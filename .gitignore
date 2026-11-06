@@ -5,3 +5,7 @@ work/
 *.lz4
 .DS_Store
 tools/probe/kprobe
+*.zip
+*.bin
+*.pit
+fw/

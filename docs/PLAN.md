@@ -117,3 +117,6 @@ crDroid 10.13 `bgN-slim` (AP2A.240905.003, Android 14 QPR, 3.2 GiB) has VNDK v28
 
 ## 14. Telephony risk, SIM carriers (user answer 2026-11-06)
 Carrier details are private. Test radio, mobile data, SMS and circuit-switched fallback on the target device; Samsung IMS/VoLTE compatibility remains unverified.
+
+## 15. Full stock firmware ingested (`docs/phase3prep/FIRMWARE-TAR.md`)
+The user's SamFOTA zip (SHA-256 `6d4eef6d5f614a3985b4c1a8e7b850900ab96ee4cb68981ee090ce7f91c197b4`) holds AP, BL, CP, CSC, HOME_CSC for `M307FXXS4CWC2` (binary 4, equal to the phone: anti-rollback OK); md5 trailers verified; system/vendor/product/boot/recovery/vbmeta in it are identical to the earlier files. It adds `dt.img` (dtb), `dtbo.img`, `cache`, `omr`, BL parts, modem and the PIT (partition table). Not in the firmware (back up from the phone before an unlock): `efs`, `sec_efs`, `cpefs`, `persistent`, `keyrefuge`, `keydata` and more. **Root device (updates s12):** `sboot.bin` builds `skip_initramfs rootwait ro init=/init root=/dev/sda%d` itself, so a disabled vbmeta probably still leaves a `root=`; still to confirm on hardware or by disassembly. AP includes `userdata.img`: flashing AP wipes data.
