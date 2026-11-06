@@ -123,3 +123,6 @@ The user's SamFOTA zip (SHA-256 `6d4eef6d5f614a3985b4c1a8e7b850900ab96ee4cb68981
 
 ## 16. Offline A14 build, policy check, backup plan (`docs/phase3prep/{A14-IMAGE-BUILD,BACKUP-PLAN}.md`)
 The A14 `system` image (4800 MiB, unshared, clean fsck), an optional MP2-free `vendor`, and two boot images (permissive cmdline, and with an explicit `root=/dev/sda25`) are built offline with committed scripts; hashes in the doc. SELinux compile with the stock vendor passes with the GSI's own secilc. Pre-flash backup plan: all not-in-firmware partitions need root, which means TWRP after the unlock; user data cannot be backed up by tools for the important apps; four written OKs are listed there and relayed to god.
+
+## 17. Root device question resolved by reading `sboot.bin` (`docs/phase3prep/BOOTLOADER-CMDLINE.md`)
+The Samsung bootloader looks up the `SYSTEM` partition in the PIT and appends `skip_initramfs rootwait ro init=/init root=/dev/sdaN` (N = 25) itself, in the cmdline builder, with no AVB condition in that path (static reading). So a disabled vbmeta should still leave a root device; supersedes the risk in section 12. A14 libcutils uses `F_SEAL_FUTURE_WRITE` only in the memfd path with a support check (fallback to ashmem expected, as on the tablet's 4.9 kernel).
