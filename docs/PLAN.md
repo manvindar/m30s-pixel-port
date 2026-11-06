@@ -111,3 +111,6 @@ Build plan and the OKs needed: `docs/PHASE2B-3-DRAFT.md`.
 
 ## 12. Stock images checked (2026-11-06; `docs/phase3prep/STOCK-IMAGES.md`)
 All seven images, sizes and SHA-256 are listed there. The user's `system`, `vendor`, `product` are **the same firmware as the phone (M307FXXS4CWC2)**: build props equal, vendor `manifest.xml` byte-identical. Findings that change the plan: `boot.img` has **no ramdisk and an empty cmdline**; the kernel has no built-in `root=`; `root=/dev/dm-0` lives only in the vbmeta cmdline descriptor (flags 1), which a disabled vbmeta may drop, so the vbmeta-disabled step in section 4 needs a root-device fix (boot-image cmdline) tested first; Magisk on a ramdisk-less system-as-root boot image needs its own route.
+
+## 13. A14 candidate GSI checked offline (`docs/phase3prep/A14-GSI-CHECK.md`)
+crDroid 10.13 `bgN-slim` (AP2A.240905.003, Android 14 QPR, 3.2 GiB) has VNDK v28 to v34 APEXes and SELinux mapping 28.0 to 34.0, so **no VNDK/mapping donor is needed for the A14 track** (matches PLAN 9.1 for A14). It fits `system` (4800 MiB) with room. It has `shared_blocks` (remove before writing). Downloaded with MindTheGapps 14 (`20250203_200051`, SHA-256 `6e1c3616862ce5b33e2b96074f86ae846eb1351a26a980e1ed140f8a7e7a4fd6`, verified against the published hash). Both live untracked in the phase-3-prep working folder; they are not in the repo.
