@@ -1,0 +1,10 @@
+ls: /product/etc/vintf: No such file or directory
+compatibility_matrix.1.xml
+compatibility_matrix.2.xml
+compatibility_matrix.3.xml
+compatibility_matrix.4.xml
+compatibility_matrix.5.xml
+compatibility_matrix.device.xml
+compatibility_matrix.legacy.xml
+manifest
+manifest.xml

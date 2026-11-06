@@ -1,0 +1,179 @@
+kernel Linux 4.14.113-22430363 aarch64
+F_SEAL_FUTURE_WRITE: ABSENT (ret=-1 errno=22 Invalid argument)
+F_SEAL_{SHRINK,GROW,SEAL}: ret=-1 errno=1
+syscall pidfd_send_signal nr=424 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall io_uring_setup   nr=425 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall pidfd_open       nr=434 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall clone3           nr=435 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall close_range      nr=436 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall openat2          nr=437 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall pidfd_getfd      nr=438 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall faccessat2       nr=439 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall process_madvise  nr=440 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall epoll_pwait2     nr=441 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall userfaultfd      nr=282 ABSENT (ret=-1 errno=38 Function not implemented)
+syscall membarrier       nr=283 present (ret=25 errno=0 )
+syscall statx            nr=291 present (ret=-1 errno=14 Bad address)
+syscall rseq             nr=293 ABSENT (ret=-1 errno=38 Function not implemented)
+bpf baseline (mov r0,0;exit) REJECTED (ret=-1 errno=13 Permission denied)
+bpf xadd32 (imm=0)             REJECTED (fd/ret=-1 errno=13 Permission denied)
+bpf xadd64 (imm=0)             REJECTED (fd/ret=-1 errno=13 Permission denied)
+bpf atomic fetch-add32         REJECTED (fd/ret=-1 errno=13 Permission denied)
+bpf atomic fetch-add64         REJECTED (fd/ret=-1 errno=13 Permission denied)
+bpf map_create array FAIL (ret=-1 errno=13)
+bpf map_type RINGBUF ABSENT/FAIL (errno=13)
+/dev/binder: BINDER_VERSION ret=0 protocol=8
+/dev/hwbinder: BINDER_VERSION ret=0 protocol=8
+/dev/vndbinder: open failed (Permission denied)
+/proc/pressure: absent
+/proc/pressure/memory                                absent
+/dev/memcg                                           exists
+/sys/fs/cgroup                                       exists
+/dev/cpuctl                                          exists
+/dev/cpuset                                          exists
+/dev/stune                                           exists
+/sys/fs/bpf                                          exists
+/dev/ashmem                                          exists
+/dev/binderfs                                        exists
+/dev/fuse                                            exists
+/sys/module/lowmemorykiller                          exists
+/sys/module/lowmemorykiller/parameters/minfree       exists
+/sys/kernel/memory_state_time                        exists
+/sys/fs/f2fs                                         exists
+/dev/uinput                                          exists
+/dev/ion                                             exists
+/dev/dma_heap                                        absent
+/proc/sys/kernel/sched_rt_runtime_us                 absent
+/proc/sys/kernel/unprivileged_bpf_disabled: cannot open (Permission denied)
+--- /proc/sys/kernel/perf_event_paranoid
+3
+--- /proc/filesystems
+nodev	sysfs
+nodev	rootfs
+nodev	ramfs
+nodev	bdev
+nodev	proc
+nodev	cpuset
+nodev	cgroup
+nodev	cgroup2
+nodev	tmpfs
+nodev	devtmpfs
+nodev	configfs
+nodev	debugfs
+nodev	tracefs
+nodev	sockfs
+nodev	dax
+nodev	bpf
+nodev	pipefs
+nodev	devpts
+	ext3
+	ext4
+	ext2
+	cramfs
+	vfat
+	msdos
+	sdfat
+nodev	ecryptfs
+nodev	sdcardfs
+	fuseblk
+nodev	fuse
+nodev	fusectl
+	f2fs
+nodev	pstore
+nodev	selinuxfs
+nodev	functionfs
+/proc/cgroups: cannot open (Permission denied)
+--- /proc/mounts
+/dev/root / ext4 ro,seclabel,nodev,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+tmpfs /dev tmpfs rw,seclabel,nosuid,relatime,mode=755 0 0
+devpts /dev/pts devpts rw,seclabel,relatime,mode=600,ptmxmode=000 0 0
+proc /proc proc rw,relatime,gid=3009,hidepid=2 0 0
+sysfs /sys sysfs rw,seclabel,relatime 0 0
+selinuxfs /sys/fs/selinux selinuxfs rw,relatime 0 0
+tmpfs /mnt tmpfs rw,seclabel,nosuid,nodev,noexec,relatime,mode=755,gid=1000 0 0
+/dev/block/dm-1 /product ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/block/dm-2 /vendor ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+tmpfs /apex tmpfs rw,seclabel,nosuid,nodev,noexec,relatime,mode=755 0 0
+tmpfs /linkerconfig tmpfs rw,seclabel,nosuid,nodev,noexec,relatime,mode=755 0 0
+tmpfs /mnt/installer tmpfs rw,seclabel,nosuid,nodev,noexec,relatime,mode=755,gid=1000 0 0
+tmpfs /mnt/androidwritable tmpfs rw,seclabel,nosuid,nodev,noexec,relatime,mode=755,gid=1000 0 0
+/dev/root /apex/com.android.os.statsd ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.media ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.i18n ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.neuralnetworks ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.wifi ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.permission ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.ipsec ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.art ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.conscrypt ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.tzdata ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.tethering ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.extservices ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.runtime ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.mediaprovider ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.vndk.v30 ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.resolv ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.media.swcodec ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.adbd ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/root /apex/com.android.sdkext ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+none /dev/cg2_bpf cgroup2 rw,nosuid,nodev,noexec,relatime 0 0
+none /dev/cpuctl cgroup rw,nosuid,nodev,noexec,relatime,cpu 0 0
+none /acct cgroup rw,nosuid,nodev,noexec,relatime,cpuacct 0 0
+none /dev/cpuset cgroup rw,nosuid,nodev,noexec,relatime,cpuset,noprefix,release_agent=/sbin/cpuset_release_agent 0 0
+none /dev/freezer cgroup rw,nosuid,nodev,noexec,relatime,freezer 0 0
+none /dev/memcg cgroup rw,nosuid,nodev,noexec,relatime,memory 0 0
+none /dev/stune cgroup rw,nosuid,nodev,noexec,relatime,schedtune 0 0
+tmpfs /linkerconfig tmpfs rw,seclabel,nosuid,nodev,noexec,relatime,mode=755 0 0
+tracefs /sys/kernel/tracing tracefs rw,seclabel,relatime 0 0
+/sys/kernel/debug /sys/kernel/debug debugfs rw,seclabel,relatime 0 0
+none /config configfs rw,nosuid,nodev,noexec,relatime 0 0
+none /sys/fs/fuse/connections fusectl rw,relatime 0 0
+bpf /sys/fs/bpf bpf rw,nosuid,nodev,noexec,relatime 0 0
+pstore /sys/fs/pstore pstore rw,seclabel,nosuid,nodev,noexec,relatime 0 0
+adb /dev/usb-ffs/adb functionfs rw,relatime 0 0
+tracefs /sys/kernel/debug/tracing tracefs rw,seclabel,relatime 0 0
+/dev/block/by-name/omr /omr ext4 rw,seclabel,nosuid,nodev,noatime,journal_checksum,noauto_da_alloc 0 0
+/dev/block/platform/13520000.ufs/by-name/cache /cache ext4 rw,seclabel,nosuid,nodev,noatime,journal_checksum,noauto_da_alloc 0 0
+tmpfs /mnt/sde tmpfs rw,seclabel,relatime,mode=700 0 0
+/dev/block/platform/13520000.ufs/by-name/userdata /data f2fs rw,lazytime,seclabel,nosuid,nodev,noatime,background_gc=on,discard,no_heap,user_xattr,inline_xattr,acl,inline_data,inline_dentry,extent_cache,mode=adaptive,active_logs=6,reserve_root=32768,resuid=0,resgid=5678,usrquota,grpquota,alloc_mode=default,fsync_mode=nobarrier 0 0
+/dev/block/platform/13520000.ufs/by-name/efs /mnt/vendor/efs ext4 rw,seclabel,nosuid,nodev,noatime,journal_checksum,noauto_da_alloc 0 0
+/dev/block/platform/13520000.ufs/by-name/cpefs /mnt/vendor/cpefs ext4 rw,seclabel,nosuid,nodev,noatime,journal_checksum,noauto_da_alloc 0 0
+/dev/block/platform/13520000.ufs/by-name/sec_efs /efs ext4 rw,seclabel,nosuid,nodev,noatime,journal_checksum,noauto_da_alloc 0 0
+/dev/block/platform/13520000.ufs/by-name/userdata /data/user/0 f2fs rw,lazytime,seclabel,nosuid,nodev,noatime,background_gc=on,discard,no_heap,user_xattr,inline_xattr,acl,inline_data,inline_dentry,extent_cache,mode=adaptive,active_logs=6,reserve_root=32768,resuid=0,resgid=5678,usrquota,grpquota,alloc_mode=default,fsync_mode=nobarrier 0 0
+tmpfs /data_mirror tmpfs rw,seclabel,nosuid,nodev,noexec,relatime,mode=700,gid=1000 0 0
+/dev/block/platform/13520000.ufs/by-name/userdata /data_mirror/data_ce/null f2fs rw,lazytime,seclabel,nosuid,nodev,noatime,background_gc=on,discard,no_heap,user_xattr,inline_xattr,acl,inline_data,inline_dentry,extent_cache,mode=adaptive,active_logs=6,reserve_root=32768,resuid=0,resgid=5678,usrquota,grpquota,alloc_mode=default,fsync_mode=nobarrier 0 0
+/dev/block/platform/13520000.ufs/by-name/userdata /data_mirror/data_ce/null/0 f2fs rw,lazytime,seclabel,nosuid,nodev,noatime,background_gc=on,discard,no_heap,user_xattr,inline_xattr,acl,inline_data,inline_dentry,extent_cache,mode=adaptive,active_logs=6,reserve_root=32768,resuid=0,resgid=5678,usrquota,grpquota,alloc_mode=default,fsync_mode=nobarrier 0 0
+/dev/block/platform/13520000.ufs/by-name/userdata /data_mirror/data_de/null f2fs rw,lazytime,seclabel,nosuid,nodev,noatime,background_gc=on,discard,no_heap,user_xattr,inline_xattr,acl,inline_data,inline_dentry,extent_cache,mode=adaptive,active_logs=6,reserve_root=32768,resuid=0,resgid=5678,usrquota,grpquota,alloc_mode=default,fsync_mode=nobarrier 0 0
+/dev/block/platform/13520000.ufs/by-name/userdata /data_mirror/cur_profiles f2fs rw,lazytime,seclabel,nosuid,nodev,noatime,background_gc=on,discard,no_heap,user_xattr,inline_xattr,acl,inline_data,inline_dentry,extent_cache,mode=adaptive,active_logs=6,reserve_root=32768,resuid=0,resgid=5678,usrquota,grpquota,alloc_mode=default,fsync_mode=nobarrier 0 0
+tmpfs /storage tmpfs rw,seclabel,nosuid,nodev,noexec,relatime,mode=755,gid=1000 0 0
+/dev/block/dm-1 /product/etc/permissions ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/dev/block/dm-1 /product/etc/sysconfig ext4 ro,seclabel,relatime,block_validity,discard,delalloc,barrier,user_xattr,acl 0 0
+/data/media /mnt/runtime/default/emulated sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /mnt/runtime/read/emulated sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=9997,multiuser,mask=23,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /mnt/runtime/write/emulated sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=9997,multiuser,mask=7,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /mnt/runtime/full/emulated sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=9997,multiuser,mask=7,derive_gid,default_normal,reserved=20MB 0 0
+/dev/fuse /mnt/user/0/emulated fuse rw,lazytime,nosuid,nodev,noexec,noatime,user_id=0,group_id=0,allow_other 0 0
+/dev/fuse /mnt/installer/0/emulated fuse rw,lazytime,nosuid,nodev,noexec,noatime,user_id=0,group_id=0,allow_other 0 0
+/dev/fuse /mnt/androidwritable/0/emulated fuse rw,lazytime,nosuid,nodev,noexec,noatime,user_id=0,group_id=0,allow_other 0 0
+/dev/fuse /storage/emulated fuse rw,lazytime,nosuid,nodev,noexec,noatime,user_id=0,group_id=0,allow_other 0 0
+/data/media /mnt/pass_through/0/emulated sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=9997,multiuser,mask=7,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /mnt/user/0/emulated/0/Android/data sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /storage/emulated/0/Android/data sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /mnt/androidwritable/0/emulated/0/Android/data sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /mnt/installer/0/emulated/0/Android/data sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /mnt/user/0/emulated/0/Android/obb sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /storage/emulated/0/Android/obb sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal,reserved=20MB 0 0
+/data/media /mnt/androidwritable/0/emulated/0/Android/obb sdcardfs rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal,reserved=20MB 0 0
+--- /proc/meminfo
+MemTotal:        5742128 kB
+MemFree:          506240 kB
+MemAvailable:    2048560 kB
+Buffers:            1348 kB
+Cached:          1706688 kB
+SwapCached:        83996 kB
+Active:          2142284 kB
+Inactive:        1478212 kB
+/proc/sys/vm/overcommit_memory: cannot open (Permission denied)
+--- /sys/fs/selinux/enforce
+1--- /sys/fs/selinux/policyvers
+31

@@ -1,0 +1,122 @@
+/vendor/etc/vintf/:
+total 32
+drwxr-xr-x  3 root shell  4096 2008-12-31 08:00 .
+drwxr-xr-x 17 root shell  4096 2008-12-31 08:00 ..
+-rw-r--r--  1 root root   3111 2008-12-31 08:00 compatibility_matrix.xml
+drwxr-xr-x  2 root shell  4096 2008-12-31 08:00 manifest
+-rw-r--r--  1 root root  14841 2008-12-31 08:00 manifest.xml
+
+/vendor/etc/vintf/manifest:
+total 92
+drwxr-xr-x 2 root shell 4096 2008-12-31 08:00 .
+drwxr-xr-x 3 root shell 4096 2008-12-31 08:00 ..
+-rw-r--r-- 1 root root   323 2008-12-31 08:00 android.hardware.cas@1.2-service.xml
+-rw-r--r-- 1 root root   329 2008-12-31 08:00 android.hardware.dumpstate@1.1-service-lazy.xml
+-rw-r--r-- 1 root root   510 2008-12-31 08:00 android.hardware.health@2.1-samsung.xml
+-rw-r--r-- 1 root root   319 2008-12-31 08:00 android.hardware.sensors@2.0-multihal.xml
+-rw-r--r-- 1 root root   310 2008-12-31 08:00 android.hardware.usb@1.1-service.exynos9611.xml
+-rw-r--r-- 1 root root   324 2008-12-31 08:00 android.hardware.wifi.hostapd.xml
+-rw-r--r-- 1 root root   313 2008-12-31 08:00 android.hardware.wifi@1.0-service.xml
+-rw-r--r-- 1 root root   338 2008-12-31 08:00 engmode_manifest.xml
+-rw-r--r-- 1 root root   180 2008-12-31 08:00 hyper-default-sec.xml
+-rw-r--r-- 1 root root   171 2008-12-31 08:00 lights-default-sec.xml
+-rw-r--r-- 1 root root   330 2008-12-31 08:00 manifest.xml
+-rw-r--r-- 1 root root   945 2008-12-31 08:00 manifest_android.hardware.drm@1.3-service.clearkey.xml
+-rw-r--r-- 1 root root   945 2008-12-31 08:00 manifest_android.hardware.drm@1.3-service.widevine.xml
+-rw-r--r-- 1 root root   170 2008-12-31 08:00 power-samsung.xml
+-rw-r--r-- 1 root root   378 2008-12-31 08:00 sec_c2_manifest_default.xml
+-rw-r--r-- 1 root root   346 2008-12-31 08:00 vaultkeeper_manifest.xml
+-rw-r--r-- 1 root root   320 2008-12-31 08:00 vendor.samsung.hardware.hqm@1.0-manifest.xml
+-rw-r--r-- 1 root root   562 2008-12-31 08:00 vendor.samsung.hardware.thermal@1.0-manifest.xml
+-rw-r--r-- 1 root root   334 2008-12-31 08:00 vendor.samsung.hardware.wifi.hostapd.xml
+-rw-r--r-- 1 root root   323 2008-12-31 08:00 vendor.samsung.hardware.wifi@2.0-service.xml
+-rw-r--r-- 1 root root   330 2008-12-31 08:00 vendor.samsung_slsi.hardware.ofi@1.0-service.xml
+a2dp_audio_policy_configuration.xml
+audio_effects.xml
+audio_effects_common.conf
+audio_effects_sec.xml
+audio_policy_configuration.xml
+audio_policy_configuration_sec.xml
+audio_policy_volumes.xml
+dax3_media_codecs_dolby_audio.xml
+hearing_aid_audio_policy_configuration.xml
+init
+media_codecs.xml
+media_codecs_ac4.xml
+media_codecs_c2_sec.xml
+media_codecs_c2_sec_ape.xml
+media_codecs_c2_sec_qcp.xml
+media_codecs_c2_sec_wmx.xml
+media_codecs_ddp.xml
+media_codecs_dolby_audio.xml
+media_codecs_google_telephony.xml
+media_codecs_performance.xml
+media_codecs_performance_c2.xml
+media_codecs_sec_ape.xml
+media_codecs_sec_primary.xml
+media_codecs_sec_qcp.xml
+media_codecs_sec_video_primary.xml
+media_profiles_V1_0.xml
+permissions
+playback_record_audio_policy_configuration.xml
+r_submix_audio_policy_configuration.xml
+sensors
+usb_audio_policy_configuration.xml
+android.hardware.audio.service.rc
+android.hardware.bluetooth@1.0-service.rc
+android.hardware.cas@1.2-service.rc
+android.hardware.configstore@1.1-service.rc
+android.hardware.drm@1.3-service.clearkey.rc
+android.hardware.drm@1.3-service.widevine.rc
+android.hardware.dumpstate@1.1-service-lazy.rc
+android.hardware.gatekeeper@1.0-service.rc
+android.hardware.graphics.allocator@2.0-service.rc
+android.hardware.graphics.composer@2.1-service.rc
+android.hardware.health@2.1-service-samsung.rc
+android.hardware.keymaster@4.0-service.rc
+android.hardware.media.omx@1.0-service.rc
+android.hardware.memtrack@1.0-service.rc
+android.hardware.sensors@2.0-service-multihal.rc
+android.hardware.usb@1.1-service.exynos9611.rc
+android.hardware.wifi.supplicant-service.rc
+android.hardware.wifi@1.0-service.rc
+argos.rc
+boringssl_self_test.rc
+cass.rc
+emservice.rc
+hostapd.android.rc
+hyper-default-sec.rc
+init.baseband.rc
+init.exynos9611.rc
+init.exynos9611.usb.rc
+init.gps.rc
+init.recovery.exynos9611.rc
+init.vendor.onebinary.rc
+init.vendor.rilchip.rc
+init.vendor.rilcommon.rc
+init.vendor.sysfw.rc
+lights-default-sec.rc
+power-default-sec.rc
+samsung.hardware.media.c2@1.1-default-service.rc
+snap_utility.rc
+teegris_v3.rc
+vaultkeeper_common.rc
+vendor.samsung.hardware.biometrics.fingerprint@3.0-service.rc
+vendor.samsung.hardware.camera.provider@4.0-service.rc
+vendor.samsung.hardware.gnss@2.0-service.rc
+vendor.samsung.hardware.hqm@1.0-service.rc
+vendor.samsung.hardware.miscpower@2.0-service.rc
+vendor.samsung.hardware.security.drk@2.0-service.rc
+vendor.samsung.hardware.security.engmode@1.0-service.rc
+vendor.samsung.hardware.security.widevine.keyprov@1.0-service.rc
+vendor.samsung.hardware.snap@1.2-service.rc
+vendor.samsung.hardware.sysinput@1.1-service.rc
+vendor.samsung.hardware.thermal@1.0-service.rc
+vendor.samsung.hardware.vibrator@2.1-service.rc
+vendor.samsung.hardware.wifi@2.0-service.rc
+vendor.samsung_slsi.hardware.ExynosHWCServiceTW@1.0-service.rc
+vendor.samsung_slsi.hardware.configstore@1.0-service.rc
+vendor.samsung_slsi.hardware.ofi@1.0-service.rc
+vndservicemanager.rc
+wifi.rc
+wifi_slsi.rc

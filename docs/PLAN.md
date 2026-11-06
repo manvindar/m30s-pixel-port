@@ -94,3 +94,17 @@ Recovered from the Phase 1 agent's report (2026-11-06). The agent's own clone, `
 6. **Prepared, not run.** A static arm64 kernel probe (seals, clone3, close_range, BPF, PSI, memcg) pushes one file to `/data/local/tmp`, so it needs the user's OK. Source lost; rewrite if wanted.
 
 Open decisions for the user: OK for phase 2a read-only probes (probe binary, `/vendor/etc/vintf/manifest`, media_codecs xml, sysfs nodes; no reboot, no setting change); who downloads the stock firmware tar; which carriers the two SIMs are on; later, OK for Download mode plus a Heimdall test.
+
+## 10. Phase 2a results (read-only probes, 2026-11-06; details in `docs/phase2a/PHASE2A.md`)
+Run with the user's yes (assumed from "yes"): one static arm64 probe pushed to `/data/local/tmp`, plus reads. No reboot, no setting change. VERIFIED on the phone:
+1. Kernel 4.14.113 lacks `F_SEAL_FUTURE_WRITE`, `close_range`, `clone3`, `openat2`, `faccessat2`, `pidfd_*`, `userfaultfd`, `io_uring`, `rseq`, PSI. Binder protocol is 8. BPF cannot be tested as `shell` (SELinux denies even a trivial program); atomics are absent by kernel version.
+2. **Corrects 9.3:** the kernel *does* have the in-kernel low-memory killer (`/sys/module/lowmemorykiller`) and memcg v1 `memory.pressure_level`; stock lmkd is Samsung SLMK (`ro.slmk.*`). The tablet's `lmkd_inkernel.c` approach carries over; PSI-only lmkd is still the problem.
+3. **Corrects 9.3 (health/lights/vibrator):** lights is already AIDL in the vendor (no shim). Health is HIDL 2.1 with a real gauge (`sm5713-fuelgauge`), vibrator is HIDL 1.3 on `timed_output/vibrator/enable` (root-only), so A17 needs an AIDL health shim and a vibrator shim that forwards to the vendor HAL.
+4. `/metadata`: no partition (`by-name`), a directory exists on the rootfs. Stand-in needed for A17, probably not for A14 (UNVERIFIED).
+5. The MP2 trap exists as a `Type` of `OMX.SEC.mp3.dec` in `media_codecs_sec_primary.xml`; VP9 decode is an Exynos codec here (no tablet-style removal planned).
+6. Filesystems: no erofs/overlayfs/incremental-fs; sdcardfs + fuse present.
+Build plan and the OKs needed: `docs/PHASE2B-3-DRAFT.md`.
+
+## 11. Stock firmware and TWRP image (2026-11-06)
+- **Restore firmware:** `M307FXXS4CWC2` is archived on samfw (premium only). Any **INS build with binary 4 or higher** restores the phone (anti-rollback only blocks older binaries); the user downloads the latest free INS build (samfw, or Frija/samloader with the IMEI). Before any Download mode or unlock, check the tar's bootloader binary number ("S" digit in the AP file name, `XXS4` = 4 or higher). A newer build may carry a different `vendor`/`product` image than the one inspected here, so Phases 0 to 2a describe **this phone's installed CWC2 firmware only**; do not extend those findings to the new tar. Re-read the phone itself for any build decision. Firmware is needed only before Download mode or unlock (supersedes the exact-CWC2 wording in sections 5 and 9.5).
+- **TWRP image (staged, not flashed):** `~/Aistuff/m30s-pixel-port/twrp-3.7.0_9-0-m30s.img` (repo root, 41.7 MB, SHA-256 `d67a081233cc98578f9fd3d5c0a761ada53b6dc516fe064b10cd6e9261a41b93`, Android boot image, kernel at 0x10008000, `buildvariant=eng`). Not tracked: `.gitignore` already has `*.img` (`git status` clean). The Download-mode/unlock gate still stands; flashing TWRP replaces Samsung's `recovery`, so keep the stock `recovery.img` from the firmware tar.

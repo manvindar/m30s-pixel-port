@@ -1,0 +1,261 @@
+## power_supply
+== /sys/class/power_supply/ac
+device
+online
+power
+subsystem
+temp
+type
+uevent
+== /sys/class/power_supply/battery
+2g_call
+3g_call
+auth
+batt_capacity_max
+batt_charging_source
+batt_chip_id
+batt_current_event
+batt_current_ua_avg
+batt_current_ua_now
+batt_ext_dev_chg
+batt_filter_cfg
+batt_high_current_usb
+batt_hv_wireless_pad_ctrl
+batt_hv_wireless_status
+batt_inbat_voltage
+batt_inbat_voltage_adc
+batt_inbat_voltage_ocv
+batt_inbat_wireless_cs100
+batt_jig_gpio
+batt_lp_charging
+batt_misc_event
+batt_read_adj_soc
+batt_read_raw_soc
+batt_reset_soc
+batt_shipmode_test
+batt_slate_mode
+batt_swelling_control
+batt_temp
+batt_temp_adc
+batt_temp_adc_aver
+batt_temp_aver
+batt_temp_table
+batt_tx_event
+batt_type
+batt_vf_adc
+batt_vfocv
+batt_vol_adc
+batt_vol_adc_aver
+batt_vol_adc_cal
+batt_vol_aver
+batt_wdt_control
+batt_wpc_temp
+batt_wpc_temp_adc
+battery_cycle
+battery_cycle_test
+browser
+call
+camcorder
+camera
+capacity
+cc_info
+charge_counter
+charge_counter_shadow
+charge_full
+charge_now
+charge_otg_control
+charge_type
+charge_uno_control
+check_ps_ready
+check_slave_chg
+chg_current_adc
+chg_temp
+chg_temp_adc
+cisd_cable_data
+cisd_cable_data_json
+cisd_data
+cisd_data_d_json
+cisd_data_json
+cisd_fullcaprep_max
+cisd_wc_data
+cisd_wc_data_json
+cisd_wire_count
+current_avg
+current_now
+data_call
+device
+direct_charging_status
+error_cause
+event
+ext_event
+factory_mode
+factory_mode_bypass
+factory_mode_relieve
+factory_voltage_regulation
+fg_asoc
+fg_capacity
+fg_cycle
+fg_full_voltage
+fg_fullcapnom
+fg_reg_dump
+fg_reset_cap
+gps
+health
+hmt_ta_charge
+hmt_ta_connected
+hotspot
+hv_charger_set
+hv_charger_status
+hv_wc_charger_status
+lcd
+led_cover
+lte
+mode
+mst_switch_test
+music
+normal_mode_bypass
+online
+power
+present
+prev_battery_data
+prev_battery_info
+safety_timer_info
+safety_timer_set
+set_stability_test
+siop_activated
+siop_event
+siop_level
+slave_chg_temp
+slave_chg_temp_adc
+status
+store_mode
+subsystem
+talk_gsm
+talk_wcdma
+technology
+temp
+temp_ambient
+test_mode
+time_to_full_now
+type
+uevent
+update
+usb_temp
+usb_temp_adc
+video
+voltage_avg
+voltage_now
+wc_adc
+wc_cmd_info
+wc_control
+wc_control_cnt
+wc_duo_rx_power
+wc_enable
+wc_op_freq
+wc_rx_connected
+wc_rx_connected_dev
+wc_status
+wc_tx_en
+wc_tx_id
+wc_tx_mfc_iin_from_uno
+wc_tx_mfc_vin_from_uno
+wc_tx_stop_capacity
+wc_tx_timer_en
+wc_tx_vout
+wc_vout
+wc_vrect
+wibro
+wifi
+== /sys/class/power_supply/otg
+device
+online
+power
+subsystem
+type
+uevent
+== /sys/class/power_supply/ps
+device
+online
+power
+status
+subsystem
+type
+uevent
+== /sys/class/power_supply/sm5713-charger
+chip_id
+device
+power
+subsystem
+type
+uevent
+== /sys/class/power_supply/sm5713-fuelgauge
+device
+power
+subsystem
+type
+uevent
+== /sys/class/power_supply/usb
+device
+online
+power
+subsystem
+type
+uevent
+== /sys/class/power_supply/wireless
+device
+online
+power
+present
+subsystem
+type
+uevent
+## battery values
+status=Charging
+health=Good
+present=1
+capacity=20
+voltage_now=3868000
+current_now=586
+temp=324
+technology=Li-ion
+charge_type=Fast
+batt_current_ua_now=556000
+time_to_full_now=7544
+battery_cycle=647
+## leds
+ls: /sys/class/leds/: Permission denied
+== /sys/class/leds/*
+ls: /sys/class/leds/*: Permission denied
+## backlight
+total 0
+drwxr-xr-x  2 root root 0 2023-06-17 02:56 .
+drwxr-xr-x 85 root root 0 2023-06-17 02:56 ..
+lrwxrwxrwx  1 root root 0 2023-06-17 02:56 panel -> ../../devices/platform/148e0000.dsim/backlight/panel
+== /sys/class/backlight/panel
+actual_brightness
+bl_power
+brightness
+device
+max_brightness
+power
+subsystem
+type
+uevent
+cat: /sys/class/backlight/panel/max_brightness: Permission denied
+cat: /sys/class/backlight/panel/brightness: Permission denied
+## vibrator / timed_output
+ls: /sys/class/haptic: No such file or directory
+/sys/class/timed_output:
+total 0
+drwxr-xr-x  2 root root 0 2026-11-06 14:27 .
+drwxr-xr-x 85 root root 0 2023-06-17 02:56 ..
+lrwxrwxrwx  1 root root 0 2026-11-06 14:27 vibrator -> ../../devices/virtual/timed_output/vibrator
+
+/sys/devices/virtual/timed_output:
+total 0
+drwxr-xr-x  3 root root 0 2026-11-06 14:27 .
+drwxr-xr-x 42 root root 0 2023-06-17 02:56 ..
+drwxr-xr-x  3 root root 0 2026-11-06 14:27 vibrator
+timed_output
+## input devices
+cat: /proc/bus/input/devices: Permission denied

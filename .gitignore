@@ -4,3 +4,4 @@ work/
 *.tar.md5
 *.lz4
 .DS_Store
+tools/probe/kprobe
