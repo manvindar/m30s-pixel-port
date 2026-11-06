@@ -28,6 +28,7 @@ Risk: low. Abort at any step: hold Volume Down + Power about 10 s, the phone reb
 | A3 | `heimdall detect` | `Device detected` |
 | A4 | `heimdall print-pit --no-reboot > pit-device.txt` | a PIT dump with 42 entries; compare with the PIT from the firmware (`M30S_SWA_OPEN.pit`). **Known risk:** newer Samsung bootloaders often make Heimdall fail ("Failed to receive PIT file size", "Protocol initialisation failed"): that is a result, not damage; it means use Odin on a Windows PC |
 | A5 | Hold Volume Down + Power about 10 s | phone reboots to Android; `$A devices` lists it within 2 minutes |
+**Result 2026-11-06:** A1 `adb reboot download` ok; the user pressed Volume Up at the warning; the phone enumerates as USB "Gadget Serial"; `heimdall detect` = `Device detected`; `heimdall print-pit --no-reboot` worked (42 entries, SYSTEM/VBMETA/RECOVERY/BOOT/VENDOR/PRODUCT/USERDATA present; dump in `work/pit-device.txt`). **Heimdall works on this bootloader.** Two practical notes: (1) Heimdall must run **outside the agent sandbox** (the sandbox blocks USB: `Failed to detect compatible download-mode device`); (2) after `--no-reboot` the session stays open and a second `heimdall` call fails with `Protocol initialisation failed`: either do all steps in one call or leave with Volume Down + Power (about 10 s). Not yet compared against `M30S_SWA_OPEN.pit` byte for byte.
 Result recorded in PLAN.md: Heimdall works / does not.
 
 ## Gate B: unlock, vbmeta-disabled, TWRP, partition dump

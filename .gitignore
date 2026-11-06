@@ -10,3 +10,5 @@ tools/probe/kprobe
 *.pit
 fw/
 fw-extracted/
+phone-sdcard-backup/
+partition-dump/
