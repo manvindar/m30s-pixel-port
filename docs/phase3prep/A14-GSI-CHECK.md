@@ -13,3 +13,9 @@ Candidate: `naz664/crDroid_gsi` release `v2025.03.08`, `crDroid-10.13-arm64_bgN-
 | Framework manifest | `manifest.xml` has HIDL entries with `max-level` 5 to 8 (legacy HALs the GSI still offers) |
 
 Not checked yet: SELinux policy compile against the stock vendor cil (`secilc`), libhwui for `F_SEAL_FUTURE_WRITE` use (A14 should not seal), bionic fallbacks for missing syscalls, the init rc files that need Samsung services, and the GSI's `product`/`system_ext` content (what to strip for size).
+
+## SELinux policy compile (added 2026-11-06)
+Init compiles the split policy at boot because the stock `precompiled_sepolicy` hashes do not match a GSI. Offline repeat: `tools/policy/check_sepolicy.sh GSI.raw VENDOR.raw secilc` (build secilc for the Mac with `tools/policy/build_secilc.sh`; upstream 3.7).
+- Inputs: GSI `plat_sepolicy.cil`, `mapping/30.0.cil`, `mapping/30.0.compat.cil`, `system_ext_sepolicy.cil`; stock vendor `plat_pub_versioned.cil`, `vendor_sepolicy.cil` (`plat_sepolicy_vers` = 30.0).
+- **Upstream secilc 3.7 fails:** "Found conflicting genfscon rules": the GSI's `system_ext_sepolicy.cil` labels `iso9660 /` and `udf /` as `iso9660`/`udf`, Samsung's vendor labels both `vfat`. It compiles (1.37 MB policy) once those two lines are dropped.
+- **The GSI's own `/system/bin/secilc`, run on the phone** (pushed to `/data/local/tmp/sepolchk`, run as `shell` with output to `/dev/null`, then removed: no state change) compiles the as-shipped set and only prints `Received conflicting / vs / but ignore` for iso9660 and udf: it ignores these conflicts on purpose. So the policy compile is **not** a boot blocker for this GSI on this vendor. Residual risk: the compiled policy is not a *working* policy (denials come later); the plan is to boot permissive first.
