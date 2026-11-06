@@ -1,0 +1,6 @@
+work/
+*.img
+*.tar
+*.tar.md5
+*.lz4
+.DS_Store
