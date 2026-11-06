@@ -126,3 +126,6 @@ The A14 `system` image (4800 MiB, unshared, clean fsck), an optional MP2-free `v
 
 ## 17. Root device question resolved by reading `sboot.bin` (`docs/phase3prep/BOOTLOADER-CMDLINE.md`)
 The Samsung bootloader looks up the `SYSTEM` partition in the PIT and appends `skip_initramfs rootwait ro init=/init root=/dev/sdaN` (N = 25) itself, in the cmdline builder, with no AVB condition in that path (static reading). So a disabled vbmeta should still leave a root device; supersedes the risk in section 12. A14 libcutils uses `F_SEAL_FUTURE_WRITE` only in the memfd path with a support check (fallback to ashmem expected, as on the tablet's 4.9 kernel).
+
+## 18. First-flash checklist and A17 prep (`docs/phase3prep/FIRST-FLASH-CHECKLIST.md`, `A17-TRACK-PREP.md`)
+Ordered Gates A (Download-mode/Heimdall test), B (unlock, vbmeta-disabled + TWRP, partition dump with `tools/backup/dump_partitions.sh`) and C (A14 `system`+`boot` by `dd` from TWRP), each with expected output and rollback. Rules written in: never delete anything on `/sdcard` or the SD card; the card is portable (`public:179,1`, checked), removed by the user and kept out until Android boots; the unlock itself wipes the internal `/sdcard`. A17 changes per tablet build step are listed in the prep doc.
