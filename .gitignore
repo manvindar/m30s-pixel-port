@@ -9,3 +9,4 @@ tools/probe/kprobe
 *.bin
 *.pit
 fw/
+fw-extracted/
