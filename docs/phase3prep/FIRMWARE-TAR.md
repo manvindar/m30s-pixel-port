@@ -1,6 +1,6 @@
 # Full stock firmware, ingested and catalogued (2026-11-06)
 
-Source: `~/Aistuff/m30s-pixel-port/SamFOTA.com_SM-M307F_2_20230427160910_hmjyjlzw7c_fac.zip` (4,388,968,423 bytes), SHA-256 `6d4eef6d5f614a3985b4c1a8e7b850900ab96ee4cb68981ee090ce7f91c197b4`. Read-only access worked (no sandbox change). Untracked (`.gitignore`: `*.zip`, `*.tar*`, `*.lz4`, `*.img`, `*.bin`, `*.pit`, `fw/`). Extracted to `/home/developer/HarnessAgents/hive/agents/worker-m30s-lead/fw/img/{AP,BL,CP,CSC,HOME_CSC}/` (lz4 as shipped) and `fw/img/raw/` (small partitions decompressed). That folder is deleted at my teardown; the user's zip is the permanent copy. Tar files were removed after extraction to save disk (hashes below).
+Source: `~/Aistuff/m30s-pixel-port/SamFOTA.com_SM-M307F_2_20230427160910_hmjyjlzw7c_fac.zip` (4,388,968,423 bytes), SHA-256 `6d4eef6d5f614a3985b4c1a8e7b850900ab96ee4cb68981ee090ce7f91c197b4`. Read-only access worked (no sandbox change). Untracked (`.gitignore`: `*.zip`, `*.tar*`, `*.lz4`, `*.img`, `*.bin`, `*.pit`, `fw/`). **Canonical path: `~/Aistuff/m30s-pixel-port/fw-extracted/img/{AP,BL,CP,CSC,HOME_CSC}/`** (lz4 as shipped) and `fw-extracted/img/raw/` (small partitions decompressed), untracked. (My working path `hive/agents/worker-m30s-lead/fw` is a symlink to it.) The user's zip is the original. Tar files were removed after extraction to save disk (hashes below).
 
 ## 1. Tars inside (each is `.tar.md5`: tar plus a trailing md5 line; all 5 md5 trailers verified)
 | Tar | File size | tar md5 (verified) |
