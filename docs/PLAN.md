@@ -17,7 +17,7 @@ Recommendation: **Android 14 (LineageOS 21 / AndyYan `arm64_bgN` family, or Goog
 - Kernel here is 4.14.113 (better than the tablet's 4.9). Android 16+ still needs the same class of patches (missing `F_SEAL_FUTURE_WRITE`, `close_range`, BPF atomics: UNVERIFIED, tested only by running code on the phone). Newer GSIs also assume more of the kernel (see PSI below).
 - **Order of attempts:** A14 first (target of this plan), then A15 only if the A14 base is solid. Do not start at A16/A17: a phone with a bad radio stack is much less forgiving than a tablet.
 - Open check that needs no phone access: compare the A14 GSI's `system/etc/vintf/compatibility_matrix*.xml` against `docs/phase0/vendor-vintf-manifest.xml` by hand (Android has `checkvintf`; none is installed on the Mac).
-- `CONFIG_PSI` is absent from the kernel config. Android 12+ lmkd prefers pressure stall information and falls back to the legacy path; low-memory killing may be poor on 5.5 GiB. UNVERIFIED, measure in Phase 3 (the tablet ran A14 to A17 on 4.9 without PSI, per its docs; its lmkd notes were not found by a quick grep).
+- `CONFIG_PSI` is absent from the kernel config. Android 12+ lmkd prefers pressure stall information and falls back to the legacy path; low-memory killing may be poor on 5.5 GiB. UNVERIFIED, measure in Phase 3 (the tablet's 4.9 kernel ran A14 to A17; whether it has PSI was not checked).
 
 ## 3. Layers: phone, not tablet
 | Layer | Use here? | Notes |
@@ -27,7 +27,7 @@ Recommendation: **Android 14 (LineageOS 21 / AndyYan `arm64_bgN` family, or Goog
 | Pixel SystemUI / Settings (phone, `SystemUIGoogle`) | Later, optional | The biggest gain in look and the biggest boot risk (privapp allowlists, resource id remaps, `package_cache` clearing: all documented in `tb-x606v-android17/docs/PIXEL.md`). Only after the plain GSI plus Pixel Launcher is stable. |
 | GApps | MindTheGapps (matching Android version) | As on the tablet. |
 | Pixel setup wizard fix (delete `Provision`), `wizard_lock_skip.sh` | Reuse if the Pixel wizard is staged | `tools/pixel/`. |
-| privapp allowlist rule | **Mandatory** | `/vendor/build.prop` on a Samsung vendor may or may not enforce; assume it does. A priv-app that asks for an unlisted privileged permission makes system_server abort and the phone sits on the boot logo. Run `check_privapp.py` / `check_privapp_offline.py` before every priv-app. Samsung's boot hang has no adb: recovery is Download mode, not TWRP key combos we have verified. |
+| privapp allowlist rule | **Mandatory** | `/vendor/build.prop` on a Samsung vendor may or may not enforce; assume it does. A priv-app that asks for an unlisted privileged permission makes system_server abort and the phone sits on the boot logo. Run `check_privapp.py` / `check_privapp_offline.py` before every priv-app. A boot hang has no adb: recovery is Download mode (or TWRP once installed). |
 | Magisk module approach, root daemon (ROM Tuner idea) | Reuse the approach only | MediaTek PPM/GPU/power-HAL nodes, codec XML and the compass shim are irrelevant on Exynos. |
 | Samsung-only pieces (One UI, Samsung Pay, Secure Folder, Dual Messenger, Knox) | Lost | Say so to the user before the unlock. Dual Messenger user 95 and the Secure Folder data are in `userdata` and are wiped. |
 
