@@ -114,3 +114,6 @@ All seven images, sizes and SHA-256 are listed there. The user's `system`, `vend
 
 ## 13. A14 candidate GSI checked offline (`docs/phase3prep/A14-GSI-CHECK.md`)
 crDroid 10.13 `bgN-slim` (AP2A.240905.003, Android 14 QPR, 3.2 GiB) has VNDK v28 to v34 APEXes and SELinux mapping 28.0 to 34.0, so **no VNDK/mapping donor is needed for the A14 track** (matches PLAN 9.1 for A14). It fits `system` (4800 MiB) with room. It has `shared_blocks` (remove before writing). Downloaded with MindTheGapps 14 (`20250203_200051`, SHA-256 `6e1c3616862ce5b33e2b96074f86ae846eb1351a26a980e1ed140f8a7e7a4fd6`, verified against the published hash). Both live untracked in the phase-3-prep working folder; they are not in the repo.
+
+## 14. Telephony risk, SIM carriers (user answer 2026-11-06)
+Carrier details are private. Test radio, mobile data, SMS and circuit-switched fallback on the target device; Samsung IMS/VoLTE compatibility remains unverified.
