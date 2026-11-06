@@ -17,6 +17,7 @@ Every command is for the Mac, serial `DEVICE_SERIAL` (`A=~/Library/Android/sdk/p
 | 0.4 | `$A shell dumpsys battery \| grep level` | `level: 50` or more |
 | 0.5 | User notes IMEI (`*#06#`), serial, Wi-Fi MAC | written down |
 | 0.6 | `brew install heimdall` (the Mac, network, no phone) then `heimdall version` | a version string; if the formula is missing/broken, build from source or use Odin on Windows (blocker for Gate A) |
+| 0.6a | **Result 2026-11-06:** there is no `heimdall` formula (only `heimdal`, a different tool; the `heimdall-suite` cask is disabled). Built v1.4.2 from `Benjamin-Dobell/Heimdall` master tarball: `cmake .. -DDISABLE_FRONTEND=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXE_LINKER_FLAGS="-framework IOKit -framework CoreFoundation -framework Security"` (libusb 1.0.30 and cmake from brew), binary `work/heimdall-src/build/bin/heimdall`, `heimdall version` = `v1.4.2`. Use that path wherever the checklist says `heimdall`. | built |
 
 ## Gate A: Download-mode transport test (reboots the phone, changes nothing)
 Risk: low. Abort at any step: hold Volume Down + Power about 10 s, the phone reboots into Android.
