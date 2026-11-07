@@ -31,7 +31,19 @@ public class Main {
     static Session session;   // the one live session (the HAL has a single active group)
     static Handler lockoutTimer;
 
+    /** HwParcel.readInt8VectorAsArray is hidden and refused to a class outside the boot classpath: lift the hidden API checks for this process (double reflection, the checks only look at the direct caller). */
+    static void exemptHiddenApis() {
+        try {
+            Method getDeclaredMethod = Class.class.getDeclaredMethod("getDeclaredMethod", String.class, Class[].class);
+            Class<?> vm = Class.forName("dalvik.system.VMRuntime");
+            Method getRuntime = (Method) getDeclaredMethod.invoke(vm, "getRuntime", null);
+            Method set = (Method) getDeclaredMethod.invoke(vm, "setHiddenApiExemptions", new Class[] { String[].class });
+            set.invoke(getRuntime.invoke(null), (Object) new String[] { "L" });
+        } catch (Throwable t) { Log.w(TAG, "hidden API exemption failed: " + t); }
+    }
+
     public static void main(String[] args) throws Exception {
+        exemptHiddenApis();
         hatSelfTest();
         HandlerThread ht = new HandlerThread("lockout"); ht.start(); lockoutTimer = new Handler(ht.getLooper());
         HwBinder.configureRpcThreadpool(4, true);
@@ -180,7 +192,7 @@ public class Main {
                     case 256921159: { in.enforceInterface("android.hidl.base@1.0::IBase"); out.writeStatus(HwParcel.STATUS_SUCCESS); out.send(); return; }   // ping
                     default: Log.w(TAG, "callback: unhandled transaction " + code);
                 }
-            } catch (RuntimeException e) { Log.e(TAG, "callback " + code + " failed", e); }
+            } catch (Throwable e) { Log.e(TAG, "callback " + code + " failed", e); }   // never let a callback take the process down
             if ((flags & FLAG_ONEWAY) == 0) { out.writeStatus(HwParcel.STATUS_SUCCESS); out.send(); }
         }
 
