@@ -335,6 +335,13 @@ if exists(S, '/system/etc/init/cpustatsd.rc'):
 run('sh', os.path.join(TOOLS, 'health', 'build.sh'), env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))
 put(os.path.join(TOOLS, 'health', 'out', 'healthshim.jar'), '/system/etc/healthshim.jar', '644')
 put(os.path.join(TOOLS, 'health', 'healthshim.sh'), '/system/bin/healthshim.sh', '755'); put(os.path.join(TOOLS, 'health', 'healthshim.rc'), '/system/etc/init/healthshim.rc', '644')
+# fingerprint: Android 17's FingerprintService only speaks the AIDL IFingerprint HAL, the Samsung vendor only HIDL IBiometricsFingerprint@2.1. tools/fphal/shim (Java, app_process, like the health shim)
+# registers IFingerprint/default and forwards to the HIDL HAL. The vintf fragment is a framework one (no vendor reflash); the feature file switches FingerprintService on.
+fp = os.path.join(HERE, '..', 'fphal'); fpjar = wp('m30s-fphal.jar')
+run(sys.executable, os.path.join(fp, 'make_fphal_jar.py'), fpjar, BT)
+put(fpjar, '/system/etc/m30s-fphal.jar', '644'); put(os.path.join(fp, 'fphal.sh'), '/system/bin/m30s-fphal.sh', '755'); put(os.path.join(fp, 'fphal.rc'), '/system/etc/init/05_fphal.rc', '644')
+put(os.path.join(fp, 'android.hardware.biometrics.fingerprint-m30s.xml'), '/system/etc/vintf/manifest/android.hardware.biometrics.fingerprint-m30s.xml', '644')
+put(os.path.join(fp, 'android.hardware.fingerprint.xml'), '/system/etc/permissions/android.hardware.fingerprint.xml', '644')
 # init.rc starts the UART console on debuggable builds and ActivityManager then warns "Serial console enabled, performance is impacted" every boot
 rc = cat(S, '/system/etc/init/hw/init.rc').decode(); old = 'on init && property:ro.debuggable=1\n    start console\n'; assert old in rc
 replace(S, '/system/etc/init/hw/init.rc', tmpf('init.rc', rc.replace(old, '# console shell on the UART only when asked (ROM Tuner: Serial console). ActivityManager shows a performance warning whenever init.svc.console is running.\n'
