@@ -41,7 +41,7 @@ env:
   FACTORY_URL: https://dl.google.com/developers/android/cinnamonbun/images/factory/tegu_beta-dp11.261016.003-factory-50ec463b.zip
   FACTORY_SHA256: 50ec463b0fd404cbd98b9f201b3694246d4aa5f86d7e93719da6e0288de6c703
   GAPPS_TAG: MindTheGapps-16.0.0-arm64-20261023_034858
-  TABLET_REF: d718d61f95bba296a1093cdb8076a17aa1b6247d   # tb-x606v-android17 branch exp/pixel-tablet: patch library (tools/) and the public AOSP platform test keys
+  TABLET_REF: 44cde4e25a160d95900ad12e3415b5527792be06   # tb-x606v-android17 branch exp/pixel-tablet (last pushed commit): patch library (tools/) and the public AOSP platform test keys
   VENDOR_MP2_SHA256: 285a28cc6785a25eb208d98ed9d387b2f345597c46e92403f42cbdf25dc113f9
   BOOT_SHA256: d788f41397481fd7990ece136460edc1b62bac35c73bc4eda1593bdb50704c65
   VBMETA_SHA256: fe1f4b55088fbc97040bc898d8b076f93c93e203c8ba7a15c8348080351f4ca2

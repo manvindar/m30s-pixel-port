@@ -129,6 +129,9 @@ try:
         zi.close(); subprocess.run([os.path.join(BT, 'zipalign'), '-p', '-f', '4', tmpz, ov + '.al'], check=True); os.remove(tmpz)
         subprocess.run([os.path.join(BT, 'apksigner'), 'sign', '--key', os.path.join(a.keys, 'platform.pk8'), '--cert', os.path.join(a.keys, 'platform.x509.pem'), '--out', ov, ov + '.al'], check=True, capture_output=True)
         os.remove(ov + '.al'); os.path.exists(ov + '.idsig') and os.remove(ov + '.idsig')
+    # the M30s panel has rounded corners and the Pixel 9a's auto-generated overlay (its corner/padding values) is not staged: a static framework overlay gives the status bar content a corner padding
+    if not a.only:
+        subprocess.run([sys.executable, os.path.join(HERE, 'make_m30s_overlay.py'), os.path.join(out, 'product/overlay/M30sDisplayOverlay.apk'), a.keys, BT], check=True, capture_output=True)
     for rel in ([] if a.only else RESIGN):
         f = os.path.join(out, rel)
         subprocess.run([os.path.join(BT, 'zipalign'), '-p', '-f', '4', f, f + '.al'], check=True)
