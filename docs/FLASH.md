@@ -17,7 +17,8 @@ sha256sum system-a17-pixel.img vendor-a17.img                           # must e
 ```
 cat system-a17-pixel.img | adb exec-in 'dd of=/dev/block/by-name/system bs=1048576'
 cat vendor-a17.img       | adb exec-in 'dd of=/dev/block/by-name/vendor bs=1048576'
-adb shell 'head -c 5033164800 /dev/block/by-name/system | sha256sum'    # must equal the system image hash
+# verify in windows: one long read through TWRP's shell is cut off after about 700 MiB, so hash 256 MiB at a time and compare with the same window of the image
+for i in $(seq 0 18); do adb shell "dd if=/dev/block/by-name/system bs=1048576 skip=$((i*256)) count=256 2>/dev/null | sha256sum"; done    # last window is 192 MiB (count=192)
 adb shell 'rm -rf /data/system/package_cache /data/dalvik-cache'
 ```
 TWRP's `dd` rejects `bs=4M`: use bytes (`bs=1048576`). The vendor image only needs flashing when coming from the stock vendor or an older build of this repo.
