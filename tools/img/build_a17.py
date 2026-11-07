@@ -261,6 +261,7 @@ for f in sorted(os.listdir(os.path.join(a.a14fs, 'lib64'))): put(os.path.join(a.
 symlink('/init', '/system/a14fs/launcher', 'u:object_r:rootfs:s0')
 if not a.pixel_phone: put(os.path.join(HERE, 'rc', '02_webview.rc'), '/system/etc/init/02_webview.rc', '644')    # picks the system WebView (the vendor GMS overlay leaves no default); the Pixel layer brings Chrome's WebView, which is the default
 put(os.path.join(HERE, 'rc', '03_zram.rc'), '/system/etc/init/03_zram.rc', '644')    # swap: the stock vendor fstab has no zram
+put(os.path.join(HERE, 'rc', '04_precompile.rc'), '/system/etc/init/04_precompile.rc', '644')    # the Precompile apps icon/tile starts it
 # 5 virt apex ------------------------------------------------------------------------------------------------------------
 print('5 virt apex (EROFS -> ext4)')
 if shutil.which('fsck.erofs'):
