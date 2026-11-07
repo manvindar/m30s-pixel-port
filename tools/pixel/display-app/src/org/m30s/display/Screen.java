@@ -78,7 +78,7 @@ public class Screen extends PreferenceActivity {
         for (int t : supported) {
             SwitchPreference s = new SwitchPreference(this);
             s.setPersistent(false); s.setTitle(t < HDR_NAMES.length ? HDR_NAMES[t] : "HDR type " + t);
-            s.setSummary("Off: videos in this format play tone mapped to SDR");
+            s.setSummary("When off, videos in this format play tone mapped to SDR");
             boolean off = false;
             for (int d : disabledHdr(this)) off |= d == t;
             s.setChecked(!off);
