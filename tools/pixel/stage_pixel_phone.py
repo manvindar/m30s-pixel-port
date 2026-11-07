@@ -134,6 +134,8 @@ try:
         subprocess.run([sys.executable, os.path.join(HERE, 'make_m30s_overlay.py'), os.path.join(out, 'product/overlay/M30sDisplayOverlay.apk'), a.keys, BT], check=True, capture_output=True)
         os.makedirs(os.path.join(out, 'product/app/Precompile'), exist_ok=True)    # launcher icon + Quick Settings tile that start the on-device compile job (rc/04_precompile.rc)
         subprocess.run([sys.executable, os.path.join(HERE, 'make_precompile_app.py'), os.path.join(out, 'product/app/Precompile/Precompile.apk'), a.keys, BT], check=True, capture_output=True)
+        os.makedirs(os.path.join(out, 'product/app/DisplayExtras'), exist_ok=True)    # launcher icon: screen mode (mdnie) and HDR format switches
+        subprocess.run([sys.executable, os.path.join(HERE, 'make_precompile_app.py'), os.path.join(out, 'product/app/DisplayExtras/DisplayExtras.apk'), a.keys, BT], check=True, capture_output=True, env=dict(os.environ, APP='display-app'))
     for rel in ([] if a.only else RESIGN):
         f = os.path.join(out, rel)
         subprocess.run([os.path.join(BT, 'zipalign'), '-p', '-f', '4', f, f + '.al'], check=True)
