@@ -31,19 +31,7 @@ public class Main {
     static Session session;   // the one live session (the HAL has a single active group)
     static Handler lockoutTimer;
 
-    /** HwParcel.readInt8VectorAsArray is hidden and refused to a class outside the boot classpath: lift the hidden API checks for this process (double reflection, the checks only look at the direct caller). */
-    static void exemptHiddenApis() {
-        try {
-            Method getDeclaredMethod = Class.class.getDeclaredMethod("getDeclaredMethod", String.class, Class[].class);
-            Class<?> vm = Class.forName("dalvik.system.VMRuntime");
-            Method getRuntime = (Method) getDeclaredMethod.invoke(vm, "getRuntime", null);
-            Method set = (Method) getDeclaredMethod.invoke(vm, "setHiddenApiExemptions", new Class[] { String[].class });
-            set.invoke(getRuntime.invoke(null), (Object) new String[] { "L" });
-        } catch (Throwable t) { Log.w(TAG, "hidden API exemption failed: " + t); }
-    }
-
     public static void main(String[] args) throws Exception {
-        exemptHiddenApis();
         hatSelfTest();
         HandlerThread ht = new HandlerThread("lockout"); ht.start(); lockoutTimer = new Handler(ht.getLooper());
         HwBinder.configureRpcThreadpool(4, true);
@@ -63,6 +51,9 @@ public class Main {
         Log.i(TAG, "registered " + IFingerprint.DESCRIPTOR + "/default");
         HwBinder.joinRpcThreadpool();
     }
+
+    /** HwParcel.readInt8VectorAsArray is private (IllegalAccessError); the public readInt8Vector boxes. */
+    static byte[] bytes(ArrayList<Byte> l) { byte[] a = new byte[l.size()]; for (int i = 0; i < a.length; i++) a[i] = l.get(i); return a; }
 
     interface Writer { void write(HwParcel req); }
 
@@ -143,6 +134,7 @@ public class Main {
         }
         public ICancellationSignal authenticate(long operationId) throws RemoteException {
             int st = callStatus(T_AUTHENTICATE, r -> { r.writeInt64(operationId); r.writeInt32(user); });
+            Log.i(TAG, "authenticate(op " + operationId + ", user " + user + ") -> " + st);
             if (st != 0) { Log.w(TAG, "authenticate -> " + st); cb.onError(android.hardware.biometrics.fingerprint.Error.UNABLE_TO_PROCESS, 0); }
             return canceller();
         }
@@ -179,7 +171,8 @@ public class Main {
                         if (s != null) s.cb.onEnrollmentProgress(fid, remaining); break; }
                     case 2: { in.enforceInterface(HIDL_CB); in.readInt64(); int info = in.readInt32(), vendor = in.readInt32();
                         if (s != null) s.cb.onAcquired((byte) (info + 1), vendor); break; }   // HIDL GOOD..VENDOR (0..6) = AIDL GOOD..VENDOR (1..7)
-                    case 3: { in.enforceInterface(HIDL_CB); in.readInt64(); int fid = in.readInt32(); in.readInt32(); byte[] tok = in.readInt8VectorAsArray();
+                    case 3: { in.enforceInterface(HIDL_CB); in.readInt64(); int fid = in.readInt32(); int gid = in.readInt32(); byte[] tok = bytes(in.readInt8Vector());
+                        Log.i(TAG, "onAuthenticated fid " + fid + " gid " + gid + " token " + (tok == null ? -1 : tok.length));
                         if (s != null) { if (fid != 0) s.cb.onAuthenticationSucceeded(fid, hat(tok)); else s.cb.onAuthenticationFailed(); } break; }
                     case 4: { in.enforceInterface(HIDL_CB); in.readInt64(); int err = in.readInt32(), vendor = in.readInt32();
                         if (s != null) error(s, err, vendor); break; }
