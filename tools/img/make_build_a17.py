@@ -66,6 +66,9 @@ symlink('/init', '/system/a14fs/launcher', 'u:object_r:rootfs:s0')
 if not a.pixel_phone: put(os.path.join(HERE, 'rc', '02_webview.rc'), '/system/etc/init/02_webview.rc', '644')    # picks the system WebView (the vendor GMS overlay leaves no default); the Pixel layer brings Chrome's WebView, which is the default
 put(os.path.join(HERE, 'rc', '03_zram.rc'), '/system/etc/init/03_zram.rc', '644')    # swap: the stock vendor fstab has no zram
 put(os.path.join(HERE, 'rc', '04_precompile.rc'), '/system/etc/init/04_precompile.rc', '644')    # the Precompile apps icon/tile starts it
+put(os.path.join(HERE, 'rc', '05_gesture.rc'), '/system/etc/init/05_gesture.rc', '644')    # no ML back gesture: its TFLite lib is SIGILL on the Exynos 9611, SystemUI would crash-loop in gesture navigation
+put(os.path.join(HERE, 'rc', '06_nosensorhog.rc'), '/system/etc/init/06_nosensorhog.rc', '644')    # GMS Personal Safety streamed the accelerometer at 100 Hz: system_server 26-55% CPU idle (docs/PERF-2026-11-07.md)
+if exists(S, '/system/product/etc/permissions/android.hardware.biometrics.face.xml'): cmds.append('rm /system/product/etc/permissions/android.hardware.biometrics.face.xml')    # face feature without a HAL: BiometricService spun on IVirtualHal (4 log lines/s)
 """ + s[i:]
 
 # netbpfload: the stock kernel has no BPF JIT, patch the "Kernel eBPF JIT failure" check out; tracer and lmkd come from make_a14fs.py (NDK builds)
