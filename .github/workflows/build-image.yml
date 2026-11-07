@@ -7,7 +7,7 @@ name: Build image
 #   vendor-mp2.img      stock vendor with the audio/mpeg-L2 codec type removed (tools/img/build_a14.sh does that from the firmware vendor.img)
 #   boot.img            stock Samsung boot image of the firmware (the kernel Image is swapped in)
 #   vbmeta-disabled.img 4 KiB vbmeta with verification disabled
-#   kernel-<tag>.Image, kernel-<tag>.repack_boot.py, kernel-<tag>.SHA256SUMS   mirror of the m30s-kernel release assets, used only when the secret M30S_KERNEL_TOKEN (read access to manvindar/m30s-kernel) is not set
+#   kernel-<tag>.Image, kernel-<tag>.SHA256SUMS   mirror of the m30s-kernel release assets, used only when the secret M30S_KERNEL_TOKEN (read access to manvindar/m30s-kernel) is not set
 # The kernel is never built here: it is the newest "kernel-*" release of manvindar/m30s-kernel (or inputs.kernel_tag).
 on:
   workflow_dispatch:
@@ -162,15 +162,15 @@ jobs:
           if [ -n "$KTOKEN" ]; then
             export GH_TOKEN="$KTOKEN"
             [ -n "$TAG" ] || TAG=$(gh release list -R manvindar/m30s-kernel --limit 50 --json tagName,publishedAt -q '[.[]|select(.tagName|startswith("kernel-"))]|sort_by(.publishedAt)|last|.tagName')
-            gh release download "$TAG" -R manvindar/m30s-kernel -p Image -p repack_boot.py -p SHA256SUMS -D kernel
+            gh release download "$TAG" -R manvindar/m30s-kernel -p Image -p SHA256SUMS -D kernel
           else
             [ -n "$TAG" ] || TAG=$(gh release view inputs --json assets -q '.assets[].name' | sed -n 's/^\(kernel-.*\)\.Image$/\1/p' | sort -V | tail -1)
             [ -n "$TAG" ] || { echo "no kernel mirrored in the inputs release and M30S_KERNEL_TOKEN is not set"; exit 1; }
-            for f in Image repack_boot.py SHA256SUMS; do gh release download inputs -p "$TAG.$f" -O "kernel/$f"; done
+            for f in Image SHA256SUMS; do gh release download inputs -p "$TAG.$f" -O "kernel/$f"; done
           fi
           echo "KERNEL_TAG=$TAG" >> "$GITHUB_ENV"
           WANT=$(awk '$2=="Image"{print $1}' kernel/SHA256SUMS); echo "$WANT  kernel/Image" | sha256sum -c -
-          python3 kernel/repack_boot.py boot.img kernel/Image boot-a17.img
+          python3 tools/img/repack_boot.py boot.img kernel/Image boot-a17.img   # the repo's copy: the one in the baseline release is older and cannot place the larger Image before Samsung's trailer
           sha256sum boot-a17.img
 
       - name: Check the images
