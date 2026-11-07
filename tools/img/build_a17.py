@@ -35,6 +35,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--gsi', required=True, help='raw ext4 system.img from the Google GSI zip (DP11.261002.005)')
 ap.add_argument('--donor', '--a16', dest='donor', required=True, help='LineageOS 23.2 GSI, raw ext4')
 ap.add_argument('--vndk-dir', required=True, help='dir with com.android.vndk.v30.apex, 30.0.cil, 30.0.compat.cil (from the Android 14 GSI)')
+ap.add_argument('--a14fs', required=True, help='dir made by tools/img/make_a14fs.py (A14 first-stage init + libs, /init launcher, bpf tracer, lmkd)')
 ap.add_argument('--out', required=True); ap.add_argument('--gapps', help='MindTheGapps-16.0.0-arm64 zip'); ap.add_argument('--out-gapps', help='write a second image with the Google apps (the --out image stays without)')
 ap.add_argument('--port-repo', default=os.path.join(HERE, '..', '..', 'tb-x606v-android16-port'), help='Android 16 port repo (ROM Tuner, boot animations)')
 ap.add_argument('--dev-tools', action='store_true', help='development safety net (tools/debug): boot_watchdog reboots into recovery when a boot does not finish, bootdiag writes the boot logcat to /data/local/tmp/bootdiag')
@@ -43,6 +44,7 @@ ap.add_argument('--no-tuner', action='store_true', default=True); ap.add_argumen
 ap.add_argument('--dolby', help='directory with DaxUI.apk, daxService.patched.apk (or daxService.apk) and com.dolby.daxservice.xml from the stock Lenovo firmware')
 ap.add_argument('--pixel', help='NikGapps-full-arm64-16-*.zip: source of the Pixel apps (Android 16 build; the launcher itself comes from --pixel-launcher-apk)')
 ap.add_argument('--pixel-tablet', help='directory made by tools/pixel/stage_pixel_tablet.py: Pixel Tablet SystemUI, Settings and launcher + config overlays of the matching Android 17 build (replaces the GSI SystemUI and Settings)')
+ap.add_argument('--pixel-phone', help='directory made by tools/pixel/stage_pixel_phone.py (Pixel 9a SystemUI, Settings, launcher, Google apps, Chrome + WebView, overlays of the matching Android 17 build)')
 ap.add_argument('--pixel-launcher-apk', help='Pixel Launcher built by tools/pixel/build_pixel_launcher.sh')
 ap.add_argument('--platform-keys', help='directory with platform.pk8 and platform.x509.pem (the public AOSP platform test key): with it framework-res.apk also accepts Chrome WebView Beta as a WebView provider (tools/framework/allow_webview_beta.py)')
 ap.add_argument('--e2fs', help='directory with debugfs, e2fsck, resize2fs, mke2fs (default: found on PATH, /sbin, Homebrew)')
@@ -168,6 +170,7 @@ bp += 'persist.traced.enable=0\n'    # perfetto traced crash-loops on kernel 4.9
 # the phone's real stock identity (vendor props of M307FXXS4CWC2)
 bp += ('ro.build.fingerprint=samsung/m30sdd/m30s:11/RP1A.200720.012/M307FXXS4CWC2:user/release-keys\n'
        'ro.build.description=m30sdd-user 11 RP1A.200720.012 M307FXXS4CWC2 release-keys\n')
+bp += 'ro.hardware.egl=mali\n'     # the Mali EGL loader looks for /vendor/lib64/egl/libGLES_mali.so by ro.hardware.egl; surfaceflinger aborts without an GLES implementation
 # the GSI ships no bluetooth.mk properties, so no profile (A2DP, HFP, HID...) is started and nothing can connect
 bp += ("\n# Bluetooth profiles (what AOSP's bluetooth.mk sets; a GSI without it starts no profile except hearing aid). Phone (class of device 0x5a020c); LE Audio left off.\n"
        'bluetooth.device.class_of_device=5a,02,0c\nbluetooth.profile.a2dp.source.enabled=true\nbluetooth.profile.avrcp.target.enabled=true\n'
@@ -250,6 +253,16 @@ for c in cg['Cgroups2']['Controllers']:
     if c['Controller'] == 'freezer': c['Optional'] = True
 replace(S, '/system/etc/cgroups.json', tmpf('cgroups.json', json.dumps(cg, indent=2)))
 
+# A17's init is second-stage only and the phone's boot.img has no ramdisk: /init is a launcher that runs Android 14's first-stage init (tools/img/make_a14fs.py)
+print('A14 first stage bundle, allow-all SELinux policy')
+mkdir('/system/a14fs'); mkdir('/system/a14fs/lib64')
+for f in ('init', 'linker64', 'launcher'): put(os.path.join(a.a14fs, f), '/system/a14fs/' + f, '755')
+for f in sorted(os.listdir(os.path.join(a.a14fs, 'lib64'))): put(os.path.join(a.a14fs, 'lib64', f), '/system/a14fs/lib64/' + f, '644')
+symlink('/init', '/system/a14fs/launcher', 'u:object_r:rootfs:s0')
+if not a.pixel_phone: put(os.path.join(HERE, 'rc', '02_webview.rc'), '/system/etc/init/02_webview.rc', '644')    # picks the system WebView (the vendor GMS overlay leaves no default); the Pixel layer brings Chrome's WebView, which is the default
+# the Samsung kernel is built with CONFIG_ALWAYS_ENFORCE: setenforce(0) and (typepermissive) do nothing, so the policy itself allows everything (init's secilc runs with -N)
+plat = cat(S, '/system/etc/selinux/plat_sepolicy.cil').decode('latin1')
+put(tmpf('plat_sepolicy.cil', plat + '\n' + run(sys.executable, '-I', os.path.join(HERE, 'make_allowall_cil.py'), tmpf('plat.orig.cil', plat))), '/system/etc/selinux/plat_sepolicy.cil', '644')
 # 5 virt apex ------------------------------------------------------------------------------------------------------------
 print('5 virt apex (EROFS -> ext4)')
 if shutil.which('fsck.erofs'):
@@ -264,13 +277,13 @@ else:
 print('6 bpf and friends')
 mkdir('/system/etc/bpf.a17')
 T = 'com.android.tethering.capex'; A = '/system/apex/'
-nb = wp('netbpfload.orig'); apex_member(S, A + T, '/bin/netbpfload', nb); py('bpf/patch_binaries.py', 'netbpfload', nb, wp('netbpfload.a17'))
+nb = wp('netbpfload.orig'); apex_member(S, A + T, '/bin/netbpfload', nb); py('bpf/patch_binaries.py', 'netbpfload', nb, wp('netbpfload.pre')); run(sys.executable, '-I', os.path.join(HERE, 'patch_netbpfload_jit.py'), wp('netbpfload.pre'), wp('netbpfload.a17'))
 put(wp('netbpfload.a17'), '/system/bin/netbpfload.a17', '755', 0, 2000, 'u:object_r:bpfloader_exec:s0')
 # the tracer starts netbpfload.a17 under ptrace (children are resumed, bpf.progs_loaded is set when it ends) and is what the bind mount puts in the apex
 def zigcc(src, out):
     zig = shutil.which('zig'); cmd = [zig] if zig else [sys.executable, '-m', 'ziglang']
     run(*cmd, 'cc', '-target', 'aarch64-linux-musl', '-static', '-O2', '-D_GNU_SOURCE', '-o', out, src)
-zigcc(os.path.join(TOOLS, 'bpf', 'netbpfload_tracer.c'), wp('tracer')); zigcc(os.path.join(TOOLS, 'lmkd', 'lmkd_inkernel.c'), wp('lmkd'))
+shutil.copy(os.path.join(a.a14fs, 'tracer'), wp('tracer')); shutil.copy(os.path.join(a.a14fs, 'lmkd'), wp('lmkd'))
 put(wp('tracer'), '/system/bin/netbpfload.tracer', '755', 0, 2000, 'u:object_r:bpfloader_exec:s0')
 def bpf_file(name, apex, inner, tool, mode, ctx):
     src = wp(name + '.orig'); apex_member(S, A + apex, inner, src); out = wp(name + '.p'); tool(src, out); put(out, '/system/etc/bpf.a17/' + name, mode, 0, 0, ctx)
@@ -433,6 +446,31 @@ if a.pixel_tablet:
     put(os.path.join(TOOLS, 'pixel', 'wizard_lock_skip.sh'), '/system/bin/wizard_lock_skip.sh', '755')
     put(os.path.join(TOOLS, 'pixel', 'zz_wizard_lock_skip.rc'), '/system/etc/init/zz_wizard_lock_skip.rc', '644')
     put(tmpf('zz_pixel_home.rc', open(os.path.join(TOOLS, 'pixel', 'zz_pixel_home.rc')).read()), '/system/etc/init/zz_pixel_home.rc', '644')
+if a.pixel_phone:
+    print('9d Pixel phone layer')
+    st = a.pixel_phone; SU = 'system_ext/priv-app/SystemUI/SystemUI.apk'; SE = 'system_ext/priv-app/Settings/Settings.apk'
+    for dst, src in (('/system/' + SU, SU), ('/system/' + SE, SE)): replace(S, dst, os.path.join(st, src))         # same package, owner and label as the GSI's own apps
+    staged = sorted(os.path.relpath(os.path.join(r, f), st) for r, _, fs in os.walk(st) for f in fs)
+    new = [f for f in staged if f not in (SU, SE)]
+    ensure_dirs('/system/' + f for f in new)
+    for f in new: put(os.path.join(st, f), '/system/' + f, '644', 0, 0, LIB if '/lib64/' in f else SYS)
+    # privileged permission allowlists: the Pixel's own xml files (both partitions) plus what the apps ask for beyond them
+    for part in ('system_ext', 'product'):
+        allow_xmls += [os.path.join(st, f) + ':' + part for f in staged if f.startswith(part + '/etc/permissions/') and f.endswith('.xml')]
+    extra = os.path.join(HERE, '..', 'pixel', 'privapp-permissions-pixelphone-a17.xml')
+    if os.path.exists(extra):
+        for part in ('system_ext', 'product'): put(extra, f'/system/{part}/etc/permissions/privapp-permissions-pixelphone-a17.xml', '644'); allow_xmls.append(extra + ':' + part)
+    priv_apks += [os.path.join(st, f) + (':system_ext' if f.startswith('system_ext/') else ':product') for f in staged if '/priv-app/' in f and f.endswith('.apk')]
+    # Pixel boot animation (made for 1080x2424), fitted to the M30s panel (1080x2340)
+    for pz, dsts in (('product/media/bootanimation-pixel.zip', ('bootanimation.zip',)), ('product/media/bootanimation-pixel-dark.zip', ('bootanimation-dark.zip',))):
+        fitted = wp(os.path.basename(pz)); py(os.path.join('pixel', 'fit_bootanimation.py'), os.path.join(st, pz), fitted, 1080, 2340)
+        for d in dsts: put(fitted, '/system/product/media/' + d, '644')
+    # AOSP Provision is a second SETUP_WIZARD activity: with two, the Google wizard never gets the `setup` permissions
+    cmds.append('rm /system/system_ext/priv-app/Provision/Provision.apk')
+    put(os.path.join(TOOLS, 'pixel', 'pixel_home.sh'), '/system/bin/pixel_home.sh', '755')
+    put(tmpf('zz_pixel_home.rc', open(os.path.join(TOOLS, 'pixel', 'zz_pixel_home.rc')).read()), '/system/etc/init/zz_pixel_home.rc', '644')
+    put(os.path.join(TOOLS, 'pixel', 'wizard_lock_skip.sh'), '/system/bin/wizard_lock_skip.sh', '755')
+    put(os.path.join(TOOLS, 'pixel', 'zz_wizard_lock_skip.rc'), '/system/etc/init/zz_wizard_lock_skip.rc', '644')
 if priv_apks:
     # a priv-app with a privileged permission that no allowlist grants aborts system_server at boot (boot animation forever): refuse to build it
     print('  privileged permission allowlist check')

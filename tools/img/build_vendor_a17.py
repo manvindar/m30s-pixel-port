@@ -5,6 +5,8 @@ usage: build_vendor_a17.py VENDOR_IN.img VENDOR_OUT.img HEALTH_VINTF.xml     (VE
   2. /vendor/etc/ueventd.rc = copy of /vendor/ueventd.rc (A17 ueventd reads only the /vendor/etc one; /dev/ion is already 0666 system in the Samsung file)
   3. seccomp policies (configstore@1.1, mediacodec, mediaextractor_sec, samsung c2): syscalls the A17 media/configstore code uses (same list as the tablet's seccomp_add.sh)
   4. /vendor/etc/vintf/manifest/android.hardware.health-aidl.xml for the health shim in the system image (HIDL health 2.1 stays declared; the shim registers AIDL IHealth)
+  5  userdata fstab line without fileencryption=ice: the stock kernel's ICE key path does not work with A17's vold/keymint here (userdata is then plain, readable from TWRP; format userdata once after flashing)
+  6  /vendor/etc/selinux/vendor_mac_permissions.xml without the package-only signers: A17's SELinuxMMAC parser rejects the Samsung (A11 format) file ("Unable to load SELinux MMAC policy", system_server dies)
 Lights: the Samsung vendor already declares AIDL ILights/default, no shim. Vibrator: HIDL 1.3 only, no shim in this first image. Originals are kept as *.orig-a17.
 Each edit keeps owner, mode and SELinux label of the file it replaces; e2fsck -fn must be clean."""
 import os, re, shutil, subprocess, sys, tempfile
@@ -30,6 +32,8 @@ fs = cat('/etc/fstab.exynos9611').decode()
 assert '/metadata' not in fs
 out = []
 for l in fs.split('\n'):
+    if l.startswith('/dev/block/platform/13520000.ufs/by-name/userdata'):
+        assert ',fileencryption=ice' in l; l = l.replace(',fileencryption=ice', '')
     out.append(l)
     if l.startswith('/dev/block/platform/13520000.ufs/by-name/userdata'):
         out.append('tmpfs\t/metadata\ttmpfs\tnosuid,nodev,noatime,size=32m,mode=0771\tdefaults')
@@ -41,6 +45,9 @@ for n in ('configstore@1.1.policy', 'mediacodec.policy', 'mediaextractor_sec.pol
     p = '/etc/seccomp_policy/' + n; t = cat(p).decode(); add = [s for s in SYSC if not re.search(r'(?m)^%s:' % s, t)]
     if t and not t.endswith('\n'): t += '\n'
     put(p, (t + ''.join(f'{s}: 1\n' for s in add)).encode(), like=p); print(f'  seccomp {n}: +{len(add)} syscalls')
+mp = '/etc/selinux/vendor_mac_permissions.xml'; mac = cat(mp).decode('latin1')
+fixed = re.sub(r'<signer\b(?:(?!</signer>).)*?<package\b.*?</signer>', '', mac, flags=re.S); assert fixed != mac and '<package' not in fixed and '<signer' in fixed
+put(mp + '.orig-a17', mac.encode('latin1'), like=mp); put(mp, fixed.encode('latin1'), like=mp)
 put('/etc/vintf/manifest/android.hardware.health-aidl.xml', open(health, 'rb').read(), like='/etc/vintf/manifest/lights-default-sec.xml')
 f = os.path.join(W, 'cmds'); open(f, 'w').write('\n'.join(cmds) + '\n')
 r = subprocess.run([E2 + '/debugfs', '-w', '-f', f, dst], capture_output=True, text=True)
