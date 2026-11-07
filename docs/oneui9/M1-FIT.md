@@ -1,0 +1,9 @@
+# Milestone 1: donor system fits the M30s (2026-11-07)
+
+Donor `system` (EROFS, 7207 MiB of files) repacked to a raw **ext4 image of 4800 MiB (the M30s system partition) using 3949 MiB**; `e2fsck -fn` clean; 7093 inodes.
+
+- `tools/oneui/erofs.py`: read-only EROFS reader (uncompressed images: plain, inline, chunk layouts). Reads mode, uid, gid, `security.selinux`, `security.capability` and data straight from the image, because the Mac has no EROFS mount and `fsck.erofs --extract` as a normal user loses uid/gid. Check: `python3 -I tools/oneui/erofs.py system.img` gives 1160 dirs, 310 symlinks, 6110 files, 7556665003 bytes, same as `dump.erofs -S`.
+- `tools/oneui/erofs2ext4.py SRC OUT [--exclude LIST] [--dry-run]`: writes the ext4 with debugfs (no mount), 300 MiB batches, ~1 minute. Verified: `/system/bin/sh` is 0:2000 `shell_exec`, `run-as` keeps `security.capability`, `services.jar` md5 equals the source.
+- `tools/oneui/debloat.txt`: 77 paths removed, 3253 MiB: OCR data 180, TTS voices ~570, SmartSuggestions 175, OneDrive 138, Samsung Cloud, Your Phone, Bixby voice, Routines, photo editors, Galaxy Store, AR Emoji, Dressing room, Samsung Pass, Secure Folder, Find My Mobile, device care, TalkBack, `saiv` AI models and the `etc/*removal` data. Kept: framework, services, SystemUI, launcher, Settings, dialer/contacts/telephony, camera, gallery, HoneyBoard keyboard, Knox core, My Files.
+- Headroom: 850 MiB inside the 4800 MiB for the Google layer (WebView, GmsCore, Phonesky, GSF; product was not taken from the donor) and for the shims. If it gets tight, next candidates are `lib64` AI libs, fonts, SamsungCamera (85) and SecMyFiles (75).
+- Output (gitignored): `fw-oneui9/work/out/system-oneui9.img`. Not boot-tested; this proves the size and filesystem only. The EROFS to ext4 step also means no /system writes at runtime are lost relative to the donor (it was read-only too).
