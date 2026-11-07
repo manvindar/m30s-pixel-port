@@ -1,6 +1,6 @@
-# A17 base image for the M30s (built offline 2026-11-07)
+# A17 base image for the M30s (built offline 2026-11-07; Pixel layer, kernel and zram added the same day, see the sections at the end)
 
-Builder: `tools/img/build_a17.py` (generated from the tablet's `build_image17.py` by `tools/img/make_build_a17.py`, 21 asserted text substitutions) + `tools/img/build_vendor_a17.py`. The tablet repo's `tools/` dir is the patch library (`A17_TOOLS`); because its health `build.sh` writes into `tools/health/out`, a copy lives in `work/a17/tools` (the repo is read-only for the agent sandbox).
+Builder: `tools/img/build_a17.py` (generated from the tablet's `build_image17.py` by `tools/img/make_build_a17.py`, 26 asserted text substitutions) + `tools/img/build_vendor_a17.py`. The tablet repo's `tools/` dir is the patch library (`A17_TOOLS`); because its health `build.sh` writes into `tools/health/out`, a copy lives in `work/a17/tools` (the repo is read-only for the agent sandbox).
 
 ## Inputs (all verified)
 | Input | Source | SHA-256 |
@@ -40,3 +40,19 @@ Rebuild: `python3 tools/img/make_a14fs.py work/a14/system-a14.img work/a17/fs` (
 
 ## A14 stays restorable
 `work/a14/system-a14.img` (sha256 9a3351708301666f3ffe2050eb25b90418def310095d1422fe777099962ad24b) and `boot-a14-permissive.img` are kept; they can be rebuilt with `tools/img/build_a14.sh` from the crDroid xz (kept) and `fw-extracted/`. Stock vendor for a full restore: `~/Aistuff/m30s-pixel-port/fw-extracted/img/vendor.img` (hash in FIRMWARE-TAR.md). Partition dump: `~/Aistuff/m30s-pixel-port/partition-dump/`.
+
+## Pixel layer, kernel, zram (2026-11-07)
+Current image: `work/a17/system-a17-pixel2.img` (5033164800 bytes, sha256 d6b6820c1b09894cfbfcff1d8b18745282ae7dbd4d3e2323e1952075c1d17bfb). Build:
+```
+python3 tools/pixel/stage_pixel_phone.py work/pixel/tegu-factory.zip work/pixel/stage --images work/pixel/img --keys <tablet repo>/tools/pixel
+python3 tools/img/make_build_a17.py            # regenerates tools/img/build_a17.py
+export JAVA_HOME=<temurin-17> A17_TOOLS=$PWD/work/a17/tools
+python3 tools/img/build_a17.py --gsi work/a17/system.img --donor work/a17/LineageOS-23.2-20260524-GAPPS-EXT4-GSI.img --vndk-dir work/a17/vndk30 --a14fs work/a17/fs --pixel-phone work/pixel/stage --gapps work/gapps/MindTheGapps-16.0.0-arm64-20261023_034858.zip --dev-tools --out work/a17/system-a17-pixel2.img
+```
+- **Pixel layer** (`tools/pixel/stage_pixel_phone.py`, builder block `9d`): Pixel 9a (tegu) factory image apps re-signed with the public AOSP platform test key (SystemUIGoogle to SystemUI, SettingsGoogle to Settings, Nexus Launcher, wallpapers, setup wizard, Dialer, Messages, Photos, Gboard, Chrome, Trichrome, WebViewGoogle, 26 overlays, fonts, media, permissions). Fixes found on the way: GoogleConfigOverlay's `config_servicesExtensionPackage` patched to `android.ext.services` (else system_server aborts); `.apk.gz` files are gunzipped; WebViewGoogle is arm64-only so `unset_multiarch.py` clears `multiArch`; extra privapp allowlist in `tools/pixel/privapp-permissions-pixelphone-a17.xml`. Without the Pixel layer `02_webview.rc` picks the system WebView.
+- **Kernel**: `boot-a17-psi.img` (kernel-4.14.113-a17, sha256 48de685820bf1d8c564c073b96d2df5c9545b4fe72bcec57c23af3719516d062) has PSI, BPF JIT, userfaultfd and permissive SELinux. With it the allow-all policy is not needed: the builder adds it only with `--allowall` (stock kernel). Booted and verified with the original `plat_sepolicy.cil`: `getenforce` Permissive, about 3000 denials logged (zygote and toolbox on unlabeled files, graphics allocator ioctl) that would have to be fixed before enforcing. The netbpfload JIT patch is kept: it only changes the path taken when the kernel has no JIT, so it is inert here (`bpf_jit_enable` 1, 19 programs loaded, no JIT failure in the logs).
+- **zram**: the Samsung vendor fstab has no zram line, so the 5.6 GB phone ran with no swap (free RAM about 40 MB, `kswapd` at 25%). `tools/img/rc/03_zram.rc` sets up 3 GB of zstd zram at boot (a service with `seclabel u:r:shell:s0`; verified after a reboot).
+- **Dexopt**: the image already has `zz_firstboot_dexopt.rc` (pass 1 about 60 s after boot, pass 2 about 45 min later, log `/data/local/tmp/dexopt.log`) and `pm.dexopt.install=speed`. By hand: `cmd package compile -m speed -a`. Compiling on a fresh flash keeps the CPU saturated for a long time; the phone is slow until it ends.
+- **Flash** (TWRP, `adb reboot recovery`): `cat IMG | adb exec-in 'dd of=/dev/block/by-name/system bs=1048576'` (TWRP's dd rejects `4M`), then `head -c 5033164800 /dev/block/by-name/system | sha256sum`, then delete `/data/system/package_cache` and `/data/dalvik-cache` and reboot. Boot partition: `dd` the kernel image to `/dev/block/by-name/boot` (rollback: `work/a14/boot-current-stock-kernel.img`).
+- **Not in this image**: camera, vibrator shim, `power.stats` HAL, Pixel utility apps (Recorder, Tips, accessibility, Maps and other Google apps), Tensor-only services. The GMS safety-center crash `Unexpected safety source: AdvancedProtection` is non-fatal and unresolved.
+- **Release note**: the image contains Google's Pixel apps and the Samsung stock vendor, so it is not suitable for a public release; build it from the recipe above.

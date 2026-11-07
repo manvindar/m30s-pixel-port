@@ -22,7 +22,7 @@ sub('PART = 0xf3800000', 'PART = 5033164800                                     
 sub('1  grow to the 0xf3800000-byte partition', '1  grow to the 5033164800-byte partition')
 
 sub("ap.add_argument('--out', required=True);",
-    "ap.add_argument('--a14fs', required=True, help='dir made by tools/img/make_a14fs.py (A14 first-stage init + libs, /init launcher, bpf tracer, lmkd)')\nap.add_argument('--out', required=True);")
+    "ap.add_argument('--a14fs', required=True, help='dir made by tools/img/make_a14fs.py (A14 first-stage init + libs, /init launcher, bpf tracer, lmkd)')\nap.add_argument('--allowall', action='store_true', help='append the allow-all SELinux policy (only for the stock ALWAYS_ENFORCE kernel; not needed with kernel-4.14.113-a17 / boot-a17-psi.img, which is permissive)')\nap.add_argument('--out', required=True);")
 
 # step 2: properties
 sub("bp += 'persist.vendor.sys.pq.shp.idx=0\\n'     # MediaTek sharpening off by default: it makes video look worse (ROM Tuner > Picture quality changes it)\n", '')
@@ -64,9 +64,10 @@ for f in ('init', 'linker64', 'launcher'): put(os.path.join(a.a14fs, f), '/syste
 for f in sorted(os.listdir(os.path.join(a.a14fs, 'lib64'))): put(os.path.join(a.a14fs, 'lib64', f), '/system/a14fs/lib64/' + f, '644')
 symlink('/init', '/system/a14fs/launcher', 'u:object_r:rootfs:s0')
 if not a.pixel_phone: put(os.path.join(HERE, 'rc', '02_webview.rc'), '/system/etc/init/02_webview.rc', '644')    # picks the system WebView (the vendor GMS overlay leaves no default); the Pixel layer brings Chrome's WebView, which is the default
+put(os.path.join(HERE, 'rc', '03_zram.rc'), '/system/etc/init/03_zram.rc', '644')    # swap: the stock vendor fstab has no zram
 # the Samsung kernel is built with CONFIG_ALWAYS_ENFORCE: setenforce(0) and (typepermissive) do nothing, so the policy itself allows everything (init's secilc runs with -N)
 plat = cat(S, '/system/etc/selinux/plat_sepolicy.cil').decode('latin1')
-put(tmpf('plat_sepolicy.cil', plat + '\\n' + run(sys.executable, '-I', os.path.join(HERE, 'make_allowall_cil.py'), tmpf('plat.orig.cil', plat))), '/system/etc/selinux/plat_sepolicy.cil', '644')
+if a.allowall: put(tmpf('plat_sepolicy.cil', plat + '\\n' + run(sys.executable, '-I', os.path.join(HERE, 'make_allowall_cil.py'), tmpf('plat.orig.cil', plat))), '/system/etc/selinux/plat_sepolicy.cil', '644')
 """ + s[i:]
 
 # netbpfload: the stock kernel has no BPF JIT, patch the "Kernel eBPF JIT failure" check out; tracer and lmkd come from make_a14fs.py (NDK builds)

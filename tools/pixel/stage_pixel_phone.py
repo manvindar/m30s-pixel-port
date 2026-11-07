@@ -112,6 +112,10 @@ try:
                 if f.endswith('.apk.gz'):
                     with gzip.open(os.path.join(r_, f)) as zi_, open(os.path.join(r_, f[:-3]), 'wb') as zo_: shutil.copyfileobj(zi_, zo_)
                     os.remove(os.path.join(r_, f))
+    # WebViewGoogle is arm64-only but declares multiArch: PackageManager refuses it on this phone (armeabi-v7a is supported too): "native libs don't support all the natively supported ABIs"
+    if not a.only:
+        wv = os.path.join(out, 'product/app/WebViewGoogle/WebViewGoogle.apk')
+        subprocess.run([sys.executable, os.path.join(HERE, 'unset_multiarch.py'), wv, wv + '.new', a.keys, BT], check=True, capture_output=True); os.replace(wv + '.new', wv)
     # GoogleConfigOverlay names com.google.android.ext.services (a Google mainline APEX of the Pixel's system image, not in the GSI) as the required services extension package: PackageManagerService
     # then aborts system_server at boot. The GSI has the AOSP one, android.ext.services (inside APEX com.android.extservices): rewrite the string in place (shorter, so the string pool stays valid) and re-sign
     if not a.only:
