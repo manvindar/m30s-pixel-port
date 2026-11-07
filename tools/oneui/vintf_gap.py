@@ -38,7 +38,8 @@ print('\n## Samsung AIDL client libs in the donor (the A11 vendor has no AIDL HA
 print(', '.join(f'{k} V{max(v)}' for k, v in sorted(aidl.items()) if k.startswith('vendor.samsung')) or 'none')
 print('\n## AOSP HIDL packages: donor client libs vs vendor\n\n| package | donor | vendor | note |\n|---|---|---|---|')
 for n in sorted(k for k in hidl if k.startswith('android.hardware.') and k in phone):
-    cl = sorted(hidl[n], key=ver_tuple); have = sorted(phone[n]['vers'], key=ver_tuple)
+    cl = sorted(hidl[n], key=ver_tuple); have = sorted((v for v in phone[n]['vers'] if re.match(r'\d+\.\d+$', v)), key=ver_tuple)
+    if not have: print(f'| {n} | {", ".join(cl)} | unversioned (AIDL or fqname only) | check by hand |'); continue
     print(f'| {n} | {", ".join(cl)} | {", ".join(have)} | ' + ('ok' if set(cl) & set(have) or (cl and have and ver_tuple(have[-1]) >= ver_tuple(cl[-1])) else 'donor client is older than vendor' if ver_tuple(cl[-1]) < ver_tuple(have[0]) else 'donor wants newer') + ' |')
 print('\n## Vendor HALs with no donor client\n')
 print(', '.join(sorted(n for n in phone if n not in hidl)))

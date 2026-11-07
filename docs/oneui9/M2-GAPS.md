@@ -44,9 +44,20 @@ vendor.samsung.frameworks.security.dsms V1, vendor.samsung.hardware.audio V1, ve
 | android.hardware.keymaster | 3.0, 4.0, 4.1 | 4.0 | ok |
 | android.hardware.media.c2 | 1.0, 1.1, 1.2 | 1.0, 1.1 | ok |
 | android.hardware.media.omx | 1.0 | 1.0 | ok |
-| android.hardware.power | 1.0, 1.1, 1.2, 1.3 | IPower/default | donor wants newer |
+| android.hardware.power | 1.0, 1.1, 1.2, 1.3 | unversioned (AIDL or fqname only) | check by hand |
 | android.hardware.radio | 1.0, 1.1, 1.2, 1.3, 1.4 | 1.2, 1.4 | ok |
 | android.hardware.radio.config | 1.0 | 1.1 | ok |
+| android.hardware.radio.deprecated | 1.0 | unversioned (AIDL or fqname only) | check by hand |
+| android.hardware.renderscript | 1.0 | 1.0 | ok |
+| android.hardware.sensors | 1.0, 2.0, 2.1 | 2.0 | ok |
+| android.hardware.thermal | 1.0 | 1.0, 2.0 | ok |
+| android.hardware.usb | 1.0, 1.1 | 1.1 | ok |
+
+### Vendor HALs with no client library in the donor `lib64`
+
+These interface stubs (wifi, bluetooth, light, vibrator, memtrack, configstore, fingerprint, thermal) are VNDK or vendor libraries, so they come with the VNDK 30 APEX of gap 1. **Fingerprint is the exception that needs thought**: the donor has no HIDL fingerprint client at all (the Pixel image uses the `tools/fphal` AIDL-to-HIDL shim, fixed in main 71b16e6; the same shim probably carries over).
+
+android.hardware.biometrics.fingerprint, android.hardware.bluetooth, android.hardware.configstore, android.hardware.dumpstate, android.hardware.light, android.hardware.memtrack, android.hardware.vibrator, android.hardware.wifi, android.hardware.wifi.hostapd, android.hardware.wifi.supplicant, vendor.samsung.hardware.biometrics.fingerprint, vendor.samsung.hardware.bluetooth, vendor.samsung.hardware.health, vendor.samsung.hardware.hqm, vendor.samsung.hardware.hyper, vendor.samsung.hardware.radio, vendor.samsung.hardware.radio.channel, vendor.samsung.hardware.security.drk, vendor.samsung.hardware.security.engmode, vendor.samsung.hardware.security.vaultkeeper, vendor.samsung.hardware.security.widevine.keyprov, vendor.samsung.hardware.snap, vendor.samsung.hardware.sysinput, vendor.samsung.hardware.thermal, vendor.samsung.hardware.vibrator, vendor.samsung.hardware.wifi, vendor.samsung.hardware.wifi.hostapd, vendor.samsung.hardware.wifi.supplicant, vendor.samsung_slsi.hardware.configstore, vendor.samsung_slsi.hardware.radio
 
 ## Gap list, ordered by what stops the boot first
 
