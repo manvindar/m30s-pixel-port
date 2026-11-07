@@ -11,7 +11,7 @@ Lights: the Samsung vendor already declares AIDL ILights/default, no shim. Vibra
 Each edit keeps owner, mode and SELinux label of the file it replaces; e2fsck -fn must be clean."""
 import os, re, shutil, subprocess, sys, tempfile
 src, dst, health = sys.argv[1:4]
-E2 = next(d for d in ('/opt/homebrew/opt/e2fsprogs/sbin', '/usr/local/opt/e2fsprogs/sbin', '/sbin') if os.path.exists(d + '/debugfs'))
+E2 = next(d for d in ('/opt/homebrew/opt/e2fsprogs/sbin', '/usr/local/opt/e2fsprogs/sbin', '/sbin', '/usr/sbin') if os.path.exists(d + '/debugfs'))
 shutil.copyfile(src, dst)
 W = tempfile.mkdtemp(prefix='vend17')
 def dbg(*c): return subprocess.run([E2 + '/debugfs', '-R', ' '.join(c), dst], capture_output=True)

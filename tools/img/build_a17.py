@@ -36,7 +36,6 @@ ap.add_argument('--gsi', required=True, help='raw ext4 system.img from the Googl
 ap.add_argument('--donor', '--a16', dest='donor', required=True, help='LineageOS 23.2 GSI, raw ext4')
 ap.add_argument('--vndk-dir', required=True, help='dir with com.android.vndk.v30.apex, 30.0.cil, 30.0.compat.cil (from the Android 14 GSI)')
 ap.add_argument('--a14fs', required=True, help='dir made by tools/img/make_a14fs.py (A14 first-stage init + libs, /init launcher, bpf tracer, lmkd)')
-ap.add_argument('--allowall', action='store_true', help='append the allow-all SELinux policy (only for the stock ALWAYS_ENFORCE kernel; not needed with kernel-4.14.113-a17 / boot-a17-psi.img, which is permissive)')
 ap.add_argument('--out', required=True); ap.add_argument('--gapps', help='MindTheGapps-16.0.0-arm64 zip'); ap.add_argument('--out-gapps', help='write a second image with the Google apps (the --out image stays without)')
 ap.add_argument('--port-repo', default=os.path.join(HERE, '..', '..', 'tb-x606v-android16-port'), help='Android 16 port repo (ROM Tuner, boot animations)')
 ap.add_argument('--dev-tools', action='store_true', help='development safety net (tools/debug): boot_watchdog reboots into recovery when a boot does not finish, bootdiag writes the boot logcat to /data/local/tmp/bootdiag')
@@ -255,16 +254,13 @@ for c in cg['Cgroups2']['Controllers']:
 replace(S, '/system/etc/cgroups.json', tmpf('cgroups.json', json.dumps(cg, indent=2)))
 
 # A17's init is second-stage only and the phone's boot.img has no ramdisk: /init is a launcher that runs Android 14's first-stage init (tools/img/make_a14fs.py)
-print('A14 first stage bundle, allow-all SELinux policy')
+print('A14 first stage bundle')
 mkdir('/system/a14fs'); mkdir('/system/a14fs/lib64')
 for f in ('init', 'linker64', 'launcher'): put(os.path.join(a.a14fs, f), '/system/a14fs/' + f, '755')
 for f in sorted(os.listdir(os.path.join(a.a14fs, 'lib64'))): put(os.path.join(a.a14fs, 'lib64', f), '/system/a14fs/lib64/' + f, '644')
 symlink('/init', '/system/a14fs/launcher', 'u:object_r:rootfs:s0')
 if not a.pixel_phone: put(os.path.join(HERE, 'rc', '02_webview.rc'), '/system/etc/init/02_webview.rc', '644')    # picks the system WebView (the vendor GMS overlay leaves no default); the Pixel layer brings Chrome's WebView, which is the default
 put(os.path.join(HERE, 'rc', '03_zram.rc'), '/system/etc/init/03_zram.rc', '644')    # swap: the stock vendor fstab has no zram
-# the Samsung kernel is built with CONFIG_ALWAYS_ENFORCE: setenforce(0) and (typepermissive) do nothing, so the policy itself allows everything (init's secilc runs with -N)
-plat = cat(S, '/system/etc/selinux/plat_sepolicy.cil').decode('latin1')
-if a.allowall: put(tmpf('plat_sepolicy.cil', plat + '\n' + run(sys.executable, '-I', os.path.join(HERE, 'make_allowall_cil.py'), tmpf('plat.orig.cil', plat))), '/system/etc/selinux/plat_sepolicy.cil', '644')
 # 5 virt apex ------------------------------------------------------------------------------------------------------------
 print('5 virt apex (EROFS -> ext4)')
 if shutil.which('fsck.erofs'):
@@ -279,7 +275,7 @@ else:
 print('6 bpf and friends')
 mkdir('/system/etc/bpf.a17')
 T = 'com.android.tethering.capex'; A = '/system/apex/'
-nb = wp('netbpfload.orig'); apex_member(S, A + T, '/bin/netbpfload', nb); py('bpf/patch_binaries.py', 'netbpfload', nb, wp('netbpfload.pre')); run(sys.executable, '-I', os.path.join(HERE, 'patch_netbpfload_jit.py'), wp('netbpfload.pre'), wp('netbpfload.a17'))
+nb = wp('netbpfload.orig'); apex_member(S, A + T, '/bin/netbpfload', nb); py('bpf/patch_binaries.py', 'netbpfload', nb, wp('netbpfload.pre')); shutil.copyfile(wp('netbpfload.pre'), wp('netbpfload.a17'))
 put(wp('netbpfload.a17'), '/system/bin/netbpfload.a17', '755', 0, 2000, 'u:object_r:bpfloader_exec:s0')
 # the tracer starts netbpfload.a17 under ptrace (children are resumed, bpf.progs_loaded is set when it ends) and is what the bind mount puts in the apex
 def zigcc(src, out):
