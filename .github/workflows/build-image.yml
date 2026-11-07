@@ -65,6 +65,7 @@ jobs:
       - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/lib/android /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/share/swift /usr/local/share/powershell
+          sudo mkdir -p /usr/local/lib/android && sudo chown -R "$USER" /usr/local/lib/android   # setup-android installs there as the runner user
           df -h /
 
       - uses: actions/setup-python@v7
