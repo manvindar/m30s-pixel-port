@@ -132,6 +132,7 @@ try:
     # the M30s panel has rounded corners and the Pixel 9a's auto-generated overlay (its corner/padding values) is not staged: a static framework overlay gives the status bar content a corner padding
     if not a.only:
         subprocess.run([sys.executable, os.path.join(HERE, 'make_m30s_overlay.py'), os.path.join(out, 'product/overlay/M30sDisplayOverlay.apk'), a.keys, BT], check=True, capture_output=True)
+        subprocess.run([sys.executable, os.path.join(HERE, 'make_m30s_overlay.py'), os.path.join(out, 'product/overlay/M30sWifiOverlay.apk'), a.keys, BT], check=True, capture_output=True, env=dict(os.environ, OVERLAY='overlay-m30s-wifi'))     # config_wifi5ghzSupport=true: 5 GHz hotspot
         os.makedirs(os.path.join(out, 'product/app/Precompile'), exist_ok=True)    # launcher icon + Quick Settings tile that start the on-device compile job (rc/04_precompile.rc)
         subprocess.run([sys.executable, os.path.join(HERE, 'make_precompile_app.py'), os.path.join(out, 'product/app/Precompile/Precompile.apk'), a.keys, BT], check=True, capture_output=True)
         os.makedirs(os.path.join(out, 'product/app/DisplayExtras'), exist_ok=True)    # launcher icon: screen mode (mdnie) and HDR format switches
