@@ -156,6 +156,7 @@ for path, f in (('/system/lib64/bootstrap/libc.so', libc64), ('/system/lib/boots
 print('5b services.jar (HintManagerService without an AIDL power HAL, isBuildConsistent); stale services.{odex,vdex,art} dropped so ART does not map a mismatching oat')
 replace('/system/framework/services.jar', patched(os.path.join(HERE, 'patch_services_oneui.py'), '/system/framework/services.jar', 'services'))
 cmds.extend(f'rm /system/framework/oat/arm64/services.{x}' for x in ('art', 'odex', 'vdex'))
+cmds.append('rm /system/app/TEEgrisTuiService/TEEgrisTuiService.apk')     # Trusted UI service: its TUIThread epoll_ctl()s the TEEgris tui socket and the 4.14 kernel oopses in tz_uiwsock_poll (circ_buf_bytes_used) ~15 s after the launcher starts
 if a.audio_closure:
     print('5c audio: Android 16 audioserver + closure, private under /system/lib64/a16audio (same recipe as the Pixel image, tools/audio/install_a16_audio.sh)')
     cl = a.audio_closure; CP = a.capstone_python; AU = lambda n: os.path.join(TOOLS, 'audio', n)
@@ -173,9 +174,9 @@ if a.audio_closure:
     rc = cat('/system/etc/init/audioserver.rc').decode(); first, rest = rc.split('\n', 1); assert first.startswith('service audioserver ')
     replace('/system/etc/init/audioserver.rc', tmpf('audioserver.rc', first + '\n    setenv LD_LIBRARY_PATH /system/lib64/a16audio\n' + rest))
 if a.google_stage:
-    print('5d Google layer (WebView, Play services, Play Store, Services Framework) from public sources, staged under /product')
+    print('5d Google layer (WebView, Play services, Play Store, Services Framework) from public sources, staged under /system/system_ext (the phone mounts its own product partition over /product, so nothing under /product of this image is visible)')
     gs = os.path.abspath(a.google_stage); made = set()
-    def gdst(rel): return '/' + rel if rel.startswith('product/') else '/system/' + rel
+    def gdst(rel): return '/system/system_ext/' + rel[len('product/'):] if rel.startswith('product/') else '/system/' + rel
     for r, _, fs in sorted(os.walk(gs)):
         for f in sorted(fs):
             rel = os.path.relpath(os.path.join(r, f), gs); d = gdst(rel); chain = []; q = os.path.dirname(d)
@@ -206,16 +207,37 @@ put(wp('netbpfload.p'), '/system/bin/netbpfload.oneui', '755', 0, 2000, 'u:objec
 nu = wp('netd_updatable.orig'); apex_member('/system/apex/com.google.android.tethering_compressed.apex', '/lib64/libnetd_updatable.so', nu)     # netd aborts on the same V+/25Q2+ kernel gates
 run(sys.executable, '-I', os.path.join(HERE, 'patch_netbpfload.py'), nu, wp('netd_updatable.p'), 'V+ platform with kernel version <', '25Q2+ platform with kernel version <', env=dict(os.environ, WINDOW='96', MIN='2'))
 put(wp('netd_updatable.p'), '/system/lib64/libnetd_updatable.oneui.so', '644', 0, 0, LIB)
+lsc = wp('lsc.orig'); apex_member('/system/apex/com.google.android.tethering_compressed.apex', '/lib64/libservice-connectivity.so', lsc)    # ConnectivityService aborts without the BPF ringbuf (kernel < 5.8)
+py(os.path.join(HERE, 'patch_lsc_ringbuf.py'), lsc, wp('lsc.p'))
+put(wp('lsc.p'), '/system/lib64/libservice-connectivity.oneui.so', '644', 0, 0, LIB)
 rc = '''# One UI port: kernel 4.14 workarounds for the tethering apex (see tools/oneui/patch_netbpfload.py)
 on load-bpf-programs
     mount none /system/bin/netbpfload.oneui /apex/com.android.tethering/bin/netbpfload bind
     mount none /system/lib64/libnetd_updatable.oneui.so /apex/com.android.tethering/lib64/libnetd_updatable.so bind
+    mount none /system/lib64/libservice-connectivity.oneui.so /apex/com.android.tethering/lib64/libservice-connectivity.so bind
 '''
 put(tmpf('00_bpf_bind.rc', rc), '/system/etc/init/00_bpf_bind.rc', '644')
 for rcp in ('/system/etc/init/netbpfload.rc',):
     if exists(rcp):
         txt = cat(rcp).decode()
         replace(rcp, tmpf('netbpfload.rc', ''.join(l for l in txt.splitlines(True) if 'reboot_on_failure reboot,netbpfload' not in l)))
+print('5f health: hide the vendor\'s AIDL IHealth fragment (bind mount of an empty manifest, vendor untouched) so the donor framework uses the vendor\'s HIDL vendor.samsung.hardware.health@2.0::ISehHealth')
+put(os.path.join(HERE, 'rc', 'oneui_empty_manifest.xml'), '/system/etc/vintf/oneui_empty_manifest.xml', '644'); put(os.path.join(HERE, 'rc', '00_health_hidl.rc'), '/system/etc/init/00_health_hidl.rc', '644')
+print('7 overlay: services extension package (donor names android.ext.services, its extservices apex ships com.google.android.ext.services)')
+ovd = os.path.join(HERE, 'overlay-extservices'); fres = wp('framework-res.apk'); open(fres, 'wb').write(cat('/system/framework/framework-res.apk'))
+run(os.path.join(BT, 'aapt2'), 'compile', '--dir', os.path.join(ovd, 'res'), '-o', wp('ov.res.zip'))
+run(os.path.join(BT, 'aapt2'), 'link', '-o', wp('ov.apk'), '-I', fres, '--manifest', os.path.join(ovd, 'AndroidManifest.xml'), '--min-sdk-version', '34', '--target-sdk-version', '34', wp('ov.res.zip'))
+run(os.path.join(BT, 'zipalign'), '-p', '-f', '4', wp('ov.apk'), wp('ov.al.apk'))
+run(os.path.join(BT, 'apksigner'), 'sign', '--ks', KS, '--ks-pass', 'pass:android', '--ks-key-alias', 'a17', '--out', wp('M30sExtServicesOverlay.apk'), wp('ov.al.apk'))
+put(wp('M30sExtServicesOverlay.apk'), '/system/system_ext/overlay/M30sExtServicesOverlay.apk', '644')
+print('7b module metadata: minimal com.android.modulemetadata (PackageManagerService.getInstalledModules throws without one; ActivityManager.systemReady calls it)')
+mmd = os.path.join(HERE, 'modulemetadata'); aj = sorted(glob.glob(os.path.join(os.path.dirname(BT), '..', 'platforms', 'android-*', 'android.jar')))[-1]
+run(os.path.join(BT, 'aapt2'), 'compile', '--dir', os.path.join(mmd, 'res'), '-o', wp('mm.res.zip'))
+run(os.path.join(BT, 'aapt2'), 'link', '-o', wp('mm.apk'), '-I', aj, '--manifest', os.path.join(mmd, 'AndroidManifest.xml'), '--min-sdk-version', '34', '--target-sdk-version', '34', wp('mm.res.zip'))
+run(os.path.join(BT, 'zipalign'), '-p', '-f', '4', wp('mm.apk'), wp('mm.al.apk'))
+run(os.path.join(BT, 'apksigner'), 'sign', '--ks', KS, '--ks-pass', 'pass:android', '--ks-key-alias', 'a17', '--out', wp('ModuleMetadata.apk'), wp('mm.al.apk'))
+if not exists('/system/system_ext/app/ModuleMetadata'): mkdir('/system/system_ext/app/ModuleMetadata')
+put(wp('ModuleMetadata.apk'), '/system/system_ext/app/ModuleMetadata/ModuleMetadata.apk', '644')
 apply()
 shutil.rmtree(W)
 print('done', a.out)

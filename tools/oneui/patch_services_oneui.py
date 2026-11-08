@@ -101,7 +101,13 @@ except AssertionError as e:                                   # One UI 9 has no 
 #    Treat the build as consistent: const/4 v2,#1 ; nop x3 replaces `invoke-static {} isBuildConsistent ; move-result v2`.
 bk = find_call(pat('7100', None, '0000', '0a02'), 'isBuildConsistent pattern', 2, 'Landroid/os/Build;.isBuildConsistent').start()
 raw[bk:bk + 8] = bytes.fromhex('1212' + '000000000000')
-touched = {base, max(x for x in heads if x <= k), max(x for x in heads if x <= bk)}
+# 5. HealthRegCallbackAidl.onRegistration(): Samsung's framework also wants the vendor.samsung.hardware.health.ISehHealth AIDL service (`asInterface(waitForDeclaredService ...)`), the
+#    A11 vendor has none, the proxy is null and `registerCallback` + `update` NPE inside BatteryService.onStart -> system_server dies. Nop both calls; the AOSP IHealth/default
+#    (tools/health shim over the vendor HIDL health 2.1) still feeds BatteryService.
+hk = find_call(pat('6e20', None, None, '6e10', None, None), 'ISehHealth registerCallback+update', 2, 'Lvendor/samsung/hardware/health/ISehHealth$Stub$Proxy;.registerCallback').start()
+assert method_name(hk + 6, struct.unpack_from('<H', raw, hk + 8)[0]) == 'Lvendor/samsung/hardware/health/ISehHealth$Stub$Proxy;.update'
+raw[hk:hk + 12] = b'\0' * 12
+touched = {base, max(x for x in heads if x <= k), max(x for x in heads if x <= bk), max(x for x in heads if x <= hk)}
 # fix headers: signature then checksum, of every dex that was edited (each dex's file_size is in its own header)
 for b0 in touched:
     fs = struct.unpack_from('<I', raw, b0 + 0x20)[0]
