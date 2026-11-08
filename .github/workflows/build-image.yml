@@ -113,8 +113,11 @@ jobs:
           ls -la "$DONOR_IMG"
 
       - name: Android 14 first stage bundle and VNDK v30 (crDroid 10.13 GSI)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          curl -L --fail --retry 5 --retry-delay 10 -o crdroid.img.xz "$CRDROID_URL"
+          # upstream asset answers HTTP 504 (2026-11-08): fall back to the mirror release of this repo (same file, same sha256 below)
+          curl -L --fail --retry 2 --retry-delay 10 -o crdroid.img.xz "$CRDROID_URL" || gh release download inputs-crdroid-10.13 -R "$GITHUB_REPOSITORY" -p crdroid.img.xz --clobber
           echo "$CRDROID_SHA256  crdroid.img.xz" | sha256sum -c -
           xz -dc crdroid.img.xz > crdroid.img && rm crdroid.img.xz
           mkdir vndk30
