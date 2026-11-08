@@ -148,6 +148,9 @@ for path, f in (('/system/lib64/bootstrap/libc.so', libc64), ('/system/lib/boots
                 ('/system/lib64/libmeminfo.so', patched('libc/patch_libmeminfo.py', '/system/lib64/libmeminfo.so', 'meminfo')),
                 ('/system/lib64/libbinder.so', patched('libc/patch_libbinder.py', '/system/lib64/libbinder.so', 'binder'))):
     replace(path, f)
+print('5b services.jar (HintManagerService without an AIDL power HAL, isBuildConsistent); stale services.{odex,vdex,art} dropped so ART does not map a mismatching oat')
+replace('/system/framework/services.jar', patched(os.path.join(HERE, 'patch_services_oneui.py'), '/system/framework/services.jar', 'services'))
+cmds.extend(f'rm /system/framework/oat/arm64/services.{x}' for x in ('art', 'odex', 'vdex'))
 # signing material for the repacked runtime apex (apexd only needs the key inside the apex to match)
 KEY, KS = wp('apex_key.pem'), wp('apex_sign.jks')
 run('openssl', 'genrsa', '-out', KEY, '4096'); run('keytool', '-genkeypair', '-keystore', KS, '-storepass', 'android', '-keypass', 'android', '-alias', 'a17', '-keyalg', 'RSA', '-keysize', '2048', '-dname', 'CN=a17', '-validity', '10000')
