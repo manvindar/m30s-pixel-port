@@ -14,7 +14,7 @@ Read from the running phone (`pm list features`, `dumpsys sensorservice`, `dumps
 | Significant motion | active | the only sensor with a client when idle (after the sensor-hog fix) |
 | Fingerprint | works | AIDL-to-HIDL shim `tools/fphal`; user unlock verified (fix 71b16e6, in v0.3d) |
 | Face | declared, no HAL | feature file removed in the next image; BiometricService spun on `IVirtualHal` |
-| Cameras | 3 camera devices listed, flash feature yes, autofocus yes | `dumpsys media.camera`; opening a camera and a picture: **human**. Not verified: ultrawide, front, video |
+| Cameras | 3 camera devices listed, flash feature yes, autofocus yes | `dumpsys media.camera`. **Rear camera 0: works** (2026-11-08, driven over adb: stock camera app opens, a 3000x4000 JPEG is saved and has real picture content; the preview is only dark if the phone lies face down). HAL log noise while previewing: `PIPE_VRA wait timeout` (face-detection pipe) and `Failed to get Internal Bayer Buffer`, no crash. **Front camera: not working yet** (the user got a camera error / cannot connect when switching to it; while the rear is open `dumpsys media.camera` shows device 1 going NOT_PRESENT, conflicting devices {1,2,20,23,50,52}); the cause is not found. Not verified: ultrawide, video, flash (night, skipped) |
 | Audio | **human** | `android.hardware.audio.output/low_latency` declared; speaker, earpiece, mic, 3.5 mm jack (the phone has one per the spec) cannot be tested over adb. Samsung audio HIDL 5.0 vendor stays under the Android 16 audioserver closure |
 | Wi-Fi | works | enabled, `wifi.direct`, `passpoint` declared; 5 GHz and hotspot not measured |
 | Bluetooth | enabled | HEADSET profile connecting in the log; pairing and A2DP audio: **human** |
@@ -27,6 +27,10 @@ Read from the running phone (`pm list features`, `dumpsys sensorservice`, `dumps
 | HDR | do not use | HDR10 advertised gives black video (kernels `a17-hdr*`) |
 | GPU | Mali-G72 MP3 | OpenGL ES 3.2, Vulkan 1.1 (`vulkan.level=1`), HWC DEVICE composition |
 | Vibration | works in the stock HAL only, no shim | `android.hardware.vibrator` HIDL 1.3: haptics untested: **human** |
+
+## Round of 2026-11-08 (user present, then phone put aside at night)
+Done over adb (the user allowed the screen-lock PIN for this; it is not recorded anywhere): rear photo, launcher bench (below, also in docs/PERF.md). Skipped on purpose: audio and flash (night), SIM steps (no SIM), charger, GPS outdoors, headphone jack. Still open for daytime: front camera error log with a clean open (force-stop the camera app first), video, speaker + jack, wall charger, GPS fix.
+Launcher bench (unlocked, 2 runs): Pixel Launcher janky 14-16 %, p50 21 ms, p99 48-65 ms, GPU p50 8-9 ms; SystemUI shade janky 15-19 %, p50 34-42 ms, GPU p50 19-20 ms. Launcher frames are slower than the 16.7 ms budget at the median but GPU is not the limit there (UI thread slow: 42-44 frames, draw-command issue slow: 87-97).
 
 ## One human round that settles the open rows
 Unlock the phone once for the launcher bench; place a call with a SIM (proximity blanking, call audio); take a photo with each camera and a video; play a sound on speaker and with headphones in the jack; plug the wall charger; open Maps outdoors for a fix.

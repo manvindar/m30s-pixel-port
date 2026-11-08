@@ -25,4 +25,4 @@ Bench: `tools/debug/bench.sh` (launcher + shade) and, with the screen locked, th
 - Clock locks (CPU/GPU) and blur-off did not help in the earlier runs (lead3) and are not shipped.
 
 ## Not done
-- Launcher/app-drawer numbers this session: the phone was locked (secure lock screen), so only the shade-on-keyguard was measured. Needs the user to unlock once (batched in the human-test ask).
+- Launcher bench, 2026-11-08, phone unlocked, two runs of `bench.sh`: launcher janky 15.7 / 14.2 %, p50 21 ms, p90 31-32 ms, p99 65 / 48 ms, GPU p50 8-9 ms; SystemUI (shade) janky 18.8 / 15.1 %, p50 34 / 42 ms, GPU p50 19-20 ms. The launcher is limited by UI-thread and draw-command issue time, not the GPU.
