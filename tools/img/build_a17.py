@@ -418,6 +418,7 @@ if a.pixel:
     ensure_dirs('/system/product/' + f for f in staged)
     for f in staged: put(os.path.join(px, f), '/system/product/' + f, '644', 0, 0, LIB if f.startswith(('lib/', 'lib64/')) else SYS)
     priv_apks += [os.path.join(px, f) + ':product' for f in staged if f.startswith('priv-app/') and f.endswith('.apk')]
+    if 'etc/permissions/android.hardware.biometrics.face.xml' in staged: cmds.append('rm /system/product/etc/permissions/android.hardware.biometrics.face.xml')    # the Pixel layer brings the face feature back after the rm above (v0.3e-img still had it)
     allow_xmls += [os.path.join(px, f) + ':product' for f in staged if f.startswith('etc/permissions/') and f.endswith('.xml')]
     # AOSP Provision is a second SETUP_WIZARD activity: with two, PackageManager names no setup wizard package and the Google wizard never gets the `setup` permissions (NETWORK_SETUP_WIZARD: wifi page crashes)
     cmds.append('rm /system/system_ext/priv-app/Provision/Provision.apk')
