@@ -18,6 +18,7 @@ ap.add_argument('--base', required=True); ap.add_argument('--out', required=True
 ap.add_argument('--a14fs', required=True); ap.add_argument('--vndk-dir', required=True)
 ap.add_argument('--tools', default=os.environ.get('A17_TOOLS') or os.path.expanduser('~/Aistuff/tb-x606v-android17/tools'))
 ap.add_argument('--port-repo', default=os.path.expanduser('~/Aistuff/tb-x606v-android16-port'), help='repo with debug/bootdiag.sh + zz_bootdiag.rc (boot logs into /data/local/tmp/bootdiag)')
+ap.add_argument('--audio-closure', help='dir from tools/audio/a16_closure.py (Android 16 audioserver + libs, public LineageOS 23.2 GSI): audio for the vendor HIDL audio 5.0'); ap.add_argument('--capstone-python', default=os.path.expanduser('~/Aistuff/android-aosp/work/venv/bin/python'), help='python with capstone (audio AIDL patches)')
 ap.add_argument('--build-tools'); ap.add_argument('--e2fs', default='/opt/homebrew/opt/e2fsprogs/sbin')
 a = ap.parse_args()
 E2, TOOLS = a.e2fs, a.tools
@@ -155,6 +156,22 @@ for path, f in (('/system/lib64/bootstrap/libc.so', libc64), ('/system/lib/boots
 print('5b services.jar (HintManagerService without an AIDL power HAL, isBuildConsistent); stale services.{odex,vdex,art} dropped so ART does not map a mismatching oat')
 replace('/system/framework/services.jar', patched(os.path.join(HERE, 'patch_services_oneui.py'), '/system/framework/services.jar', 'services'))
 cmds.extend(f'rm /system/framework/oat/arm64/services.{x}' for x in ('art', 'odex', 'vdex'))
+if a.audio_closure:
+    print('5c audio: Android 16 audioserver + closure, private under /system/lib64/a16audio (same recipe as the Pixel image, tools/audio/install_a16_audio.sh)')
+    cl = a.audio_closure; CP = a.capstone_python; AU = lambda n: os.path.join(TOOLS, 'audio', n)
+    mkdir('/system/lib64/a16audio', ctx=LIB)
+    for n in sorted(os.listdir(cl + '/lib64')):
+        f = cl + '/lib64/' + n
+        if n == 'audiopolicy-aidl-cpp.so': run(CP, '-I', AU('patch_server_codes.py'), f, wp('a16.audiopolicy.p')); f = wp('a16.audiopolicy.p')      # transaction 115 -> getPermissionController
+        if n == 'libaudiopermission.so': run(CP, '-I', AU('patch_audiopermission.py'), f, wp('a16.audiopermission.p')); f = wp('a16.audiopermission.p')
+        put(f, '/system/lib64/a16audio/' + n, '644', 0, 0, LIB)
+    # install BOTH patch sets or neither: the A17 clients must send A16's AIDL numbers
+    for lib, classes in (('audioflinger-aidl-cpp.so', 'BpAudioTrack,BpMmapStream'), ('audiopolicy-aidl-cpp.so', 'BpAudioPolicyService')):
+        src = tmpf(lib + '.a17', cat('/system/lib64/' + lib)); run(CP, '-I', AU('fix_aidl_codes.py'), src, cl + '/lib64/' + lib, wp(lib + '.p'), classes)
+        replace('/system/lib64/' + lib, wp(lib + '.p'))
+    replace('/system/bin/audioserver', cl + '/audioserver')
+    rc = cat('/system/etc/init/audioserver.rc').decode(); first, rest = rc.split('\n', 1); assert first.startswith('service audioserver ')
+    replace('/system/etc/init/audioserver.rc', tmpf('audioserver.rc', first + '\n    setenv LD_LIBRARY_PATH /system/lib64/a16audio\n' + rest))
 # signing material for the repacked runtime apex (apexd only needs the key inside the apex to match)
 KEY, KS = wp('apex_key.pem'), wp('apex_sign.jks')
 run('openssl', 'genrsa', '-out', KEY, '4096'); run('keytool', '-genkeypair', '-keystore', KS, '-storepass', 'android', '-keypass', 'android', '-alias', 'a17', '-keyalg', 'RSA', '-keysize', '2048', '-dname', 'CN=a17', '-validity', '10000')
