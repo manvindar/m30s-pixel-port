@@ -137,6 +137,10 @@ cg['Cgroups'] = [x for x in cg['Cgroups'] if x['Controller'] != 'blkio']
 for x in cg.get('Cgroups2', {}).get('Controllers', []):
     if x['Controller'] == 'freezer': x['Optional'] = True
 replace('/system/etc/cgroups.json', tmpf('cgroups.json', json.dumps(cg, indent=2)))
+# the donor's system_ext policy declares typealiases that the stock vendor policy declares too: secilc (init's compile) fails on the re-declaration (tools/oneui/sepol_check.py)
+sx = cat('/system/system_ext/etc/selinux/system_ext_sepolicy.cil').decode('latin1')
+for n in ('felicalock', 'felica', 'mfw', 'mfs', 'mfm', 'mfc'): sx, k = re.subn(r'(?m)^\(typealias %s\)\n\(typealiasactual %s \S+\)\n' % (n, n), '', sx); assert k == 1, n
+replace('/system/system_ext/etc/selinux/system_ext_sepolicy.cil', tmpf('sext.cil', sx.encode('latin1')))
 apply()      # directories and symlinks must exist before the apex edits below read them back
 
 print('5 bionic and friends')

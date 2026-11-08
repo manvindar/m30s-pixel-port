@@ -16,3 +16,4 @@ docs/phase3prep/DEVICE-IDS.md
 screenshots/
 fw-oneui9/
 oneui-base/
+__pycache__/
