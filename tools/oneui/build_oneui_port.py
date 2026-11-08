@@ -166,9 +166,13 @@ mkdir('/system/etc/bpf.oneui')
 nb = wp('netbpfload.orig'); apex_member('/system/apex/com.google.android.tethering_compressed.apex', '/bin/netbpfload', nb)
 py(os.path.join(HERE, 'patch_netbpfload.py'), nb, wp('netbpfload.p'))
 put(wp('netbpfload.p'), '/system/bin/netbpfload.oneui', '755', 0, 2000, 'u:object_r:bpfloader_exec:s0')
+nu = wp('netd_updatable.orig'); apex_member('/system/apex/com.google.android.tethering_compressed.apex', '/lib64/libnetd_updatable.so', nu)     # netd aborts on the same V+/25Q2+ kernel gates
+run(sys.executable, '-I', os.path.join(HERE, 'patch_netbpfload.py'), nu, wp('netd_updatable.p'), 'V+ platform with kernel version <', '25Q2+ platform with kernel version <', env=dict(os.environ, WINDOW='96', MIN='2'))
+put(wp('netd_updatable.p'), '/system/lib64/libnetd_updatable.oneui.so', '644', 0, 0, LIB)
 rc = '''# One UI port: kernel 4.14 workarounds for the tethering apex (see tools/oneui/patch_netbpfload.py)
 on load-bpf-programs
     mount none /system/bin/netbpfload.oneui /apex/com.android.tethering/bin/netbpfload bind
+    mount none /system/lib64/libnetd_updatable.oneui.so /apex/com.android.tethering/lib64/libnetd_updatable.so bind
 '''
 put(tmpf('00_bpf_bind.rc', rc), '/system/etc/init/00_bpf_bind.rc', '644')
 for rcp in ('/system/etc/init/netbpfload.rc',):
