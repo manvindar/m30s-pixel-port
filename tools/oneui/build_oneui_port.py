@@ -19,7 +19,7 @@ ap.add_argument('--a14fs', required=True); ap.add_argument('--vndk-dir', require
 ap.add_argument('--tools', default=os.environ.get('A17_TOOLS') or os.path.expanduser('~/Aistuff/tb-x606v-android17/tools'))
 ap.add_argument('--port-repo', default=os.path.expanduser('~/Aistuff/tb-x606v-android16-port'), help='repo with debug/bootdiag.sh + zz_bootdiag.rc (boot logs into /data/local/tmp/bootdiag)')
 ap.add_argument('--audio-closure', help='dir from tools/audio/a16_closure.py (Android 16 audioserver + libs, public LineageOS 23.2 GSI): audio for the vendor HIDL audio 5.0'); ap.add_argument('--capstone-python', default=os.path.expanduser('~/Aistuff/android-aosp/work/venv/bin/python'), help='python with capstone (audio AIDL patches)')
-ap.add_argument('--build-tools'); ap.add_argument('--e2fs', default='/opt/homebrew/opt/e2fsprogs/sbin')
+ap.add_argument('--google-stage', help='dir from tools/oneui/stage_google.py (WebView + Play services/Store/GSF, public sources): product/ goes under /product, system_ext/ under /system/system_ext'); ap.add_argument('--fphal', action='store_true', help='fingerprint AIDL shim over the vendor HIDL 2.1 (tools/fphal, builds the jar: needs a JDK 17 `javac` on PATH)'); ap.add_argument('--build-tools'); ap.add_argument('--e2fs', default='/opt/homebrew/opt/e2fsprogs/sbin')
 a = ap.parse_args()
 E2, TOOLS = a.e2fs, a.tools
 def bt_dir():
@@ -172,6 +172,22 @@ if a.audio_closure:
     replace('/system/bin/audioserver', cl + '/audioserver')
     rc = cat('/system/etc/init/audioserver.rc').decode(); first, rest = rc.split('\n', 1); assert first.startswith('service audioserver ')
     replace('/system/etc/init/audioserver.rc', tmpf('audioserver.rc', first + '\n    setenv LD_LIBRARY_PATH /system/lib64/a16audio\n' + rest))
+if a.google_stage:
+    print('5d Google layer (WebView, Play services, Play Store, Services Framework) from public sources, staged under /product')
+    gs = os.path.abspath(a.google_stage); made = set()
+    def gdst(rel): return '/' + rel if rel.startswith('product/') else '/system/' + rel
+    for r, _, fs in sorted(os.walk(gs)):
+        for f in sorted(fs):
+            rel = os.path.relpath(os.path.join(r, f), gs); d = gdst(rel); chain = []; q = os.path.dirname(d)
+            while q not in ('/', '/system', '/product', '/system/system_ext') and q not in made and not exists(q): chain.append(q); q = os.path.dirname(q)
+            for q in reversed(chain): made.add(q); mkdir(q)
+            put(os.path.join(gs, rel), d, '644', 0, 0, LIB if '/lib' in rel.split('/')[1] else SYS)
+if a.fphal:
+    print('5e fingerprint: AIDL IFingerprint/default shim over the vendor HIDL IBiometricsFingerprint@2.1 (Samsung services.jar also has the HIDL ISehBiometricsFingerprint@3.0 client for the Seh calls); face feature removed (no face HAL on the vendor)')
+    fp = os.path.join(HERE, '..', 'fphal'); fpjar = wp('m30s-fphal.jar'); run(sys.executable, '-I', os.path.join(fp, 'make_fphal_jar.py'), fpjar, BT)
+    put(fpjar, '/system/etc/m30s-fphal.jar', '644'); put(os.path.join(fp, 'fphal.sh'), '/system/bin/m30s-fphal.sh', '755'); put(os.path.join(fp, 'fphal.rc'), '/system/etc/init/05_fphal.rc', '644')
+    put(os.path.join(fp, 'android.hardware.biometrics.fingerprint-m30s.xml'), '/system/etc/vintf/manifest/android.hardware.biometrics.fingerprint-m30s.xml', '644')
+    cmds.append('rm /system/etc/permissions/android.hardware.biometrics.face.xml')
 # signing material for the repacked runtime apex (apexd only needs the key inside the apex to match)
 KEY, KS = wp('apex_key.pem'), wp('apex_sign.jks')
 run('openssl', 'genrsa', '-out', KEY, '4096'); run('keytool', '-genkeypair', '-keystore', KS, '-storepass', 'android', '-keypass', 'android', '-alias', 'a17', '-keyalg', 'RSA', '-keysize', '2048', '-dname', 'CN=a17', '-validity', '10000')
