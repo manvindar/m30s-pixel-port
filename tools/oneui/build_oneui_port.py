@@ -157,9 +157,6 @@ print('5b services.jar (HintManagerService without an AIDL power HAL, isBuildCon
 replace('/system/framework/services.jar', patched(os.path.join(HERE, 'patch_services_oneui.py'), '/system/framework/services.jar', 'services'))
 cmds.extend(f'rm /system/framework/oat/arm64/services.{x}' for x in ('art', 'odex', 'vdex'))
 cmds.append('rm /system/app/TEEgrisTuiService/TEEgrisTuiService.apk')     # Trusted UI service: its TUIThread epoll_ctl()s the TEEgris tui socket and the 4.14 kernel oopses in tz_uiwsock_poll (circ_buf_bytes_used) ~15 s after the launcher starts
-# SDHMS (SSRM/SIOP policy engine): the donor's encrypted SIOP policy names a GPU step (845000) the Mali table lacks -> SiopExpressionInvalidException -> 'Fails to parse policy XML' warning on every boot.
-# The apk is platform-signed (sharedUserId android.uid.system), so a patched/re-signed copy is rejected ('Signature mismatch for shared user'); the framework-side fix would invalidate the boot image. Remove the app (kernel thermal stays).
-cmds.extend(['rm /system/priv-app/SamsungDeviceHealthManagerService/SamsungDeviceHealthManagerService.apk', 'rm /system/priv-app/SamsungDeviceHealthManagerService/oat/arm64/SamsungDeviceHealthManagerService.odex'])
 if a.audio_closure:
     print('5c audio: Android 16 audioserver + closure, private under /system/lib64/a16audio (same recipe as the Pixel image, tools/audio/install_a16_audio.sh)')
     cl = a.audio_closure; CP = a.capstone_python; AU = lambda n: os.path.join(TOOLS, 'audio', n)
