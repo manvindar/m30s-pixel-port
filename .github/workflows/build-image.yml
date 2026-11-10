@@ -98,6 +98,7 @@ jobs:
           PYKEY
           echo "SAFETY_KEYS=$PWD/safety-keys" >> "$GITHUB_ENV"
           export PLATFORM_KEYS="$PWD/tablet/tools/pixel" SAFETY_KEYS="$PWD/safety-keys" PLATFORM_JAR="$ANDROID_HOME/platforms/android-34/android.jar"
+          export STARTUP_TEST_TABLET_REPO="$PWD/tablet"
           python3 tools/img/test_startup_scripts.py
           python3 tools/pixel/test_compat_overlays.py
 
