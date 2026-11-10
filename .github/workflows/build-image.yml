@@ -6,14 +6,14 @@ on:
     inputs:
       tag:
         description: Release tag when publishing
-        default: v0.5-pixel-compat
+        default: v0.6-pixel-perf
       publish:
         description: Publish public flashable images as a prerelease
         type: boolean
         default: true
       kernel_tag:
-        description: Reviewed dated baseline kernel (or the retained kernel-4.14.113-a17 rollback)
-        default: kernel-4.14.113-perf-20261110
+        description: Reviewed dated performance kernel; older baseline kernels remain available
+        default: kernel-4.14.113-perf-20261110-profile1
       dev_tools:
         description: Build with the debug helpers (boot_watchdog, bootdiag, dbgprobe), as the image on the phone
         type: boolean
@@ -191,6 +191,15 @@ jobs:
               echo 'KERNEL_SOURCE_COMMIT=e9649cc3df22823f3cc02848b0a35e6e30e6dedd' >> "$GITHUB_ENV"
               echo 'KERNEL_ACTIONS_RUN=https://github.com/manvindar/m30s-kernel/actions/runs/42895895988' >> "$GITHUB_ENV"
               ;;
+            kernel-4.14.113-perf-20261110-profile1)
+              gh release download "$KERNEL_TAG_IN" -R manvindar/m30s-kernel -p Image -p kernel.config -p kernel-release.txt -p kernel-label-receipt.json -D kernel
+              echo 'bca7402de04ffc2bdd281ef09e73db57af49248e244fa382ee5b8a8b98e0a6b7  kernel/kernel.config' | sha256sum -c -
+              echo '2055c1d2ce1ad9108fe511f975e8c1e801a3347cb2886a2b3ca69408524155d8  kernel/kernel-release.txt' | sha256sum -c -
+              echo '8c7e94274321ea9199c6ec85241d5731e3bd44fe78ee7eac99c57c16de523d48  kernel/kernel-label-receipt.json' | sha256sum -c -
+              KERNEL_SHA=9d02f121b11f043dca9dbdc3a7459764b7284357bc266cf2966c8fcff36d43fa
+              echo 'KERNEL_SOURCE_COMMIT=0d82b075ad8cf16d340bb2f3b787af46e2993f41' >> "$GITHUB_ENV"
+              echo 'KERNEL_ACTIONS_RUN=https://github.com/manvindar/m30s-kernel/actions/runs/42899549058' >> "$GITHUB_ENV"
+              ;;
             *) echo "Unreviewed kernel tag" >&2; exit 1 ;;
           esac
           echo "$KERNEL_SHA  kernel/Image" | sha256sum -c -
@@ -199,6 +208,9 @@ jobs:
           python3 tools/img/repack_boot.py boot.img kernel/Image boot-a17.img
           if [ "$KERNEL_TAG_IN" = kernel-4.14.113-perf-20261110 ]; then
             echo "$DATED_BOOT_SHA256  boot-a17.img" | sha256sum -c -
+          fi
+          if [ "$KERNEL_TAG_IN" = kernel-4.14.113-perf-20261110-profile1 ]; then
+            echo 'fe4b316a93c7b45cc5f4fe3b4f25f32cde69938cae00883902aa22db0ecaaef7  boot-a17.img' | sha256sum -c -
           fi
 
       - name: Check the images

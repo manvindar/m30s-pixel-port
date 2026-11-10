@@ -26,3 +26,11 @@ Bench: `tools/debug/bench.sh` (launcher + shade) and, with the screen locked, th
 
 ## Not done
 - Launcher bench, 2026-11-08, phone unlocked, two runs of `bench.sh`: launcher janky 15.7 / 14.2 %, p50 21 ms, p90 31-32 ms, p99 65 / 48 ms, GPU p50 8-9 ms; SystemUI (shade) janky 18.8 / 15.1 %, p50 34 / 42 ms, GPU p50 19-20 ms. The launcher is limited by UI-thread and draw-command issue time, not the GPU.
+
+## November 10 performance build
+
+The dated `4.14.113-perf-20261110` profile1 kernel uses an explicit configuration allowlist on the authenticated Android 17 baseline. It includes -O2, LZ4 compression support, BBR with Fair Queue defaults, atomic-sleep/power debug instrumentation removal, and the existing 150 ms touch CPU minimum-frequency requests. The touch throttle is synchronized and failed input-handler registration releases its requests. CPU/GPU maximum clocks and thermal controls are unchanged. Module CRC validation remains enabled.
+
+The ROM still selects zstd for its 3 GB zram; LZ4 availability alone does not change compression. BFQ stays off because Samsung's existing UFS queue mode would not activate it. HDR, clock locks, reduced display resolution and uncompiled donor-kernel imports are excluded. No new speed, battery or networking result is claimed before device testing.
+
+The system image also fixes startup execution of the existing Personal Safety component loop and removes automatic dexopt UI/launcher termination. These avoid the observed startup failures; they do not establish a new frame-rate result.
