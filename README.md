@@ -12,6 +12,8 @@ Read [FLASH.md](docs/FLASH.md) before installing. First installation from encryp
 
 Run the **Build image** GitHub Actions workflow to reproduce a release using pinned generic inputs and public upstream donors. Keep the baseline `kernel-4.14.113-a17`; HDR variants caused black video. The public tablet patch library supplies shared tooling.
 
+[XDA development thread](https://xdaforums.com/t/rom-17-unofficial-gsi-sm-m307f-android-17-pixel-port-experimental.4808164/) — release discussion and bug reports.
+
 ## Development
 
 Use an explicitly selected device for device tools. Preserve recovery, EFS, personal files and unrelated partitions. Report whether a result was measured or remains unverified.
