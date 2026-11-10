@@ -11,5 +11,5 @@ Historical SM-M307F testing on November 7–8, 2026 verified boot, Wi-Fi, finger
 This is the Pixel port. The separate One UI port and its recent wallpaper/drawer repairs are not included.
 
 Source: https://github.com/manvindar/m30s-pixel-port
-Kernel source: https://github.com/manvindar/m30s-kernel (currently private; baseline binary is hash-pinned).
+Kernel source, port patches/build scripts and exact configuration: `m30s-kernel-a17-source.tar` in https://github.com/manvindar/m30s-pixel-port/releases/tag/build-inputs-a17 (SHA256 `a36cac0bd4e3e51343f38f686375106d0b00cf55104f1d2ca0aabef780998f91`). The baseline binary is hash-pinned.
 See FLASH.md for prerequisites, checksum verification, installation and rollback requirements. Detailed historical status: docs/FEATURES.md and docs/PERF.md in source.
