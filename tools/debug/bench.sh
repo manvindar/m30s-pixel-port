@@ -1,7 +1,7 @@
 #!/bin/sh
 # Before/after check for a kernel change on the M30s, over adb: cold start time of a few apps, scroll jank in Settings, zram and pressure after a burst of app launches.
 # usage: bench.sh OUT.txt [SERIAL]     (run with the phone idle: load average < 3, screen on and unlocked)
-OUT=${1:-bench.txt}; S=${2:-DEVICE_SERIAL}
+OUT=${1:-bench.txt}; S=${2:?Pass the target phone serial as the second argument}
 a() { "${ADB:-$HOME/Library/Android/sdk/platform-tools/adb}" -s "$S" "$@"; }
 {
 echo "== $(date) kernel: $(a shell uname -r) $(a shell uname -v | tr -d '\r')"

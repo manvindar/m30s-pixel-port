@@ -16,3 +16,7 @@ Rules for anything done here
 - Never delete anything on /sdcard or the SD card. Logs the user copies in TWRP are in `/data/media/0`.
 - The bootloader is unlocked (Knox tripped). Flash `system` only through TWRP; keep `recovery` untouched.
 - Everything not read from the device is marked UNVERIFIED.
+
+## Public source
+
+Source history is scrubbed for public release. Original device records, firmware inputs and image releases remain in the private archive. See [public source and private builds](docs/PUBLIC-SOURCE.md).

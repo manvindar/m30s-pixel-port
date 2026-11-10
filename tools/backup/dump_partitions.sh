@@ -4,9 +4,9 @@
 #   small = everything not in the firmware, plus boot/recovery/dtb/dtbo/vbmeta (about 300 MiB)
 #   big   = system vendor product (about 5.7 GB; compare with the firmware hashes)
 # Each partition is read TWICE and the two SHA-256 must match; the image is kept only then.
-# Never writes to the phone, never touches /sdcard or the SD card. Always -s DEVICE_SERIAL.
+# Never writes to the phone, never touches /sdcard or the SD card. Always select the explicitly supplied ADB_SERIAL.
 set -e
-OUT=${1:?out dir}; SET=${2:-small}; S=${ADB_SERIAL:-DEVICE_SERIAL}
+OUT=${1:?out dir}; SET=${2:-small}; S=${ADB_SERIAL:?Set ADB_SERIAL to the target phone serial}
 ADB="$HOME/Library/Android/sdk/platform-tools/adb -s $S"
 SMALL="efs sec_efs cpefs persistent keyrefuge keydata steady uhcfg nad_refer nad_fw dqmdbg misc bota0 bota1 bota2 bota3 param up_param keystorage uh omr radio cp_debug boot recovery dtb dtbo vbmeta"
 BIG="system vendor product"

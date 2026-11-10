@@ -1,9 +1,9 @@
 name: Build image
 
-# Builds the Android 17 + Pixel image for the Galaxy M30s (SM-M307F) and, with publish=true, publishes it as a PRIVATE release.
-# This repo must stay private: the image holds Google's Pixel apps and Samsung's stock vendor.
+# Public source workflow. Firmware inputs and image releases remain in the private archive.
+# Configure M30S_INPUTS_TOKEN with access to the private archive and patch-library repositories.
 #
-# Public inputs are downloaded here (Google GSI, LineageOS donor, crDroid A14 GSI, Pixel 9a factory image, MindTheGapps). Private inputs come from the release tagged "inputs" of this repo:
+# Public inputs are downloaded here (Google GSI, LineageOS donor, crDroid A14 GSI, Pixel 9a factory image, MindTheGapps). Private inputs come from the release tagged "inputs" of the private archive:
 #   vendor-mp2.img      stock vendor with the audio/mpeg-L2 codec type removed (tools/img/build_a14.sh does that from the firmware vendor.img)
 #   boot.img            stock Samsung boot image of the firmware (the kernel Image is swapped in)
 #   vbmeta-disabled.img 4 KiB vbmeta with verification disabled
@@ -31,6 +31,7 @@ permissions:
   contents: write
 
 env:
+  PRIVATE_ARCHIVE: manvindar/m30s-pixel-port-private-archive
   GSI_URL: https://dl.google.com/developers/android/cinnamonbun/images/gsi/aosp_arm64-exp-DP11.261016.003-16708287-d735a3b1.zip
   GSI_ZIP_SHA256: d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436
   DONOR_URL: https://sourceforge.net/projects/misterztr-gsi/files/LineageOS/Android%2016/LineageOS-23.2-20260524-GAPPS-EXT4-GSI.7z/download
@@ -55,9 +56,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Check private build access
+        env:
+          PRIVATE_TOKEN: ${{ secrets.M30S_INPUTS_TOKEN }}
+        run: |
+          test -n "$PRIVATE_TOKEN" || { echo 'Configure M30S_INPUTS_TOKEN before building private firmware inputs.'; exit 1; }
+
       - name: Patch library (tb-x606v-android17)
         uses: actions/checkout@v7
         with:
+          token: ${{ secrets.M30S_INPUTS_TOKEN }}
           repository: manvindar/tb-x606v-android17
           ref: ${{ env.TABLET_REF }}
           path: tablet
@@ -89,11 +97,11 @@ jobs:
           echo "BT=$ANDROID_HOME/build-tools/35.0.0" >> "$GITHUB_ENV"
           echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
 
-      - name: Private inputs (release "inputs" of this repo)
+      - name: Private inputs (release "inputs" of private archive)
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.M30S_INPUTS_TOKEN }}
         run: |
-          gh release download inputs -p vendor-mp2.img -p boot.img -p vbmeta-disabled.img
+          gh release download inputs -R "$PRIVATE_ARCHIVE" -p vendor-mp2.img -p boot.img -p vbmeta-disabled.img
           echo "$VENDOR_MP2_SHA256  vendor-mp2.img" | sha256sum -c -
           echo "$BOOT_SHA256  boot.img" | sha256sum -c -
           echo "$VBMETA_SHA256  vbmeta-disabled.img" | sha256sum -c -
@@ -114,10 +122,10 @@ jobs:
 
       - name: Android 14 first stage bundle and VNDK v30 (crDroid 10.13 GSI)
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.M30S_INPUTS_TOKEN }}
         run: |
           # upstream asset answers HTTP 504 (2026-11-08): fall back to the mirror release of this repo (same file, same sha256 below)
-          curl -L --fail --retry 2 --retry-delay 10 -o crdroid.img.xz "$CRDROID_URL" || gh release download inputs-crdroid-10.13 -R "$GITHUB_REPOSITORY" -p crdroid.img.xz --clobber
+          curl -L --fail --retry 2 --retry-delay 10 -o crdroid.img.xz "$CRDROID_URL" || gh release download inputs-crdroid-10.13 -R "$PRIVATE_ARCHIVE" -p crdroid.img.xz --clobber
           echo "$CRDROID_SHA256  crdroid.img.xz" | sha256sum -c -
           xz -dc crdroid.img.xz > crdroid.img && rm crdroid.img.xz
           mkdir vndk30
@@ -137,7 +145,7 @@ jobs:
 
       - name: MindTheGapps
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.M30S_INPUTS_TOKEN }}
         run: |
           mkdir gapps && cd gapps
           gh release download "$GAPPS_TAG" -R MindTheGapps/16.0.0-arm64 -p '*.zip' -p '*.sha256sum'
@@ -158,7 +166,7 @@ jobs:
 
       - name: Kernel image from the m30s-kernel release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.M30S_INPUTS_TOKEN }}
           KTOKEN: ${{ secrets.M30S_KERNEL_TOKEN }}
           KERNEL_TAG_IN: ${{ inputs.kernel_tag }}
         run: |
@@ -168,9 +176,9 @@ jobs:
             [ -n "$TAG" ] || TAG=$(gh release list -R manvindar/m30s-kernel --limit 50 --json tagName,publishedAt -q '[.[]|select(.tagName|startswith("kernel-"))]|sort_by(.publishedAt)|last|.tagName')
             gh release download "$TAG" -R manvindar/m30s-kernel -p Image -p SHA256SUMS -D kernel
           else
-            [ -n "$TAG" ] || TAG=$(gh release view inputs --json assets -q '.assets[].name' | sed -n 's/^\(kernel-.*\)\.Image$/\1/p' | sort -V | tail -1)
+            [ -n "$TAG" ] || TAG=$(gh release view inputs -R "$PRIVATE_ARCHIVE" --json assets -q '.assets[].name' | sed -n 's/^\(kernel-.*\)\.Image$/\1/p' | sort -V | tail -1)
             [ -n "$TAG" ] || { echo "no kernel mirrored in the inputs release and M30S_KERNEL_TOKEN is not set"; exit 1; }
-            for f in Image SHA256SUMS; do gh release download inputs -p "$TAG.$f" -O "kernel/$f"; done
+            for f in Image SHA256SUMS; do gh release download inputs -R "$PRIVATE_ARCHIVE" -p "$TAG.$f" -O "kernel/$f"; done
           fi
           echo "KERNEL_TAG=$TAG" >> "$GITHUB_ENV"
           WANT=$(awk '$2=="Image"{print $1}' kernel/SHA256SUMS); echo "$WANT  kernel/Image" | sha256sum -c -
@@ -206,11 +214,12 @@ jobs:
       - name: Publish private release
         if: ${{ inputs.publish }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.M30S_INPUTS_TOKEN }}
           TAG: ${{ inputs.tag }}
         run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" out/* --clobber
+          test "$(gh repo view "$PRIVATE_ARCHIVE" --json isPrivate -q .isPrivate)" = true || { echo 'Firmware destination must remain private.'; exit 1; }
+          if gh release view "$TAG" -R "$PRIVATE_ARCHIVE" >/dev/null 2>&1; then
+            gh release upload "$TAG" -R "$PRIVATE_ARCHIVE" out/* --clobber
           else
-            gh release create "$TAG" out/* --prerelease --title "M30s Android 17 Pixel image ($TAG), kernel $KERNEL_TAG" --notes-file out/FLASH.md
+            gh release create "$TAG" -R "$PRIVATE_ARCHIVE" out/* --prerelease --title "M30s Android 17 Pixel image ($TAG), kernel $KERNEL_TAG" --notes-file out/FLASH.md
           fi
