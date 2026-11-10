@@ -1,7 +1,7 @@
 # Galaxy M30s SM-M307F: experimental Android 17 Pixel images
 
 Built by GitHub Actions from `@COMMIT@`, using baseline kernel `@KERNEL_TAG@`.
-This exact build has not been flashed or boot-tested. Historical device results are in RELEASE-NOTES.md.
+For the verified v0.6 upgrade result and remaining limits, see [RELEASE-NOTES.md](RELEASE-NOTES.md). Other generated builds need their own device acceptance.
 These are raw partition images, not a recovery-installable ZIP or an Odin TAR.
 
 ## Already running the Pixel port?
@@ -12,7 +12,7 @@ Use the [short TWRP upgrade steps](TWRP-UPGRADE.md). Flash System and Boot only;
 
 Only SM-M307F has been tested. Do not use on another model. Requires an unlocked bootloader and working compatible TWRP recovery. Keep a complete backup, including EFS and personal files, plus your matching stock Samsung firmware and a working Download mode recovery route. Do not overwrite recovery, EFS, modem or unrelated partitions.
 
-First installation from encrypted stock firmware requires TWRP **Format Data**: this erases internal storage, accounts and apps. Back up to a computer first. This port does not support userdata encryption and uses a permissive SELinux kernel. It is unsuitable for sensitive data or a primary phone. An upgrade without formatting has not been verified for this new release.
+First installation from encrypted stock firmware requires TWRP **Format Data**: this erases internal storage, accounts and apps. Back up to a computer first. This port does not support userdata encryption and uses a permissive SELinux kernel. It is unsuitable for sensitive data or a primary phone. The v0.6 existing-Pixel upgrade was verified without formatting; use the short upgrade guide above.
 
 ## Download and verify
 
