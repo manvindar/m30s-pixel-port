@@ -4,6 +4,10 @@ Built by GitHub Actions from `@COMMIT@`, using baseline kernel `@KERNEL_TAG@`.
 This exact build has not been flashed or boot-tested. Historical device results are in RELEASE-NOTES.md.
 These are raw partition images, not a recovery-installable ZIP or an Odin TAR.
 
+## Already running the Pixel port?
+
+Use the [short TWRP upgrade steps](TWRP-UPGRADE.md). Flash System and Boot only; keep userdata and the existing Vendor/Recovery/VBMETA. The first-install steps below apply when coming from stock.
+
 ## Before installing
 
 Only SM-M307F has been tested. Do not use on another model. Requires an unlocked bootloader and working compatible TWRP recovery. Keep a complete backup, including EFS and personal files, plus your matching stock Samsung firmware and a working Download mode recovery route. Do not overwrite recovery, EFS, modem or unrelated partitions.

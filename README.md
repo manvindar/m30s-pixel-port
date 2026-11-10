@@ -19,3 +19,5 @@ Run the **Build image** GitHub Actions workflow to reproduce a release using pin
 Use an explicitly selected device for device tools. Preserve recovery, EFS, personal files and unrelated partitions. Report whether a result was measured or remains unverified.
 
 Source history was sanitized before publication. Private device records and original history remain separate; see [PUBLIC-SOURCE.md](docs/PUBLIC-SOURCE.md). The One UI port is a separate project, and its fixes are not part of this Pixel release.
+
+For an existing Pixel installation with TWRP: [simple upgrade steps](docs/TWRP-UPGRADE.md).
