@@ -6,7 +6,7 @@ on:
     inputs:
       tag:
         description: Release tag when publishing
-        default: v0.4-public-img
+        default: v0.5-pixel-compat
       publish:
         description: Publish public flashable images as a prerelease
         type: boolean
@@ -81,6 +81,25 @@ jobs:
           debugfs -V; fsck.erofs --help 2>&1 | head -1
           echo "BT=$ANDROID_HOME/build-tools/35.0.0" >> "$GITHUB_ENV"
           echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Public AOSP SafetyCenter test identity and host regressions
+        run: |
+          mkdir safety-keys
+          python3 - <<'PYKEY'
+          import base64, hashlib, urllib.request
+          from pathlib import Path
+          base = 'https://android.googlesource.com/platform/packages/modules/Permission/+/26231a7eac744c7d2a8fea4740926620f56b20c6/SafetyCenter/Resources/'
+          files = {'com.android.safetycenter.resources.pk8': '3b55e4facb4e57b742883a9a4b4adaea7920d3244d91cfc818628d301eefb2d7',
+                   'com.android.safetycenter.resources.x509.pem': 'ad4b4e29c7cb4a86efe11da1e02bf57fad641de9192b66a362ab0a023dd2afda'}
+          for name, digest in files.items():
+              data = base64.b64decode(urllib.request.urlopen(base + name + '?format=TEXT', timeout=60).read())
+              assert hashlib.sha256(data).hexdigest() == digest, name
+              Path('safety-keys', name).write_bytes(data)
+          PYKEY
+          echo "SAFETY_KEYS=$PWD/safety-keys" >> "$GITHUB_ENV"
+          export PLATFORM_KEYS="$PWD/tablet/tools/pixel" SAFETY_KEYS="$PWD/safety-keys" PLATFORM_JAR="$ANDROID_HOME/platforms/android-34/android.jar"
+          python3 tools/img/test_startup_scripts.py
+          python3 tools/pixel/test_compat_overlays.py
 
       - name: Audited generic build inputs
         env:
@@ -166,10 +185,11 @@ jobs:
           [ "$(stat -c %s vendor-a17.img)" = 629145600 ]
           e2fsck -fn system-a17-pixel.img
           e2fsck -fn vendor-a17.img
-          for component in /system/etc/init/03_zram.rc /system/product/app/WebViewGoogle/WebViewGoogle.apk /system/system_ext/priv-app/NexusLauncherRelease/NexusLauncherRelease.apk; do
+          for component in /system/etc/init/03_zram.rc /system/product/app/WebViewGoogle/WebViewGoogle.apk /system/system_ext/priv-app/NexusLauncherRelease/NexusLauncherRelease.apk /system/product/overlay/M30sGestureOverlay.apk /system/product/overlay/M30sSafetyOverlay.apk /system/bin/nosensorhog.sh; do
             debugfs -R "stat $component" system-a17-pixel.img 2>/dev/null | grep -q '^Inode:'
           done
           [ "$(debugfs -R 'cat /system/etc/selinux/plat_sepolicy.cil' system-a17-pixel.img | grep -c m30s_allall)" = 0 ]
+          python3 tools/img/verify_pixel_fixes.py system-a17-pixel.img "$BT" image-fixes-verification.json
 
       - name: Compress, split, checksums
         run: |
@@ -180,6 +200,7 @@ jobs:
           sha256sum system-a17-pixel.img vendor-a17.img boot-a17.img vbmeta-disabled.img > out/IMAGE-SHA256SUMS
           sed -e "s|@COMMIT@|$GITHUB_SHA|g" -e "s|@KERNEL_TAG@|$KERNEL_TAG|g" docs/FLASH.md > out/FLASH.md
           cp docs/RELEASE-NOTES.md out/RELEASE-NOTES.md
+          cp image-fixes-verification.json out/
           python3 - <<'PYRECEIPT'
           import json, os
           from pathlib import Path
@@ -188,7 +209,7 @@ jobs:
               'actions_run': os.environ['GITHUB_SERVER_URL']+'/'+os.environ['GITHUB_REPOSITORY']+'/actions/runs/'+os.environ['GITHUB_RUN_ID'],
               'kernel': os.environ['KERNEL_TAG'],
               'system_bytes': 5033164800, 'vendor_bytes': 629145600,
-              'validation': ['e2fsck -fn system and vendor', 'image sizes', 'pinned input SHA256'],
+              'validation': ['e2fsck -fn system and vendor', 'image sizes', 'pinned input SHA256', 'startup host regressions', 'compiled overlay signing and resource scope', 'final image overlay target signers and startup bytes'],
               'device_validation': 'This exact CI build has not been flashed or boot-tested.'
           }, indent=2)+'\n')
           PYRECEIPT
