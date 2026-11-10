@@ -2,7 +2,7 @@
 
 Public GitHub Actions build of the Pixel source, with raw system/vendor/boot/vbmeta images, asset and raw-image SHA256 checksums, a build receipt and installation guide. This is an experimental prerelease. **This exact CI build has not been flashed or boot-tested.** Do not use on other models.
 
-The build includes the committed Pixel layer, fingerprint bridge, gesture/launcher compatibility patches, sensor-hog and face-feature corrections, 5 GHz hotspot overlay, health/audio compatibility layers, and the baseline 4.14.113 Android 17 kernel. HDR kernel variants are excluded because they caused black video.
+The build includes the committed Pixel layer, fingerprint bridge, gesture/launcher compatibility patches, sensor-hog and face-feature corrections, 5 GHz hotspot overlay, health/audio compatibility layers, and the dated baseline kernel `4.14.113-perf-20261110`. The version suffix and build date change; the existing functional kernel configuration is preserved. Experimental performance/boost/HDR settings are excluded. HDR variants caused black video.
 
 This release adds a one-boolean SystemUI overlay to exclude the crashing back-gesture model, a narrow SafetyCenter configuration overlay for the matching Pixel AdvancedProtection sources, and startup helpers that avoid init shell-variable expansion and automatic UI restarts during compilation. Host signing, compiled resources and final image checks are included. Android overlay admission and runtime behavior still require testing; these are source/build corrections, not a completed device acceptance claim. Details: docs/PIXEL-COMPAT-FIXES.md in source.
 

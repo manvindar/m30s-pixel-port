@@ -12,8 +12,8 @@ on:
         type: boolean
         default: true
       kernel_tag:
-        description: Pinned baseline kernel mirrored in public inputs
-        default: kernel-4.14.113-a17
+        description: Reviewed dated baseline kernel (or the retained kernel-4.14.113-a17 rollback)
+        default: kernel-4.14.113-perf-20261110
       dev_tools:
         description: Build with the debug helpers (boot_watchdog, bootdiag, dbgprobe), as the image on the phone
         type: boolean
@@ -40,6 +40,8 @@ env:
   VBMETA_SHA256: fe1f4b55088fbc97040bc898d8b076f93c93e203c8ba7a15c8348080351f4ca2
   NDK_VERSION: 26.1.10909125
   SYSTEM_BYTES: '5033164800'
+  DATED_KERNEL_SHA256: 95fa5adab53a1b8540d9ed3bd809c2f8f5dc2fc16d9fe985827b155b3215b8f1
+  DATED_BOOT_SHA256: 10b5d0e3e785d69b9ce5d32bc98da65ba0bdda9b2769214b28ceefafa7c149b7
 
 jobs:
   build:
@@ -101,6 +103,7 @@ jobs:
           export STARTUP_TEST_TABLET_REPO="$PWD/tablet"
           python3 tools/img/test_startup_scripts.py
           python3 tools/pixel/test_compat_overlays.py
+          python3 tools/img/test_readback_manifest.py
 
       - name: Audited generic build inputs
         env:
@@ -168,17 +171,35 @@ jobs:
             --pixel-phone pixel_stage --gapps gapps/*.zip $DEV --build-tools "$BT" --out system-a17-pixel.img
           rm -rf system.img "$DONOR_IMG" pixel_stage; ls -la *.img; df -h /
 
-      - name: Pinned baseline kernel
+      - name: Pinned reviewed kernel
         env:
           GH_TOKEN: ${{ github.token }}
           KERNEL_TAG_IN: ${{ inputs.kernel_tag }}
         run: |
-          test "$KERNEL_TAG_IN" = kernel-4.14.113-a17
           mkdir kernel
-          gh release download build-inputs-a17 -R "$INPUT_REPO" -p kernel-4.14.113-a17.Image -O kernel/Image
-          echo "da2b6c8c5024958261e10b620c22dac593d6818d2d7221425d3164c1aae531e7  kernel/Image" | sha256sum -c -
+          case "$KERNEL_TAG_IN" in
+            kernel-4.14.113-a17)
+              gh release download build-inputs-a17 -R "$INPUT_REPO" -p kernel-4.14.113-a17.Image -O kernel/Image
+              KERNEL_SHA=da2b6c8c5024958261e10b620c22dac593d6818d2d7221425d3164c1aae531e7
+              ;;
+            kernel-4.14.113-perf-20261110)
+              gh release download "$KERNEL_TAG_IN" -R manvindar/m30s-kernel -p Image -p kernel.config -p kernel-release.txt -p kernel-label-receipt.json -D kernel
+              echo '4e36e6f32e45cddc252687b9001dd123a423dc61cf1fb16632e9d7b5334309c5  kernel/kernel.config' | sha256sum -c -
+              echo '2055c1d2ce1ad9108fe511f975e8c1e801a3347cb2886a2b3ca69408524155d8  kernel/kernel-release.txt' | sha256sum -c -
+              echo '6ca6b7c4e0f4875b134db414ea49c0398a3fe681d830cedb094a6a7ff1182c5a  kernel/kernel-label-receipt.json' | sha256sum -c -
+              KERNEL_SHA="$DATED_KERNEL_SHA256"
+              echo 'KERNEL_SOURCE_COMMIT=e9649cc3df22823f3cc02848b0a35e6e30e6dedd' >> "$GITHUB_ENV"
+              echo 'KERNEL_ACTIONS_RUN=https://github.com/manvindar/m30s-kernel/actions/runs/42895895988' >> "$GITHUB_ENV"
+              ;;
+            *) echo "Unreviewed kernel tag" >&2; exit 1 ;;
+          esac
+          echo "$KERNEL_SHA  kernel/Image" | sha256sum -c -
           echo "KERNEL_TAG=$KERNEL_TAG_IN" >> "$GITHUB_ENV"
+          echo "KERNEL_IMAGE_SHA256=$KERNEL_SHA" >> "$GITHUB_ENV"
           python3 tools/img/repack_boot.py boot.img kernel/Image boot-a17.img
+          if [ "$KERNEL_TAG_IN" = kernel-4.14.113-perf-20261110 ]; then
+            echo "$DATED_BOOT_SHA256  boot-a17.img" | sha256sum -c -
+          fi
 
       - name: Check the images
         run: |
@@ -193,8 +214,11 @@ jobs:
           python3 tools/img/verify_pixel_fixes.py system-a17-pixel.img "$BT" image-fixes-verification.json
 
       - name: Compress, split, checksums
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
         run: |
           mkdir out
+          python3 tools/img/make_readback_manifest.py system-a17-pixel.img out/system-readback-manifest.json
           xz -T0 -6 -c system-a17-pixel.img | split -b 1900M -d -a 2 - out/system-a17-pixel.img.xz.part-
           xz -T0 -6 -c vendor-a17.img > out/vendor-a17.img.xz
           cp boot-a17.img vbmeta-disabled.img out/
@@ -202,6 +226,9 @@ jobs:
           sed -e "s|@COMMIT@|$GITHUB_SHA|g" -e "s|@KERNEL_TAG@|$KERNEL_TAG|g" docs/FLASH.md > out/FLASH.md
           cp docs/RELEASE-NOTES.md out/RELEASE-NOTES.md
           cp image-fixes-verification.json out/
+          if [ -f kernel/kernel-label-receipt.json ]; then
+            cp kernel/kernel-label-receipt.json kernel/kernel-release.txt kernel/kernel.config out/
+          fi
           python3 - <<'PYRECEIPT'
           import json, os
           from pathlib import Path
@@ -209,6 +236,9 @@ jobs:
               'source_commit': os.environ['GITHUB_SHA'],
               'actions_run': os.environ['GITHUB_SERVER_URL']+'/'+os.environ['GITHUB_REPOSITORY']+'/actions/runs/'+os.environ['GITHUB_RUN_ID'],
               'kernel': os.environ['KERNEL_TAG'],
+              'kernel_image_sha256': os.environ['KERNEL_IMAGE_SHA256'],
+              'kernel_source_commit': os.environ.get('KERNEL_SOURCE_COMMIT'),
+              'kernel_actions_run': os.environ.get('KERNEL_ACTIONS_RUN'),
               'system_bytes': 5033164800, 'vendor_bytes': 629145600,
               'validation': ['e2fsck -fn system and vendor', 'image sizes', 'pinned input SHA256', 'startup host regressions', 'compiled overlay signing and resource scope', 'final image overlay target signers and startup bytes'],
               'device_validation': 'This exact CI build has not been flashed or boot-tested.'

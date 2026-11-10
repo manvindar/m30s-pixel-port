@@ -37,6 +37,8 @@ def verify(directory, bt):
                        ('uses-permission', 'activity', 'service', 'receiver', 'provider')), name
         resources = subprocess.check_output([str(Path(bt) / 'aapt2'), 'dump', 'resources', str(apk)], text=True)
         types = re.findall(r'^\s*resource \S+ (\S+)', resources, re.M)
+        resource_ids = {name: ident for ident, name in
+                        re.findall(r'^\s*resource (0x[0-9a-f]+) (\S+)', resources, re.M)}
         with zipfile.ZipFile(apk) as z:
             entries = z.namelist()
             assert not any(n.endswith('.dex') or n.startswith('lib/') or n.endswith('.json') for n in entries), name
@@ -67,6 +69,23 @@ def verify(directory, bt):
                                                     '--file', 'res/xml/overlays.xml', str(apk)], text=True)
                 assert '="raw/safety_center_config"' in mapping, mapping
                 assert mapping.count('E: item') == 1 and 'value' in mapping, mapping
+                assert re.search(r':resourcesMap\([^)]*\)=@' + resource_ids['xml/overlays'] + r'\b', manifest)
+                assert re.search(r'A: value=@' + resource_ids['raw/safety_center_config'] + r'\b', mapping)
+                qualified_expected = {}
+                for p in (HERE / 'overlay-m30s-safety/res').glob('values*/strings.xml'):
+                    qualifier = p.parent.name[7:]
+                    api = re.search(r'(?:^|-)v(\d+)$', qualifier)
+                    assert api and int(api[1]) <= 37
+                    qualifier = re.sub(r'-?v\d+$', '', qualifier)
+                    for node in ET.parse(p).getroot():
+                        qualified_expected[('string/' + node.attrib['name'], qualifier)] = node.text[1:-1].replace('\\"', '"').replace('\\\\', '\\')
+                qualified_actual = {}; current = None
+                for line in resources.splitlines():
+                    entry = re.match(r'\s*resource \S+ (\S+)', line)
+                    if entry: current = entry[1]
+                    value = re.match(r'\s+\(([^)]*)\) "(.*)"$', line)
+                    if value: qualified_actual[(current, value[1])] = value[2]
+                assert qualified_actual == qualified_expected, 'Compiled locale qualifier/value binding differs'
         records[name] = {'sha256': hashlib.sha256(apk.read_bytes()).hexdigest(),
                          'bytes': apk.stat().st_size, 'package': package, 'target': target,
                          'signer_sha256': cert, 'resource_names': types}

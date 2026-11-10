@@ -58,8 +58,9 @@ def audit(image, bt, output):
             subprocess.run(['fsck.erofs', '--extract=' + str(app), str(tmp / 'payload.img')], check=True,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
-            subprocess.run(['debugfs', '-R', f'rdump /app {app}', str(tmp / 'payload.img')], check=True,
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            for location in ('/app', '/priv-app'):
+                subprocess.run(['debugfs', '-R', f'rdump {location} {app}', str(tmp / 'payload.img')], check=True,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         resources = list(app.rglob('SafetyCenterResources.apk'))
         assert len(resources) == 1, 'AOSP SafetyCenter target absent/ambiguous'
         assert signer(resources[0], bt) == SAFETY_CERT, 'SafetyCenter target signer mismatch'
