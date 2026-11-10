@@ -1,36 +1,41 @@
-# Flashing the Android 17 Pixel image on the Galaxy M30s (SM-M307F)
+# Galaxy M30s SM-M307F: experimental Android 17 Pixel images
 
-Private build for one device (serial and partitions below are the M30s with an unlocked bootloader and TWRP). Built by GitHub Actions from `@COMMIT@` with the kernel release `@KERNEL_TAG@` of `manvindar/m30s-kernel`.
-Files of this release: `system-a17-pixel.img.xz.part-*` (the system image, split because a release asset is limited to 2 GiB), `vendor-a17.img.xz`, `boot-a17.img`, `vbmeta-disabled.img`, `SHA256SUMS`.
+Built by GitHub Actions from `@COMMIT@`, using baseline kernel `@KERNEL_TAG@`.
+This exact build has not been flashed or boot-tested. Historical device results are in RELEASE-NOTES.md.
+These are raw partition images, not a recovery-installable ZIP or an Odin TAR.
 
-Never touch `recovery`. Do not delete or overwrite anything under `/sdcard` or on the SD card.
+## Before installing
 
-## 1. Check and rejoin
-```
+Only SM-M307F has been tested. Do not use on another model. Requires an unlocked bootloader and working compatible TWRP recovery. Keep a complete backup, including EFS and personal files, plus your matching stock Samsung firmware and a working Download mode recovery route. Do not overwrite recovery, EFS, modem or unrelated partitions.
+
+First installation from encrypted stock firmware requires TWRP **Format Data**: this erases internal storage, accounts and apps. Back up to a computer first. This port does not support userdata encryption and uses a permissive SELinux kernel. It is unsuitable for sensitive data or a primary phone. An upgrade without formatting has not been verified for this new release.
+
+## Download and verify
+
+Download every system part, vendor image, boot, vbmeta, SHA256SUMS, IMAGE-SHA256SUMS and the release documentation into one directory.
+
+```sh
 sha256sum -c SHA256SUMS
-cat system-a17-pixel.img.xz.part-* | xz -dc > system-a17-pixel.img     # 5033164800 bytes
-xz -dc vendor-a17.img.xz > vendor-a17.img                               # 629145600 bytes
-sha256sum system-a17-pixel.img vendor-a17.img                           # must equal the "image" lines in SHA256SUMS
+cat system-a17-pixel.img.xz.part-* | xz -dc > system-a17-pixel.img
+xz -dc vendor-a17.img.xz > vendor-a17.img
+sha256sum -c IMAGE-SHA256SUMS
 ```
 
-## 2. System and vendor (TWRP, `adb reboot recovery`)
-```
-cat system-a17-pixel.img | adb exec-in 'dd of=/dev/block/by-name/system bs=1048576'
-cat vendor-a17.img       | adb exec-in 'dd of=/dev/block/by-name/vendor bs=1048576'
-# verify in windows: one long read through TWRP's shell is cut off after about 700 MiB, so hash 256 MiB at a time and compare with the same window of the image
-for i in $(seq 0 18); do adb shell "dd if=/dev/block/by-name/system bs=1048576 skip=$((i*256)) count=256 2>/dev/null | sha256sum"; done    # last window is 192 MiB (count=192)
-adb shell 'rm -rf /data/system/package_cache /data/dalvik-cache'
-```
-TWRP's `dd` rejects `bs=4M`: use bytes (`bs=1048576`). The vendor image only needs flashing when coming from the stock vendor or an older build of this repo.
+Raw system must be 5033164800 bytes; vendor must be 629145600 bytes. Stop on any checksum mismatch. On macOS use `shasum -a 256 -c` instead of `sha256sum -c`.
 
-## 3. Kernel (boot) and vbmeta
-From TWRP: `cat boot-a17.img | adb exec-in 'dd of=/dev/block/by-name/boot bs=1048576'`.
-From Download mode with Heimdall: `heimdall flash --BOOT boot-a17.img --VBMETA vbmeta-disabled.img`.
-`boot-a17.img` is the stock Samsung boot image with the kernel Image of `@KERNEL_TAG@` swapped in (`scripts/repack_boot.py` of m30s-kernel; kernel Image sha256 in `SHA256SUMS`). Rollback: the stock `boot.img` of the firmware (sha256 in the repo docs).
+## Install
 
-## 4. First boot
-Reboot to Android. The first boot builds the package cache (a few minutes) and then `firstboot_dexopt` compiles the apps (pass 1 about 60 s after boot, pass 2 about 45 min later; log `/data/local/tmp/dexopt.log`), so the phone is slow for a while. Swap (3 GB zram) is set up by `03_zram.rc`.
-The userdata fstab line has no `fileencryption=ice`: when coming from a stock or encrypted userdata, format userdata once (this wipes the phone).
+1. Confirm the device model, unlocked bootloader and backups. Boot compatible TWRP. Check that the system partition is at least 5033164800 bytes and vendor at least 629145600 bytes; stop if the layout differs.
+2. For a first install from encrypted stock, use TWRP Format Data after copying the backup off the phone. Re-enter recovery afterward.
+3. Transfer the decompressed system and vendor images. In TWRP choose **Install > Install Image**, select `system-a17-pixel.img` and the **System** partition, then `vendor-a17.img` and **Vendor**. Check each target before confirming. Do not choose recovery.
+4. Install the supplied boot and disabled vbmeta in Download mode using Heimdall after confirming the PIT has BOOT and VBMETA partitions:
 
-## Rollback
-Android 14 system image and boot image: see `docs/phase3prep/A17-BUILD.md` (kept locally, not in this release).
+   ```sh
+   heimdall print-pit --no-reboot
+   heimdall flash --BOOT boot-a17.img --VBMETA vbmeta-disabled.img --no-reboot
+   ```
+
+   Stop if Heimdall fails or partition names differ. These files are not directly usable in Odin without correct TAR packaging. Return to recovery, then boot Android.
+5. First boot and app compilation can take several minutes. Later background compilation may affect performance. Do not interpret the first minutes as steady-state performance.
+
+For rollback, use matching stock Samsung firmware for SM-M307F through your established Download mode process. Stock firmware may require another data format; preserve your external backup. This release does not contain stock rollback firmware.
