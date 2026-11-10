@@ -4,7 +4,7 @@ Experimental Android 17 Google GSI with a Pixel 9a app layer for **Samsung Galax
 
 [Public releases](https://github.com/manvindar/m30s-pixel-port/releases) contain raw system, vendor, boot and disabled-vbmeta images built by GitHub Actions, checksums and a flashing guide. A new CI build is not device-verified merely because compilation passes.
 
-Historical testing on November 7–8, 2026 verified boot, Wi-Fi, fingerprint unlock and a rear-camera photo. Calls/SMS/data remain untested; VoLTE/VoWiFi, userdata encryption and standard proximity are unsupported. The baseline kernel uses permissive SELinux. UI jank and camera gaps remain. See [release notes](docs/RELEASE-NOTES.md), [hardware status](docs/FEATURES.md) and [performance](docs/PERF.md).
+Historical testing on November 7–8, 2026 verified boot, Wi-Fi, fingerprint unlock and a rear-camera photo. Calls/SMS/data remain untested; VoLTE/VoWiFi, userdata encryption and standard proximity are unsupported. The baseline kernel uses permissive SELinux. Camera gaps remain. See [release notes](docs/RELEASE-NOTES.md), [hardware status](docs/FEATURES.md) and [performance](docs/PERF.md).
 
 ## Install and build
 
