@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 import unittest
 from unittest.mock import patch
-from common import dump, extract_fs, protobuf_fields
+from common import dump, extract_fs, protobuf_fields, run
 from verify_final import ImageInventory, missing_symbols
 
 
@@ -11,6 +11,13 @@ def library(imports=(), exports=(), needed=()):
 
 
 class VerificationTests(unittest.TestCase):
+    def test_debugfs_partial_failure_rejected_even_with_exit_zero(self):
+        from subprocess import CompletedProcess
+        failure = CompletedProcess(['debugfs'], 0, 'some extracted files', 'rdump: Input/output error')
+        with patch('common.subprocess.run', return_value=failure):
+            with self.assertRaisesRegex(RuntimeError, 'Input/output error'):
+                run('debugfs', '-R', 'rdump / destination', 'image')
+
     def test_zero_exit_missing_file_rejected(self):
         with tempfile.TemporaryDirectory() as scratch, patch('common.run', return_value=''):
             with self.assertRaisesRegex(RuntimeError, 'empty extraction'):

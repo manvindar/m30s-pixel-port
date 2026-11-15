@@ -11,6 +11,21 @@ def run(*args, ok=(0,)):
     result = subprocess.run([str(a) for a in args], capture_output=True, text=True)
     if result.returncode not in ok:
         raise RuntimeError(f'{args}: {result.stderr[-2000:]}')
+    if Path(str(args[0])).name == 'debugfs':
+        errors = []
+        stat_query = len(args) > 2 and str(args[2]).startswith('stat ')
+        for line in result.stderr.splitlines():
+            if not line.strip() or line.startswith('debugfs '):
+                continue
+            # Host-side ownership warnings do not imply missing bytes. All other
+            # extraction errors are fatal, even when debugfs incorrectly exits zero.
+            if 'Operation not permitted while changing ownership of ' in line:
+                continue
+            if stat_query and 'File not found by ext2_lookup' in line:
+                continue  # expected existence query, never an extraction pass
+            errors.append(line)
+        if errors:
+            raise RuntimeError('debugfs failed: ' + '\n'.join(errors))
     return result.stdout
 
 
