@@ -32,6 +32,7 @@ import argparse, contextlib, glob, hashlib, io, json, os, re, shutil, struct, su
 
 HERE = os.path.dirname(os.path.abspath(__file__)); TOOLS = os.environ.get('A17_TOOLS') or os.path.expanduser('~/Aistuff/tb-x606v-android17/tools')
 ap = argparse.ArgumentParser()
+ap.add_argument('--legacy-graphics', help='checksum-pinned legacy graphics stage; final image verification required')
 ap.add_argument('--gsi', required=True, help='raw ext4 system.img from the Google GSI zip (DP11.261002.005)')
 ap.add_argument('--donor', '--a16', dest='donor', required=True, help='LineageOS 23.2 GSI, raw ext4')
 ap.add_argument('--vndk-dir', required=True, help='dir with com.android.vndk.v30.apex, 30.0.cil, 30.0.compat.cil (from the Android 14 GSI)')
@@ -195,7 +196,32 @@ replace(S, '/system/product/etc/build.prop', tmpf('product.build.prop', pb))
 print('3 libc, linkers, libui, ...')
 def patched(tool, path, name):
     """stock file -> patch tool -> work file"""
-    src = tmpf(name + '.orig', cat(S, path)); out = wp(name + '.p'); py(tool, src, out); return out
+    src = tmpf(name + '.orig', cat(S, path)); out = wp(name + '.p')
+    if tool == 'libc/patch_libui.py' and a.legacy_graphics:
+        directory = os.path.basename(os.path.dirname(path))
+        src = graphics_source('system', directory, src)
+    result = py(tool, src, out)
+    if tool == 'libc/patch_libui.py' and a.legacy_graphics:
+        graphics_patched('system', directory, out, result)
+    return out
+def graphics_source(context, directory, latest):
+    root = os.path.abspath(a.legacy_graphics)
+    target = os.path.join(root, context, directory, 'libui.so')
+    receipt = json.load(open(os.path.join(root, 'donor-receipt.json')))
+    relative = context + '/' + directory + '/libui.so'
+    expected = [r['sha256'] for r in receipt['files'] if r['relative_path'] == relative]
+    assert len(expected) == 1 and hashlib.sha256(open(target, 'rb').read()).hexdigest() == expected[0], 'graphics donor payload hash'
+    saved = os.path.join(root, 'latest', context, directory, 'libui.so')
+    os.makedirs(os.path.dirname(saved), exist_ok=True); shutil.copyfile(latest, saved)
+    return target
+
+def graphics_patched(context, directory, patched_file, guard_output):
+    root = os.path.abspath(a.legacy_graphics)
+    saved = os.path.join(root, 'patched', context, directory, 'libui.so')
+    os.makedirs(os.path.dirname(saved), exist_ok=True); shutil.copyfile(patched_file, saved)
+    open(saved + '.guards.txt', 'w').write(guard_output)
+    print(guard_output)
+
 # services.jar: HintManager/camera/build-consistent fixes, then the network location provider bind (Play services does not hold INSTALL_LOCATION_PROVIDER)
 services_loc = wp('services.loc.p'); py('framework/patch_location_provider.py', patched('framework/patch_services_jar.py', '/system/framework/services.jar', 'services'), services_loc)
 libc64 = patched('libc/patch_libc.py', '/system/lib64/bootstrap/libc.so', 'libc64'); libc32 = patched('libc/patch_libc.py', '/system/lib/bootstrap/libc.so', 'libc32')
@@ -209,6 +235,12 @@ for path, f in (('/system/lib64/bootstrap/libc.so', libc64), ('/system/lib/boots
                 ('/system/lib64/libandroid_runtime.so', patched('libc/patch_libandroid_runtime.py', '/system/lib64/libandroid_runtime.so', 'androidrt')),
                 ('/system/framework/services.jar', services_loc)):
     replace(S, path, f)
+if a.legacy_graphics:
+    for directory in ('lib64', 'lib'):
+        for name in sorted(os.listdir(os.path.join(a.legacy_graphics, 'interfaces', directory))):
+            path = '/system/' + directory + '/' + name
+            if not exists(S, path):
+                put(os.path.join(a.legacy_graphics, 'interfaces', directory, name), path, '644', ctx=LIB)
 if a.platform_keys:
     print('3b framework-res.apk: Chrome WebView Beta accepted as a WebView provider')
     jar = os.path.join(os.path.dirname(os.path.dirname(BT)), 'platforms', 'android-34', 'android.jar')
@@ -294,8 +326,21 @@ bpf_file('libnetd_updatable.so', T, '/lib64/libnetd_updatable.so', lambda i, o: 
 bpf_file('libservice-connectivity.so', T, '/lib64/libservice-connectivity.so', lambda i, o: py('bpf/patch_binaries.py', 'service_connectivity', i, o), '644', LIB)
 bpf_file('service-connectivity.jar', T, '/javalib/service-connectivity.jar', lambda i, o: py('framework/patch_service_connectivity_jar.py', i, o), '644', SYS)
 bpf_file('libbluetooth_jni.so', 'com.android.bt.capex', '/lib64/libbluetooth_jni.so', lambda i, o: py('bpf/patch_bluetooth.py', i, o), '644', LIB)
-bpf_file('libui_swcodec64.so', 'com.android.media.swcodec.capex', '/lib64/libui.so', lambda i, o: py('libc/patch_libui.py', i, o), '644', SYS)
-bpf_file('libui_swcodec32.so', 'com.android.media.swcodec.capex', '/lib/libui.so', lambda i, o: py('libc/patch_libui.py', i, o), '644', SYS)
+def codec_ui(original, output, directory):
+    source = graphics_source('codec', directory, original) if a.legacy_graphics else original
+    result = py('libc/patch_libui.py', source, output)
+    if a.legacy_graphics: graphics_patched('codec', directory, output, result)
+bpf_file('libui_swcodec64.so', 'com.android.media.swcodec.capex', '/lib64/libui.so', lambda i, o: codec_ui(i, o, 'lib64'), '644', SYS)
+bpf_file('libui_swcodec32.so', 'com.android.media.swcodec.capex', '/lib/libui.so', lambda i, o: codec_ui(i, o, 'lib'), '644', SYS)
+if a.legacy_graphics:
+    original = tmpf('codec.original.capex', cat(S, A + 'com.android.media.swcodec.capex'))
+    rebuilt = wp('codec.legacy.apex')
+    run(sys.executable, os.path.join(HERE, '..', 'graphics', 'repack_codec.py'), original, rebuilt,
+        os.path.abspath(a.legacy_graphics), KEY, os.path.join(TOOLS, 'apex', 'avbtool.py'),
+        wp('libui_swcodec64.so.p'), wp('libui_swcodec32.so.p'), env=APEX_ENV)
+    mode, uid, gid, context = attrs(S, A + 'com.android.media.swcodec.capex')
+    cmds.append('rm ' + A + 'com.android.media.swcodec.capex')
+    put(rebuilt, A + 'com.android.media.swcodec.apex', mode, uid, gid, context)
 def netd(i, o): py('bpf/btfmaps.py', i, '--patch', wp('netd.btf.o')); py('bpf/patch_netd_o.py', wp('netd.btf.o'), o)       # LRU_HASH -> HASH in the BTF, then in .android_maps
 bpf_file('netd.o', T, '/etc/bpf/mainline/netd.o', netd, '644', SYS)
 for rc in ('bpf/00_bpf_bind.rc', 'bpf/00_aee_off.rc', 'zz_a17_rt.rc'): put(os.path.join(TOOLS, rc), '/system/etc/init/' + os.path.basename(rc), '644')

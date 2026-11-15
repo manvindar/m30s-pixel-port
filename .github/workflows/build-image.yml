@@ -167,6 +167,12 @@ jobs:
       - name: Vendor image
         run: python3 tools/img/build_vendor_a17.py vendor-mp2.img vendor-a17.img tablet/tools/health/vintf_health_aidl.xml
 
+      - name: Legacy graphics fail-closed verification regressions
+        run: python3 -m unittest discover -s tools/graphics -p test_verification.py -v
+
+      - name: Pinned narrow Android 17 graphics compatibility donor
+        run: python3 tools/graphics/stage_legacy.py docs/A17-UPSTREAM.json legacy_graphics
+
       - name: System image
         env:
           DEV_TOOLS: ${{ inputs.dev_tools }}
@@ -174,7 +180,7 @@ jobs:
           export A17_TOOLS="$PWD/tablet/tools"
           DEV=""; [ "$DEV_TOOLS" = true ] && DEV="--dev-tools"
           python3 tools/img/build_a17.py --gsi system.img --donor "$DONOR_IMG" --vndk-dir vndk30 --a14fs a14fs \
-            --pixel-phone pixel_stage --gapps gapps/*.zip $DEV --build-tools "$BT" --out system-a17-pixel.img
+            --pixel-phone pixel_stage --legacy-graphics legacy_graphics --gapps gapps/*.zip $DEV --build-tools "$BT" --out system-a17-pixel.img
           rm -rf system.img "$DONOR_IMG" pixel_stage; ls -la *.img; df -h /
 
       - name: Pinned reviewed kernel
@@ -231,6 +237,9 @@ jobs:
           [ "$(debugfs -R 'cat /system/etc/selinux/plat_sepolicy.cil' system-a17-pixel.img | grep -c m30s_allall)" = 0 ]
           python3 tools/img/verify_pixel_fixes.py system-a17-pixel.img "$BT" image-fixes-verification.json
 
+      - name: Final graphics native consumers and namespace closure
+        run: python3 tools/graphics/verify_final.py system-a17-pixel.img legacy_graphics graphics-compatibility-verification.json
+
       - name: Compress, split, checksums
         env:
           RELEASE_TAG: ${{ inputs.tag }}
@@ -244,7 +253,9 @@ jobs:
           sed -e "s|@COMMIT@|$GITHUB_SHA|g" -e "s|@KERNEL_TAG@|$KERNEL_TAG|g" docs/FLASH.md > out/FLASH.md
           cp docs/RELEASE-NOTES.md out/RELEASE-NOTES.md
           cp docs/A17-UPSTREAM.json out/A17-UPSTREAM.json
-          cp image-fixes-verification.json out/
+          cp image-fixes-verification.json graphics-compatibility-verification.json out/
+          cp legacy_graphics/donor-receipt.json out/legacy-graphics-donor-receipt.json
+          cp legacy_graphics/codec-repack-receipt.json out/
           if [ -f kernel/kernel-label-receipt.json ]; then
             cp kernel/kernel-label-receipt.json kernel/kernel-release.txt kernel/kernel.config out/
           fi
@@ -260,13 +271,14 @@ jobs:
               'gsi_zip_sha256': os.environ['GSI_ZIP_SHA256'],
               'pixel_factory_url': os.environ['FACTORY_URL'],
               'pixel_factory_sha256': os.environ['FACTORY_SHA256'],
+              'legacy_graphics': json.loads(Path('docs/A17-UPSTREAM.json').read_text())['legacy_graphics'],
               'actions_run': os.environ['GITHUB_SERVER_URL']+'/'+os.environ['GITHUB_REPOSITORY']+'/actions/runs/'+os.environ['GITHUB_RUN_ID'],
               'kernel': os.environ['KERNEL_TAG'],
               'kernel_image_sha256': os.environ['KERNEL_IMAGE_SHA256'],
               'kernel_source_commit': os.environ.get('KERNEL_SOURCE_COMMIT'),
               'kernel_actions_run': os.environ.get('KERNEL_ACTIONS_RUN'),
               'system_bytes': 5033164800, 'vendor_bytes': 629145600,
-              'validation': ['e2fsck -fn system and vendor', 'image sizes', 'pinned input SHA256', 'startup host regressions', 'compiled overlay signing and resource scope', 'final image overlay target signers and startup bytes'],
+              'validation': ['e2fsck -fn system and vendor', 'image sizes', 'pinned input SHA256', 'startup host regressions', 'compiled overlay signing and resource scope', 'final image overlay target signers and startup bytes', 'final native graphics consumer and both-ABI namespace/dependency closure'],
               'device_validation': 'This exact CI build has not been flashed or boot-tested.'
           }, indent=2)+'\n')
           PYRECEIPT
@@ -280,3 +292,15 @@ jobs:
           TAG: ${{ inputs.tag }}
         run: |
           gh release create "$TAG" -R "$GITHUB_REPOSITORY" out/* --target "$GITHUB_SHA" --prerelease --title "Galaxy M30s Android 17 Pixel experimental ($TAG)" --notes-file out/RELEASE-NOTES.md
+
+      - name: Retain graphics verification evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: graphics-verification-evidence
+          path: |
+            legacy_graphics/donor-receipt.json
+            legacy_graphics/codec-repack-receipt.json
+            legacy_graphics/patched/**/*.guards.txt
+            graphics-compatibility-verification.json
+          if-no-files-found: warn

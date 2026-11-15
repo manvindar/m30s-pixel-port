@@ -23,5 +23,14 @@
   },
   "kernel_tag": "kernel-4.14.113-perf-20261110-profile1",
   "previous_build_id": "DP11.261016.003",
-  "device_validation": "This exact build has not been flashed or boot-tested."
+  "device_validation": "This exact build has not been flashed or boot-tested.",
+  "legacy_graphics": {
+    "build_id": "DP11.261016.003",
+    "url": "https://dl.google.com/developers/android/cinnamonbun/images/gsi/aosp_arm64-exp-DP11.261016.003-16708287-d735a3b1.zip",
+    "sha256": "d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436",
+    "scope": "libui system/codec variants and missing HIDL graphics2/3 interface libraries only",
+    "reason": "Newest GSI removes legacy mapper2/3; SM-M307F vendor uses mapper2.1",
+    "validation": "Unchanged mapper/video patch guards, both-ABI dependency/namespace checks and all final native consumers before publication",
+    "runtime_validation": false
+  }
 }
