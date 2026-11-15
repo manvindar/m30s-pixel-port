@@ -23,6 +23,14 @@ def unproven_flag_provider_imports(imports):
     return sorted(name for name in imports if 'libui5flags' in name)
 
 
+def unresolved_mapper_interface(imports, exports):
+    # New Gralloc4/5 virtual lock slot10 has five arguments; donor requires seven.
+    # Inline getGrallocMapper/getInstance can bypass direct lock-symbol coverage.
+    exposed = ('13GrallocMapper', '14Gralloc4Mapper', '14Gralloc5Mapper',
+               'SingletonINS_19GraphicBufferMapper', 'getGrallocMapper')
+    return sorted(name for name in imports | exports if any(token in name for token in exposed))
+
+
 class ImageInventory:
     def __init__(self, root, scratch):
         self.root, self.scratch = Path(root), Path(scratch)
@@ -169,7 +177,7 @@ def main():
             raise RuntimeError('Donor stage hash changed')
     repack = json.loads((stage / 'codec-repack-receipt.json').read_text())
     receipt = {'input': donor['input'], 'donor_files': donor['files'], 'codec_repack': repack,
-               'image_sha256': digest(args.image), 'consumer_failures': [], 'linkage': [], 'flag_provider_consumers': [],
+               'image_sha256': digest(args.image), 'consumer_failures': [], 'linkage': [], 'flag_provider_consumers': [], 'mapper_callsite_candidates': [],
                'device_validation': False,
                'limitations': ['Static ELF symbol and declared namespace checks do not prove runtime behavior or C++ object layout compatibility']}
     with tempfile.TemporaryDirectory(prefix='verify-final-graphics-') as scratch:
@@ -232,12 +240,32 @@ def main():
         codec = [p for p in inventory.packages if p['name'] == 'com.android.media.swcodec']
         if len(codec) != 1 or codec[0]['sha256'] != repack['output_package_sha256']:
             raise RuntimeError('Final codec APEX differs from signed/readback-verified package')
+        verified_ui_hashes = {record['libui_sha256'] for record in receipt['linkage']}
+        evidence_dir = stage / 'abi-consumers'; evidence_dir.mkdir(exist_ok=True)
+        evidence_bytes = 0
         # All native files and packaged natives, not just base system + codec.
         for context, virtual, metadata in inventory.natives:
             abi = metadata['abi']
             if abi not in changed:
                 continue
-            uncertain = unproven_flag_provider_imports(metadata['imports'])
+            mapper = unresolved_mapper_interface(metadata.get('abi_imports', metadata['imports']), metadata['exports'])
+            if mapper:
+                source = Path(metadata['source_path'])
+                identity = digest(source)
+                if identity not in verified_ui_hashes:
+                    size = source.stat().st_size
+                    item = {'context': context, 'file': virtual, 'abi': abi, 'sha256': identity,
+                            'bytes': size, 'interface_symbols': mapper, 'status': 'unreviewed-call-sites'}
+                    copy = evidence_dir / (identity + '.elf')
+                    if copy.is_file():
+                        item['evidence_file'] = str(copy.relative_to(stage))
+                    elif evidence_bytes + size <= 64 * 1024 ** 2:
+                        shutil.copyfile(source, copy); evidence_bytes += size
+                        item['evidence_file'] = str(copy.relative_to(stage))
+                    else:
+                        item['evidence_limit'] = '64MiB cap; missing code evidence is not a pass'
+                    receipt['mapper_callsite_candidates'].append(item)
+            uncertain = unproven_flag_provider_imports(metadata.get('abi_imports', metadata['imports']))
             if uncertain:
                 receipt['flag_provider_consumers'].append({'context': context, 'file': virtual, 'imports': uncertain})
             affected_imports = metadata['imports'] & changed[abi]
@@ -250,9 +278,9 @@ def main():
         receipt.update(native_files_scanned=len(inventory.natives), contexts=inventory.counts,
                        archives=inventory.archives, apex_packages=inventory.packages,
                        missing_exports={a: sorted(v) for a, v in changed.items()})
-        if receipt['consumer_failures'] or receipt['flag_provider_consumers']:
+        if receipt['consumer_failures'] or receipt['flag_provider_consumers'] or receipt['mapper_callsite_candidates']:
             Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
-            raise RuntimeError('Final consumers need unavailable graphics exports or unproven flag-provider ABI')
+            raise RuntimeError('Final consumers need unavailable graphics exports or unreviewed graphics interface call sites')
     receipt['status'] = 'pass'
     Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
     print('Final graphics coverage passed:', receipt['native_files_scanned'], 'native files, both ABIs, all APEX/APK consumers')

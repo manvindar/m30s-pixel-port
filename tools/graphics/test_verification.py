@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 from common import dump, extract_fs, protobuf_fields, run
-from verify_final import ImageInventory, missing_symbols, unproven_flag_provider_imports
+from verify_final import ImageInventory, missing_symbols, unproven_flag_provider_imports, unresolved_mapper_interface
 
 
 def library(imports=(), exports=(), needed=()):
@@ -11,6 +11,14 @@ def library(imports=(), exports=(), needed=()):
 
 
 class VerificationTests(unittest.TestCase):
+    def test_inline_mapper_access_requires_callsite_review(self):
+        symbol = '_ZN7android9SingletonINS_19GraphicBufferMapperEE11getInstanceEv'
+        self.assertEqual(unresolved_mapper_interface({symbol}, set()), [symbol])
+        self.assertEqual(unresolved_mapper_interface(set(), {symbol}), [symbol])
+
+    def test_direct_stable_mapper_wrapper_is_not_inline_access(self):
+        self.assertEqual(unresolved_mapper_interface({'_ZN7android19GraphicBufferMapper9getStrideEPK13native_handlePj'}, set()), [])
+
     def test_changed_vtable_interface_rejected_despite_matching_export(self):
         names = {'_ZN3com7android8graphics5libui5flags12get_providerEv', '_ZTVN3com7android8graphics5libui5flags13flag_providerE'}
         self.assertEqual(set(unproven_flag_provider_imports(names)), names)

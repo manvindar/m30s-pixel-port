@@ -87,13 +87,14 @@ def elf(path):
     if abi is None:
         return {'abi': None, 'exports': set(), 'imports': set(), 'needed': []}
     symbols = run('readelf', '--dyn-syms', '--wide', path)
-    exports, imports = set(), set()
+    exports, imports, abi_imports = set(), set(), set()
     for line in symbols.splitlines():
         fields = line.split()
         if len(fields) < 8 or fields[4] not in ('GLOBAL', 'WEAK'):
             continue
         name = fields[7]
         if fields[6] == 'UND':
+            abi_imports.add(name.replace('@@', '@'))
             if fields[4] != 'WEAK':
                 imports.add(name.replace('@@', '@'))
         else:
@@ -101,7 +102,7 @@ def elf(path):
             if '@@' in name:
                 exports.add(name.split('@')[0])
     needed = re.findall(r'Shared library: \[([^]]+)\]', run('readelf', '-d', path))
-    return {'abi': abi, 'exports': exports, 'imports': imports, 'needed': needed}
+    return {'abi': abi, 'exports': exports, 'imports': imports, 'abi_imports': abi_imports, 'source_path': str(path), 'needed': needed}
 
 
 def protobuf_fields(data):
