@@ -1,0 +1,27 @@
+{
+  "version": "17",
+  "channel": "Android 17 QPR3 Beta 4",
+  "build_id": "DP11.261030.003",
+  "release_date": "2026-11-12",
+  "security_patch_level": "October 2026",
+  "gsi": {
+    "architecture": "arm64",
+    "url": "https://dl.google.com/developers/android/cinnamonbun/images/gsi/aosp_arm64-exp-DP11.261030.003-16847878-1cb1c525.zip",
+    "sha256": "1cb1c5254299581246ba626faccd41566df25382cd0415d8b82bf2e2d80cbf6c",
+    "source": "https://developer.android.com/topic/generic-system-image/releases#17-qpr3-beta"
+  },
+  "pixel_factory": {
+    "device": "Pixel 9a (tegu)",
+    "url": "https://dl.google.com/developers/android/cinnamonbun/images/factory/tegu_beta-dp11.261030.003-factory-639e8f85.zip",
+    "sha256": "639e8f85c463121e59292f4832e26837d42f1c97d0370944f4c680651e8ae452",
+    "source": "https://developer.android.com/about/versions/17/qpr3/download"
+  },
+  "latest_stable_listed": {
+    "channel": "Android 17 QPR1",
+    "build_id": "CP3A.260905.010",
+    "release_date": "2026-09-17"
+  },
+  "kernel_tag": "kernel-4.14.113-perf-20261110-profile1",
+  "previous_build_id": "DP11.261016.003",
+  "device_validation": "This exact build has not been flashed or boot-tested."
+}

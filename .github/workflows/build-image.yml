@@ -6,7 +6,7 @@ on:
     inputs:
       tag:
         description: Release tag when publishing
-        default: v0.6-pixel-perf
+        default: v0.7-a17-qpr3-beta4
       publish:
         description: Publish public flashable images as a prerelease
         type: boolean
@@ -24,15 +24,18 @@ permissions:
 
 env:
   INPUT_REPO: manvindar/m30s-pixel-port
-  GSI_URL: https://dl.google.com/developers/android/cinnamonbun/images/gsi/aosp_arm64-exp-DP11.261016.003-16708287-d735a3b1.zip
-  GSI_ZIP_SHA256: d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436
+  ANDROID_BUILD: DP11.261030.003
+  ANDROID_CHANNEL: Android 17 QPR3 Beta 4
+  ANDROID_RELEASE_DATE: '2026-11-12'
+  GSI_URL: https://dl.google.com/developers/android/cinnamonbun/images/gsi/aosp_arm64-exp-DP11.261030.003-16847878-1cb1c525.zip
+  GSI_ZIP_SHA256: 1cb1c5254299581246ba626faccd41566df25382cd0415d8b82bf2e2d80cbf6c
   DONOR_URL: https://sourceforge.net/projects/misterztr-gsi/files/LineageOS/Android%2016/LineageOS-23.2-20260524-GAPPS-EXT4-GSI.7z/download
   DONOR_7Z_SHA256: 22b3c069445cc3d54819361a1636f7b27ff455dc547f300b868cecddb1b2e22d
   DONOR_IMG: LineageOS-23.2-20260524-GAPPS-EXT4-GSI.img
   CRDROID_URL: https://github.com/naz664/crDroid_gsi/releases/download/v2025.03.08/crDroid-10.13-arm64_bgN-slim-Unofficial.img.xz
   CRDROID_SHA256: 0a403c4de120adbb15e7219f7c2acc59337e6d7fc995eaf4ace7e9267e25a0dc
-  FACTORY_URL: https://dl.google.com/developers/android/cinnamonbun/images/factory/tegu_beta-dp11.261016.003-factory-50ec463b.zip
-  FACTORY_SHA256: 50ec463b0fd404cbd98b9f201b3694246d4aa5f86d7e93719da6e0288de6c703
+  FACTORY_URL: https://dl.google.com/developers/android/cinnamonbun/images/factory/tegu_beta-dp11.261030.003-factory-639e8f85.zip
+  FACTORY_SHA256: 639e8f85c463121e59292f4832e26837d42f1c97d0370944f4c680651e8ae452
   GAPPS_TAG: MindTheGapps-16.0.0-arm64-20261023_034858
   TABLET_REF: 44cde4e25a160d95900ad12e3415b5527792be06   # tb-x606v-android17 branch exp/pixel-tablet (last pushed commit): patch library (tools/) and the public AOSP platform test keys
   VENDOR_MP2_SHA256: 285a28cc6785a25eb208d98ed9d387b2f345597c46e92403f42cbdf25dc113f9
@@ -237,6 +240,7 @@ jobs:
           sha256sum system-a17-pixel.img vendor-a17.img boot-a17.img vbmeta-disabled.img > out/IMAGE-SHA256SUMS
           sed -e "s|@COMMIT@|$GITHUB_SHA|g" -e "s|@KERNEL_TAG@|$KERNEL_TAG|g" docs/FLASH.md > out/FLASH.md
           cp docs/RELEASE-NOTES.md out/RELEASE-NOTES.md
+          cp docs/A17-UPSTREAM.json out/A17-UPSTREAM.json
           cp image-fixes-verification.json out/
           if [ -f kernel/kernel-label-receipt.json ]; then
             cp kernel/kernel-label-receipt.json kernel/kernel-release.txt kernel/kernel.config out/
@@ -246,6 +250,13 @@ jobs:
           from pathlib import Path
           Path('out/build-receipt.json').write_text(json.dumps({
               'source_commit': os.environ['GITHUB_SHA'],
+              'android_build': os.environ['ANDROID_BUILD'],
+              'android_channel': os.environ['ANDROID_CHANNEL'],
+              'android_release_date': os.environ['ANDROID_RELEASE_DATE'],
+              'gsi_url': os.environ['GSI_URL'],
+              'gsi_zip_sha256': os.environ['GSI_ZIP_SHA256'],
+              'pixel_factory_url': os.environ['FACTORY_URL'],
+              'pixel_factory_sha256': os.environ['FACTORY_SHA256'],
               'actions_run': os.environ['GITHUB_SERVER_URL']+'/'+os.environ['GITHUB_REPOSITORY']+'/actions/runs/'+os.environ['GITHUB_RUN_ID'],
               'kernel': os.environ['KERNEL_TAG'],
               'kernel_image_sha256': os.environ['KERNEL_IMAGE_SHA256'],
