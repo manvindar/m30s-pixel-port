@@ -37,6 +37,7 @@ env:
   FACTORY_URL: https://dl.google.com/developers/android/cinnamonbun/images/factory/tegu_beta-dp11.261030.003-factory-639e8f85.zip
   FACTORY_SHA256: 639e8f85c463121e59292f4832e26837d42f1c97d0370944f4c680651e8ae452
   GAPPS_TAG: MindTheGapps-16.0.0-arm64-20261023_034858
+  GAPPS_ZIP_SHA256: 6929593937cd85541228e4e5db9cbb5455338bf33c75eabf610de632ac155810
   TABLET_REF: 44cde4e25a160d95900ad12e3415b5527792be06   # tb-x606v-android17 branch exp/pixel-tablet (last pushed commit): patch library (tools/) and the public AOSP platform test keys
   VENDOR_MP2_SHA256: 285a28cc6785a25eb208d98ed9d387b2f345597c46e92403f42cbdf25dc113f9
   BOOT_SHA256: d788f41397481fd7990ece136460edc1b62bac35c73bc4eda1593bdb50704c65
@@ -178,6 +179,9 @@ jobs:
           path: download-cache/gsi/gsi.zip
           key: a17-input-v1-gsi-${{ env.GSI_ZIP_SHA256 }}
 
+      - name: Release temporary runner gsi archive after cache save
+        run: rm -- download-cache/gsi/gsi.zip
+
       - name: Restore verified audio archive cache
         id: cache_audio
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
@@ -197,6 +201,9 @@ jobs:
         with:
           path: download-cache/audio/donor.7z
           key: a17-input-v1-audio-${{ env.DONOR_7Z_SHA256 }}
+
+      - name: Release temporary runner audio archive after cache save
+        run: rm -- download-cache/audio/donor.7z
 
       - name: Restore verified a14 archive cache
         id: cache_a14
@@ -226,6 +233,9 @@ jobs:
           path: download-cache/a14/crdroid.img.xz
           key: a17-input-v1-a14-${{ env.CRDROID_SHA256 }}
 
+      - name: Release temporary runner a14 archive after cache save
+        run: rm -- download-cache/a14/crdroid.img.xz
+
       - name: Browser packaging regression checks
         run: python3 -m unittest discover -s tools/pixel -p test_browser_packages.py -v
 
@@ -249,12 +259,15 @@ jobs:
           path: download-cache/pixel/factory.zip
           key: a17-input-v1-pixel-${{ env.FACTORY_SHA256 }}
 
+      - name: Release temporary runner pixel archive after cache save
+        run: rm -- download-cache/pixel/factory.zip
+
       - name: Restore verified GApps download cache
         id: cache_gapps
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: gapps/
-          key: a17-input-v1-gapps-${{ env.GAPPS_TAG }}
+          key: a17-input-v2-gapps-${{ env.GAPPS_ZIP_SHA256 }}
 
       - name: MindTheGapps
         env:
@@ -263,13 +276,14 @@ jobs:
           mkdir -p gapps && cd gapps
           gh release download "$GAPPS_TAG" --skip-existing -R MindTheGapps/16.0.0-arm64 -p '*.zip' -p '*.sha256sum'
           sha256sum -c *.sha256sum
+          echo "$GAPPS_ZIP_SHA256  ${GAPPS_TAG}.zip" | sha256sum -c -
 
       - name: Save verified GApps download cache
         if: steps.cache_gapps.outputs.cache-hit != 'true'
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: gapps/
-          key: a17-input-v1-gapps-${{ env.GAPPS_TAG }}
+          key: a17-input-v2-gapps-${{ env.GAPPS_ZIP_SHA256 }}
 
       - name: Vendor image
         run: python3 tools/img/build_vendor_a17.py vendor-mp2.img vendor-a17.img tablet/tools/health/vintf_health_aidl.xml
@@ -299,6 +313,14 @@ jobs:
         with:
           path: download-cache/graphics/gsi.zip
           key: a17-input-v1-graphics-d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436
+
+      - name: Release temporary runner graphics archive after cache save
+        run: rm -- download-cache/graphics/gsi.zip
+
+      - name: Runner free-space gate before system and APEX generation
+        run: |
+          python3 tools/downloads/check_runner_space.py 24 runner-space-before-system.json
+          df -h /
 
       - name: System image
         env:
@@ -363,6 +385,9 @@ jobs:
           done
           [ "$(debugfs -R 'cat /system/etc/selinux/plat_sepolicy.cil' system-a17-pixel.img | grep -c m30s_allall)" = 0 ]
           python3 tools/img/verify_pixel_fixes.py system-a17-pixel.img "$BT" image-fixes-verification.json
+
+      - name: Runner free-space gate before final image inventory
+        run: python3 tools/downloads/check_runner_space.py 12 runner-space-before-inventory.json
 
       - name: Final graphics native consumers and namespace closure
         run: python3 tools/graphics/verify_final.py system-a17-pixel.img legacy_graphics graphics-compatibility-verification.json
@@ -446,4 +471,5 @@ jobs:
             legacy_graphics/runtime-budget-receipt.json
             legacy_graphics/patched/**/*.guards.txt
             graphics-compatibility-verification.json
+            runner-space-*.json
           if-no-files-found: warn
