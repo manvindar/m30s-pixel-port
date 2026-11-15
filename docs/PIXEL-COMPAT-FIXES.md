@@ -19,3 +19,7 @@ The Safety identity is fetched from official Permission source commit `26231a7ea
 The generic builder generator's unrelated fingerprint/face-block drift predates these fixes. The checked-in blocks are preserved. Do not regenerate the entire builder blindly.
 
 The new image has not yet been flashed or accepted on the phone. Existing three-button navigation is a temporary workaround. Gesture swipes, stability, resource selection, GMS behavior and persistence need device verification after a verified image flash. No userdata reset is part of these fixes.
+
+## DP11.261030.003 target review
+
+The exact AOSP SafetyCenter target APK and permission parser JAR are pinned in `A17-SAFETYCENTER-TARGET.json`. Inspection run43775542607 verified the expected certificate/package and SDK37 target. The latest API37 raw configuration adds `refreshOnPageOpenAllowed="true"` to the lock-screen source; the overlay preserves it. All other API37 base bytes remain unchanged, with only the two established AdvancedProtection insertions. The whole reader, parser and resource-loader classes match the retained implementations after decoding both JARs with Apktool3.0.3. Final image verification checks the new exact APK, raw-config and parser-module hashes. These are host checks; runtime/idmap acceptance remains pending.
