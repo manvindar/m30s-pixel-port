@@ -170,6 +170,9 @@ jobs:
       - name: JNI-anchored budget watcher regressions
         run: python3 -m unittest discover -s tools/libc -p test_budget_watchers.py -v
 
+      - name: Measured tethering patch regressions
+        run: python3 -m unittest discover -s tools/bpf -p test_tethering.py -v
+
       - name: Legacy graphics fail-closed verification regressions
         run: python3 -m unittest discover -s tools/graphics -p test_verification.py -v
 

@@ -74,7 +74,10 @@ def run(*c, ok=(0,), env=None, cwd=None):
     r = subprocess.run(c, capture_output=True, text=True, env=env, cwd=cwd)
     if r.returncode not in ok: sys.exit(f'{c[0]} failed ({r.returncode}): {" ".join(map(str, c))[:300]}\n{r.stdout[-2000:]}{r.stderr[-2000:]}')
     return r.stdout
-def py(script, *args, env=None): return run(sys.executable, '-I', os.path.join(TOOLS, script), *map(str, args), env=env)
+def py(script, *args, env=None):
+    if script == 'bpf/patch_binaries.py':
+        return run(sys.executable, '-I', os.path.join(HERE, '..', 'bpf', 'patch_tethering.py'), *map(str, args), env=env)
+    return run(sys.executable, '-I', os.path.join(TOOLS, script), *map(str, args), env=env)
 def dbg(img, *c): return subprocess.run([os.path.join(E2, 'debugfs'), '-R', ' '.join(c), img], capture_output=True)
 def cat(img, path):
     r = dbg(img, 'cat', path).stdout
