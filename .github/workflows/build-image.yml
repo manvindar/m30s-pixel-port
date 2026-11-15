@@ -316,6 +316,11 @@ jobs:
           name: graphics-verification-evidence
           path: |
             legacy_graphics/donor-receipt.json
+            legacy_graphics/tethering-*-receipt.json
+            legacy_graphics/latest/**/libui.so
+            legacy_graphics/system/**/libui.so
+            legacy_graphics/codec/**/libui.so
+            legacy_graphics/patched/**/libui.so
             legacy_graphics/codec-repack-receipt.json
             legacy_graphics/runtime-budget-receipt.json
             legacy_graphics/patched/**/*.guards.txt
