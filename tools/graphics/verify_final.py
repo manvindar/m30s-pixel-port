@@ -31,6 +31,13 @@ def unresolved_mapper_interface(imports, exports):
     return sorted(name for name in imports | exports if any(token in name for token in exposed))
 
 
+def compatibility_failed(receipt):
+    # Every failure category remains a publication blocker, even while collecting
+    # independent caller evidence after a donor-linkage failure.
+    return any(receipt[key] for key in ('donor_failures', 'consumer_failures',
+                                       'flag_provider_consumers', 'mapper_callsite_candidates'))
+
+
 class ImageInventory:
     def __init__(self, root, scratch):
         self.root, self.scratch = Path(root), Path(scratch)
@@ -178,7 +185,7 @@ def main():
     repack = json.loads((stage / 'codec-repack-receipt.json').read_text())
     receipt = {'input': donor['input'], 'donor_files': donor['files'], 'codec_repack': repack,
                'image_sha256': digest(args.image), 'consumer_failures': [], 'linkage': [], 'flag_provider_consumers': [], 'mapper_callsite_candidates': [],
-               'device_validation': False,
+               'device_validation': False, 'donor_failures': [],
                'limitations': ['Static ELF symbol and declared namespace checks do not prove runtime behavior or C++ object layout compatibility']}
     with tempfile.TemporaryDirectory(prefix='verify-final-graphics-') as scratch:
         tmp = Path(scratch)
@@ -189,6 +196,21 @@ def main():
             apps = list((root / 'system' / partition).rglob('*.apk'))
             if not apps:
                 raise RuntimeError('Missing final Pixel/native coverage partition: ' + partition)
+        evidence_dir = stage / 'abi-consumers'; evidence_dir.mkdir(exist_ok=True)
+        evidence_bytes = 0
+        def retain_provider(metadata):
+            nonlocal evidence_bytes
+            source = Path(metadata['source_path']); identity = digest(source); size = source.stat().st_size
+            record = {'sha256': identity, 'bytes': size, 'exports': sorted(metadata['exports']), 'imports': sorted(metadata['imports']), 'needed': metadata['needed']}
+            copy = evidence_dir / (identity + '.elf')
+            if copy.is_file():
+                record['evidence_file'] = str(copy.relative_to(stage))
+            elif evidence_bytes + size <= 64 * 1024 ** 2:
+                shutil.copyfile(source, copy); evidence_bytes += size
+                record['evidence_file'] = str(copy.relative_to(stage))
+            else:
+                record['evidence_limit'] = '64MiB cap; missing evidence is not a pass'
+            return record
         changed = {}
         for abi, directory in [('arm64', 'lib64'), ('arm32', 'lib')]:
             changed[abi] = set()
@@ -206,19 +228,27 @@ def main():
                 actual = inventory.virtual[virtual]
                 if digest(actual) != digest(patched):
                     raise RuntimeError('Final patched libui readback mismatch')
-                providers, edges = inventory.closure(ctx, virtual, metadata)
-                absent = missing_symbols(metadata['imports'], providers)
-                if absent:
-                    raise RuntimeError(f'Donor imports unresolved in {ctx}/{abi}: {absent}')
-                # Each newly added donor interface must also resolve all imports in its namespace.
-                for edge in edges:
-                    if 'android.hardware.graphics.' not in edge['needed']:
-                        continue
-                    target = inventory.metadata[edge['to']]
-                    dep_providers, _ = inventory.closure(edge['namespace'], edge['to'], target)
-                    missing = missing_symbols(target['imports'], dep_providers)
-                    if missing:
-                        raise RuntimeError(f'Graphics interface imports unresolved: {edge["to"]}: {missing}')
+                try:
+                    providers, edges = inventory.closure(ctx, virtual, metadata)
+                    absent = missing_symbols(metadata['imports'], providers)
+                    if absent:
+                        receipt['donor_failures'].append({'context': ctx, 'abi': abi, 'file': virtual,
+                            'missing': absent, 'edges': edges, 'providers': [retain_provider(p) for p in providers]})
+                    # Each newly added interface must resolve every import too.
+                    for edge in edges:
+                        if 'android.hardware.graphics.' not in edge['needed']:
+                            continue
+                        target = inventory.metadata[edge['to']]
+                        dep_providers, _ = inventory.closure(edge['namespace'], edge['to'], target)
+                        missing = missing_symbols(target['imports'], dep_providers)
+                        if missing:
+                            receipt['donor_failures'].append({'context': edge['namespace'], 'abi': abi,
+                                'file': edge['to'], 'missing': missing,
+                                'providers': [retain_provider(p) for p in dep_providers]})
+                except RuntimeError as error:
+                    receipt['donor_failures'].append({'context': ctx, 'abi': abi, 'file': virtual,
+                        'error': str(error), 'library': retain_provider(metadata)})
+                    edges = []
                 receipt['linkage'].append({'context': context, 'abi': abi, 'libui_sha256': digest(actual), 'edges': edges})
                 if context == 'codec':
                     bind = root / 'system/etc/bpf.a17' / ('libui_swcodec64.so' if abi == 'arm64' else 'libui_swcodec32.so')
@@ -245,8 +275,6 @@ def main():
         if len(codec) != 1 or codec[0]['sha256'] != repack['output_package_sha256']:
             raise RuntimeError('Final codec APEX differs from signed/readback-verified package')
         verified_ui_hashes = {record['libui_sha256'] for record in receipt['linkage']}
-        evidence_dir = stage / 'abi-consumers'; evidence_dir.mkdir(exist_ok=True)
-        evidence_bytes = 0
         # All native files and packaged natives, not just base system + codec.
         for context, virtual, metadata in inventory.natives:
             abi = metadata['abi']
@@ -275,16 +303,20 @@ def main():
             affected_imports = metadata['imports'] & changed[abi]
             if not affected_imports:
                 continue
-            providers, _ = inventory.closure(context, virtual, metadata)
-            absent = missing_symbols(affected_imports, providers)
+            try:
+                providers, _ = inventory.closure(context, virtual, metadata)
+                absent = missing_symbols(affected_imports, providers)
+            except RuntimeError as error:
+                receipt['consumer_failures'].append({'context': context, 'file': virtual, 'error': str(error)})
+                continue
             if absent:
                 receipt['consumer_failures'].append({'context': context, 'file': virtual, 'missing': absent})
         receipt.update(native_files_scanned=len(inventory.natives), contexts=inventory.counts,
                        archives=inventory.archives, apex_packages=inventory.packages,
                        missing_exports={a: sorted(v) for a, v in changed.items()})
-        if receipt['consumer_failures'] or receipt['flag_provider_consumers'] or receipt['mapper_callsite_candidates']:
+        if compatibility_failed(receipt):
             Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
-            raise RuntimeError('Final consumers need unavailable graphics exports or unreviewed graphics interface call sites')
+            raise RuntimeError('Donor linkage or final consumer graphics compatibility failed; complete retained evidence required')
     receipt['status'] = 'pass'
     Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
     print('Final graphics coverage passed:', receipt['native_files_scanned'], 'native files, both ABIs, all APEX/APK consumers')

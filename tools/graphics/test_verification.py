@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 from common import dump, extract_fs, protobuf_fields, run
-from verify_final import ImageInventory, missing_symbols, unproven_flag_provider_imports, unresolved_mapper_interface
+from verify_final import compatibility_failed, ImageInventory, missing_symbols, unproven_flag_provider_imports, unresolved_mapper_interface
 
 
 def library(imports=(), exports=(), needed=()):
@@ -11,6 +11,19 @@ def library(imports=(), exports=(), needed=()):
 
 
 class VerificationTests(unittest.TestCase):
+    def test_donor_failure_alone_still_rejects_final_candidate(self):
+        keys = ('donor_failures', 'consumer_failures', 'flag_provider_consumers', 'mapper_callsite_candidates')
+        clean = dict.fromkeys(keys, [])
+        self.assertFalse(compatibility_failed(clean))
+        for category in keys:
+            failed = dict(clean, **{category: [{'missing': 'symbol'}]})
+            self.assertTrue(compatibility_failed(failed), category)
+        with self.assertRaises(KeyError):
+            compatibility_failed({})
+
+    def test_unversioned_provider_does_not_satisfy_versioned_import(self):
+        self.assertEqual(missing_symbols({'memcpy@LIBC'}, [library(exports={'memcpy'})]), ['memcpy@LIBC'])
+
     def test_inline_mapper_access_requires_callsite_review(self):
         symbol = '_ZN7android9SingletonINS_19GraphicBufferMapperEE11getInstanceEv'
         self.assertEqual(unresolved_mapper_interface({symbol}, set()), [symbol])
