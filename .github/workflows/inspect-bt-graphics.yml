@@ -1,6 +1,11 @@
 name: Inspect Bluetooth patch and graphics ABI inputs
 on:
   workflow_dispatch:
+    inputs:
+      controlflow_only:
+        type: boolean
+        default: false
+        description: Inspect exact BT error blocks after measured unique matches
 permissions:
   contents: read
 jobs:
@@ -17,7 +22,16 @@ jobs:
         with:
           path: download-cache/graphics/gsi.zip
           key: a17-input-v1-graphics-d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436
-      - run: python3 tools/pixel/inspect_bt_graphics.py
+      - name: Inspect selected measured evidence
+        env:
+          CONTROLFLOW: ${{ inputs.controlflow_only }}
+        run: |
+          if [ "$CONTROLFLOW" = true ]; then
+            sudo apt-get update && sudo apt-get install -y binutils-aarch64-linux-gnu
+            python3 tools/pixel/inspect_bt_flow.py
+          else
+            python3 tools/pixel/inspect_bt_graphics.py
+          fi
       - uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: download-cache/gsi/gsi.zip
