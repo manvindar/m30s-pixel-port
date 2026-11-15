@@ -8,10 +8,44 @@ import os
 from pathlib import Path
 import re
 import shutil
+import struct
 import tempfile
 import zipfile
 from common import digest, dump, run, unpack_apex
 from stage_legacy import LEGACY
+
+
+def filesystem_geometry(path):
+    with Path(path).open('rb') as stream:
+        stream.seek(1024)
+        data = stream.read(1024)
+    if len(data) != 1024 or data[56:58] != b'\x53\xef':
+        raise RuntimeError('Not an ext4 codec payload')
+    value = lambda offset: struct.unpack_from('<I', data, offset)[0]
+    log = value(24)
+    if log > 6 or value(4 + 0x14c):
+        raise RuntimeError('Unsupported codec filesystem geometry')
+    geometry = {'blocks': value(4), 'free_inodes': value(16),
+                'first_block': value(20), 'block_bytes': 1024 << log,
+                'blocks_per_group': value(32), 'inodes_per_group': value(40)}
+    if not all(geometry[k] > 0 for k in ('blocks', 'blocks_per_group', 'inodes_per_group')):
+        raise RuntimeError('Invalid codec filesystem geometry')
+    return geometry
+
+
+def growth_bytes(geometry, original_bytes, required_inodes):
+    block = geometry['block_bytes']
+    group = geometry['blocks_per_group']
+    minimum = (original_bytes + 16 * 1024 * 1024 + block - 1) // block
+    if geometry['free_inodes'] < required_inodes:
+        # Byte growth within the existing group does not add an inode table.
+        # Allocate one complete additional group, and verify free inodes afterward.
+        groups = (geometry['blocks'] - geometry['first_block'] + group - 1) // group
+        minimum = max(minimum, geometry['first_block'] + (groups + 1) * group)
+    target = minimum * block
+    if target - original_bytes > 256 * 1024 * 1024:
+        raise RuntimeError('Codec growth exceeds bounded 256 MiB allowance')
+    return target
 
 
 def main():
@@ -37,16 +71,25 @@ def main():
         original_bytes = int(re.search(r'Original image size:\s+(\d+)', info).group(1))
         block = int(re.search(r'Data Block Size:\s+(\d+)', info).group(1))
         apex_key = re.search(r"Prop: apex.key -> '([^']+)'", info).group(1)
-        # Bounded extra ext4 space for at most ten small HIDL interface libraries.
-        new_bytes = ((original_bytes + 16 * 1024 * 1024 + block - 1) // block) * block
         with pay.open('r+b') as stream:
             stream.truncate(original_bytes)
         run('e2fsck', '-fy', pay, ok=(0, 1))
+        before = filesystem_geometry(pay)
+        if before['block_bytes'] != block or before['blocks'] * block != original_bytes:
+            raise RuntimeError('AVB and ext4 payload sizes disagree')
+        required_inodes = 2 * (len(LEGACY) + 1) + 16
+        new_bytes = growth_bytes(before, original_bytes, required_inodes)
         with pay.open('r+b') as stream:
             stream.truncate(new_bytes)
         run('resize2fs', pay)
         run('e2fsck', '-fy', '-E', 'unshare_blocks', pay, ok=(0, 1))
         run('e2fsck', '-fn', pay)
+        after = filesystem_geometry(pay)
+        if after['free_inodes'] < required_inodes or after['blocks'] * block != new_bytes:
+            raise RuntimeError('Codec payload growth did not provide required inode capacity')
+        receipt['filesystem_growth'] = {'before': before, 'after': after,
+                                      'required_free_inodes': required_inodes,
+                                      'original_bytes': original_bytes, 'new_bytes': new_bytes}
         commands = []
         for directory, library in [('lib64', Path(args.ui64)), ('lib', Path(args.ui32))]:
             original_path = '/' + directory + '/libui.so'

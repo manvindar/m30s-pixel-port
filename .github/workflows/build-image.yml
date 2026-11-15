@@ -295,7 +295,7 @@ jobs:
         run: python3 -m unittest discover -s tools/bpf -p 'test_*.py' -v
 
       - name: Legacy graphics fail-closed verification regressions
-        run: python3 -m unittest discover -s tools/graphics -p test_verification.py -v
+        run: python3 -m unittest discover -s tools/graphics -p 'test_*.py' -v
 
       - name: Restore pinned legacy graphics archive cache
         id: cache_graphics
