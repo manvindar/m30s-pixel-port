@@ -23,6 +23,56 @@ for abi, directory in [("arm64", "lib64"), ("arm32", "lib")]:
     listing = run("debugfs", "-R", "ls -p /system/" + directory, "system.img")
     (out / ("latest-" + directory + "-listing.txt")).write_text(listing)
     latest_dirs[abi] = listing
+# Record actual undefined references to the two new mapper lock signatures.
+new_lock_names = ["_ZNK7android14Gralloc4Mapper4lockEPK13native_handlemRKNS_4RectEiPPv",
+                  "_ZNK7android14Gralloc5Mapper4lockEPK13native_handlemRKNS_4RectEiPPv",
+                  "_ZNK7android14Gralloc4Mapper4lockEPK13native_handleyRKNS_4RectEiPPv",
+                  "_ZNK7android14Gralloc5Mapper4lockEPK13native_handleyRKNS_4RectEiPPv"]
+scan = {"scope": ["/system/lib64", "/system/lib", "/system/bin", "swcodec payload lib64/lib/bin"], "missing_export_consumers": [], "elf_files": 0}
+
+def scan_directory(image, directory, label):
+    target = Path("consumer-scan-" + label)
+    target.mkdir()
+    run("debugfs", "-R", f"rdump {directory} {target}", image)
+    for file in target.rglob("*"):
+        if not file.is_file() or file.is_symlink():
+            continue
+        with file.open("rb") as stream:
+            if stream.read(4) != b"\x7fELF":
+                continue
+        scan["elf_files"] += 1
+        symbols = run("readelf", "-Ws", str(file))
+        for line in symbols.splitlines():
+            fields = line.split()
+            if len(fields) >= 8 and fields[6] == "UND" and fields[7].split("@")[0] in new_lock_names:
+                scan["missing_export_consumers"].append({"file": str(file.relative_to(target)), "symbol": fields[7]})
+    shutil.rmtree(target)
+
+for directory in ("/system/lib64", "/system/lib", "/system/bin"):
+    scan_directory("system.img", directory, directory.replace("/", "_"))
+# Inspect the codec APEX variant and its namespace requirements, not only system libui.
+run("debugfs", "-R", "dump /system/apex/com.android.media.swcodec.capex swcodec.capex", "system.img")
+with zipfile.ZipFile("swcodec.capex") as compressed:
+    with compressed.open("original_apex") as src, open("swcodec.apex", "wb") as dst:
+        shutil.copyfileobj(src, dst)
+with zipfile.ZipFile("swcodec.apex") as apex:
+    with apex.open("apex_payload.img") as src, open("swcodec-payload.img", "wb") as dst:
+        shutil.copyfileobj(src, dst)
+for abi, directory in [("arm64", "lib64"), ("arm32", "lib")]:
+    target = out / ("swcodec-libui-" + abi + ".so")
+    run("debugfs", "-R", f"dump /{directory}/libui.so {target}", "swcodec-payload.img")
+    (out / (target.name + "-symbols.txt")).write_text(run("readelf", "-Ws", str(target)))
+    (out / (target.name + "-dynamic.txt")).write_text(run("readelf", "-d", str(target)))
+    scan_directory("swcodec-payload.img", "/" + directory, "swcodec-" + abi)
+scan_directory("swcodec-payload.img", "/bin", "swcodec-bin")
+for image, source, name in [("system.img", "/system/etc/linker.config.pb", "system-linker.config.pb"),
+                              ("swcodec-payload.img", "/etc/linker.config.pb", "swcodec-linker.config.pb")]:
+    target = out / name
+    run("debugfs", "-R", f"dump {source} {target}", image)
+    if target.is_file():
+        (out / (name + "-strings.txt")).write_text(run("strings", str(target)))
+(out / "new-export-consumer-scan.json").write_text(json.dumps(scan, indent=2))
+
 Path("gsi.zip").unlink()
 Path("system.img").unlink()
 urllib.request.urlretrieve(prior["url"], "prior-gsi.zip")
