@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pixel phone (Pixel 9a "tegu") system_ext and product pieces for the GSI of the same build (DP11.261016.003), for the Galaxy M30s: SystemUI (SystemUIGoogle), Settings (SettingsGoogle), Pixel Launcher,
+"""Pixel phone (Pixel 9a "tegu") system_ext and product pieces for the GSI of the same build (DP11.261030.003), for the Galaxy M30s: SystemUI (SystemUIGoogle), Settings (SettingsGoogle), Pixel Launcher,
 wallpaper picker and live wallpapers, themes and fonts, Setup Wizard, Google apps (Dialer, Messages, Contacts, Clock, Calendar, Calculator, Files, Photos, Gboard, Google app, Wellbeing, At a Glance), Chrome with its
 WebView and the Pixel config overlays and boot animation. Adapted from the tablet's stage_pixel_tablet.py (same output layout, so build_a17.py can take it with --pixel-phone). Nothing is redistributable: run it on your own download.
 usage: stage_pixel_phone.py FACTORY.zip OUT_DIR [--keys DIR] [--build-tools DIR] [--e2fs DIR] [--images DIR]   (--only TEXT: partial run (repeatable); --images: directory that already holds the unpacked product.img and system_ext.img)
@@ -50,8 +50,7 @@ PKGS = [
     ('product', '/app/WallpaperEmojiPrebuilt-p26-foldable-wallpaper', 'app/WallpaperEmojiPrebuilt'),
     ('product', '/app/GoogleTTS', 'app/GoogleTTS'),
     ('product', '/app/MarkupGoogle_v2', 'app/MarkupGoogle'),
-    # Chrome and its WebView (Trichrome: the library APK holds the native code for both)
-    ('product', '/app/TrichromeLibrary', 'app/TrichromeLibrary'),
+    # DP11.261030.003 ships standalone Chrome/WebView, without TrichromeLibrary.
     ('product', '/app/Chrome', 'app/Chrome'),
     ('product', '/app/WebViewGoogle', 'app/WebViewGoogle'),
     # Play services, Play Store and the Services Framework come from MindTheGapps (build with --gapps): on the Pixel com.google.android.gms is a system APEX
@@ -115,6 +114,10 @@ try:
                 if f.endswith('.apk.gz'):
                     with gzip.open(os.path.join(r_, f)) as zi_, open(os.path.join(r_, f[:-3]), 'wb') as zo_: shutil.copyfileobj(zi_, zo_)
                     os.remove(os.path.join(r_, f))
+    # Fail before modifying WebView if the upstream browser packaging changes again.
+    if not a.only:
+        from verify_browser_packages import verify_browser_pair
+        verify_browser_pair(out, BT)
     # WebViewGoogle is arm64-only but declares multiArch: PackageManager refuses it on this phone (armeabi-v7a is supported too): "native libs don't support all the natively supported ABIs"
     if not a.only:
         wv = os.path.join(out, 'product/app/WebViewGoogle/WebViewGoogle.apk')

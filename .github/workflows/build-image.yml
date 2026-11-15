@@ -146,6 +146,9 @@ jobs:
           python3 tools/img/make_a14fs.py crdroid.img a14fs tablet/tools
           rm crdroid.img; df -h /
 
+      - name: Browser packaging regression checks
+        run: python3 -m unittest discover -s tools/pixel -p test_browser_packages.py -v
+
       - name: Pixel 9a pieces from Google's factory image
         run: |
           curl -L --fail --retry 5 --retry-delay 10 -o factory.zip "$FACTORY_URL"
