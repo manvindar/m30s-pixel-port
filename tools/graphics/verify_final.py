@@ -201,7 +201,7 @@ def main():
         def retain_provider(metadata):
             nonlocal evidence_bytes
             source = Path(metadata['source_path']); identity = digest(source); size = source.stat().st_size
-            record = {'sha256': identity, 'bytes': size, 'exports': sorted(metadata['exports']), 'imports': sorted(metadata['imports']), 'needed': metadata['needed']}
+            record = {'sha256': identity, 'bytes': size, 'exports': sorted(metadata['exports']), 'imports': sorted(metadata['imports']), 'needed': metadata['needed'], 'symbol_table_text': metadata['symbol_table_text']}
             copy = evidence_dir / (identity + '.elf')
             if copy.is_file():
                 record['evidence_file'] = str(copy.relative_to(stage))

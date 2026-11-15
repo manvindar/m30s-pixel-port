@@ -102,7 +102,7 @@ def elf(path):
             if '@@' in name:
                 exports.add(name.split('@')[0])
     needed = re.findall(r'Shared library: \[([^]]+)\]', run('readelf', '-d', path))
-    return {'abi': abi, 'exports': exports, 'imports': imports, 'abi_imports': abi_imports, 'source_path': str(path), 'needed': needed}
+    return {'abi': abi, 'exports': exports, 'imports': imports, 'abi_imports': abi_imports, 'source_path': str(path), 'needed': needed, 'symbol_table_text': symbols}
 
 
 def protobuf_fields(data):
