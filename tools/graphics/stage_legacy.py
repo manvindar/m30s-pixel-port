@@ -17,14 +17,21 @@ LEGACY = ['android.hardware.graphics.allocator@2.0.so', 'android.hardware.graphi
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('pins'); parser.add_argument('out')
+    parser.add_argument('--archive-cache')
     args = parser.parse_args()
     pins = json.loads(Path(args.pins).read_text())['legacy_graphics']
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=False)
     records = []
     with tempfile.TemporaryDirectory(prefix='legacy-graphics-') as scratch:
         tmp = Path(scratch)
-        archive = tmp / 'gsi.zip'
-        urllib.request.urlretrieve(pins['url'], archive)
+        archive = Path(args.archive_cache).resolve() if args.archive_cache else tmp / 'gsi.zip'
+        if args.archive_cache:
+            import sys
+            sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'downloads'))
+            from verified_input import obtain
+            obtain(pins['url'], pins['sha256'], archive)
+        else:
+            urllib.request.urlretrieve(pins['url'], archive)
         if digest(archive) != pins['sha256']:
             raise RuntimeError('Legacy graphics GSI hash mismatch')
         image = tmp / 'system.img'
