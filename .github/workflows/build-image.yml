@@ -291,8 +291,8 @@ jobs:
       - name: JNI-anchored budget watcher regressions
         run: python3 -m unittest discover -s tools/libc -p test_budget_watchers.py -v
 
-      - name: Measured tethering patch regressions
-        run: python3 -m unittest discover -s tools/bpf -p test_tethering.py -v
+      - name: Measured tethering and Bluetooth patch regressions
+        run: python3 -m unittest discover -s tools/bpf -p 'test_*.py' -v
 
       - name: Legacy graphics fail-closed verification regressions
         run: python3 -m unittest discover -s tools/graphics -p test_verification.py -v
@@ -463,6 +463,7 @@ jobs:
           path: |
             legacy_graphics/donor-receipt.json
             legacy_graphics/tethering-*-receipt.json
+            legacy_graphics/bluetooth-receipt.json
             legacy_graphics/abi-consumers/
             legacy_graphics/latest/**/libui.so
             legacy_graphics/system/**/libui.so

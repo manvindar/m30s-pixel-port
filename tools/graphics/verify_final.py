@@ -232,6 +232,10 @@ def main():
             if digest(root / target) != record['output_sha256']:
                 raise RuntimeError('Final measured tethering patch readback mismatch: ' + tool)
             receipt['tethering'].append(record)
+        bluetooth = json.loads((stage / 'bluetooth-receipt.json').read_text())
+        if digest(root / 'system/etc/bpf.a17/libbluetooth_jni.so') != bluetooth['output_sha256']:
+            raise RuntimeError('Final measured Bluetooth patch readback mismatch')
+        receipt['bluetooth'] = bluetooth
         runtime_budget = json.loads((stage / 'runtime-budget-receipt.json').read_text())
         actual_runtime = root / 'system/lib64/libandroid_runtime.so'
         if digest(actual_runtime) != runtime_budget['output_sha256']:
