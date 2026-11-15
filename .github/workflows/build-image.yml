@@ -167,6 +167,9 @@ jobs:
       - name: Vendor image
         run: python3 tools/img/build_vendor_a17.py vendor-mp2.img vendor-a17.img tablet/tools/health/vintf_health_aidl.xml
 
+      - name: JNI-anchored budget watcher regressions
+        run: python3 -m unittest discover -s tools/libc -p test_budget_watchers.py -v
+
       - name: Legacy graphics fail-closed verification regressions
         run: python3 -m unittest discover -s tools/graphics -p test_verification.py -v
 
@@ -255,7 +258,7 @@ jobs:
           cp docs/A17-UPSTREAM.json out/A17-UPSTREAM.json
           cp image-fixes-verification.json graphics-compatibility-verification.json out/
           cp legacy_graphics/donor-receipt.json out/legacy-graphics-donor-receipt.json
-          cp legacy_graphics/codec-repack-receipt.json out/
+          cp legacy_graphics/codec-repack-receipt.json legacy_graphics/runtime-budget-receipt.json out/
           if [ -f kernel/kernel-label-receipt.json ]; then
             cp kernel/kernel-label-receipt.json kernel/kernel-release.txt kernel/kernel.config out/
           fi
@@ -285,6 +288,16 @@ jobs:
           ( cd out && sha256sum * > SHA256SUMS )
           ls -la out
 
+      - name: Retain unpublished candidate ROM and verification receipts
+        if: ${{ !inputs.publish }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: m30s-a17-pixel-candidate-${{ github.run_id }}
+          path: out/
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
+
       - name: Publish public experimental release
         if: ${{ inputs.publish }}
         env:
@@ -301,6 +314,7 @@ jobs:
           path: |
             legacy_graphics/donor-receipt.json
             legacy_graphics/codec-repack-receipt.json
+            legacy_graphics/runtime-budget-receipt.json
             legacy_graphics/patched/**/*.guards.txt
             graphics-compatibility-verification.json
           if-no-files-found: warn

@@ -210,6 +210,11 @@ def main():
                     bind = root / 'system/etc/bpf.a17' / ('libui_swcodec64.so' if abi == 'arm64' else 'libui_swcodec32.so')
                     if not bind.is_file() or digest(bind) != digest(patched):
                         raise RuntimeError('Codec bind copy differs from verified APEX payload')
+        runtime_budget = json.loads((stage / 'runtime-budget-receipt.json').read_text())
+        actual_runtime = root / 'system/lib64/libandroid_runtime.so'
+        if digest(actual_runtime) != runtime_budget['output_sha256']:
+            raise RuntimeError('Final JNI-anchored runtime patch readback mismatch')
+        receipt['runtime_budget'] = runtime_budget
         codec = [p for p in inventory.packages if p['name'] == 'com.android.media.swcodec']
         if len(codec) != 1 or codec[0]['sha256'] != repack['output_package_sha256']:
             raise RuntimeError('Final codec APEX differs from signed/readback-verified package')

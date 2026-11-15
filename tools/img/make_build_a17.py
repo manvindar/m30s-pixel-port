@@ -128,7 +128,12 @@ sub("    src = tmpf(name + '.orig', cat(S, path)); out = wp(name + '.p'); py(too
     if tool == 'libc/patch_libui.py' and a.legacy_graphics:
         directory = os.path.basename(os.path.dirname(path))
         src = graphics_source('system', directory, src)
-    result = py(tool, src, out)
+    if tool == 'libc/patch_libandroid_runtime.py':
+        result = run(sys.executable, os.path.join(HERE, '..', 'libc', 'patch_budget_watchers.py'), src, out)
+        if a.legacy_graphics:
+            shutil.copyfile(out + '.budget-receipt.json', os.path.join(a.legacy_graphics, 'runtime-budget-receipt.json'))
+    else:
+        result = py(tool, src, out)
     if tool == 'libc/patch_libui.py' and a.legacy_graphics:
         graphics_patched('system', directory, out, result)
     return out""")
