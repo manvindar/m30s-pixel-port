@@ -1,5 +1,17 @@
 # Upgrade the installed Pixel ROM in TWRP
 
+## Android 17 QPR3 Beta 4 candidate
+
+This candidate is not accepted for installation until its image and graphics compatibility checks pass. A successful Actions job alone does not establish device compatibility.
+
+For the maintained SM-M307F test installation, the preferred upgrade writes **System only** and retains the installed ACPM-fixed boot. Before any write, freshly match the complete installed boot against its retained fixed-boot/readback provenance, verify the existing vendor is compatible, and verify recoverable rollback images, partition size and system checksums. The historical fixed boot SHA256 is `5219d618dad571438312ab1fcd62deaa9af17f3e49a48b70638bb9e817917426`; this is a comparison pin, not evidence of current phone state.
+
+The bundled dated profile1 boot has not established preservation of the later ACPM memory-mapped I/O, CPU/Mali and boost fixes. Do not substitute it for the verified installed fixed boot. Keep Vendor, Recovery, VBMETA, modem and bootloader unchanged. Do not format or wipe data. The maintained unattended procedure uses verified computer-to-recovery streaming and readback; it must not write, move, delete or format internal/shared storage or any SD card. Preserve user data and off-device rollback.
+
+## Historical v0.6 System and Boot upgrade
+
+The instructions below describe the historical v0.6 release, not the Beta 4 candidate.
+
 For **Galaxy M30s SM-M307F already running this Pixel port**, with TWRP installed. Coming from encrypted stock is a first installation: use [the full guide](FLASH.md).
 
 1. Back up your important files off the phone. Download `system-a17-pixel.img.xz.part-00`, `boot-a17.img`, `SHA256SUMS` and `IMAGE-SHA256SUMS` from [v0.6-pixel-perf](https://github.com/manvindar/m30s-pixel-port/releases/tag/v0.6-pixel-perf). Check the two downloaded image files against `SHA256SUMS`.
