@@ -216,6 +216,14 @@ def main():
                     bind = root / 'system/etc/bpf.a17' / ('libui_swcodec64.so' if abi == 'arm64' else 'libui_swcodec32.so')
                     if not bind.is_file() or digest(bind) != digest(patched):
                         raise RuntimeError('Codec bind copy differs from verified APEX payload')
+        receipt['tethering'] = []
+        for tool, target in [('netbpfload', 'system/bin/netbpfload.a17'),
+                             ('netd_updatable', 'system/etc/bpf.a17/libnetd_updatable.so'),
+                             ('service_connectivity', 'system/etc/bpf.a17/libservice-connectivity.so')]:
+            record = json.loads((stage / ('tethering-' + tool + '-receipt.json')).read_text())
+            if digest(root / target) != record['output_sha256']:
+                raise RuntimeError('Final measured tethering patch readback mismatch: ' + tool)
+            receipt['tethering'].append(record)
         runtime_budget = json.loads((stage / 'runtime-budget-receipt.json').read_text())
         actual_runtime = root / 'system/lib64/libandroid_runtime.so'
         if digest(actual_runtime) != runtime_budget['output_sha256']:

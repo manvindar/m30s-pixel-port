@@ -76,7 +76,10 @@ def run(*c, ok=(0,), env=None, cwd=None):
     return r.stdout
 def py(script, *args, env=None):
     if script == 'bpf/patch_binaries.py':
-        return run(sys.executable, '-I', os.path.join(HERE, '..', 'bpf', 'patch_tethering.py'), *map(str, args), env=env)
+        result = run(sys.executable, '-I', os.path.join(HERE, '..', 'bpf', 'patch_tethering.py'), *map(str, args), env=env)
+        if a.legacy_graphics:
+            shutil.copyfile(str(args[2]) + '.tethering-receipt.json', os.path.join(a.legacy_graphics, 'tethering-' + str(args[0]) + '-receipt.json'))
+        return result
     return run(sys.executable, '-I', os.path.join(TOOLS, script), *map(str, args), env=env)
 def dbg(img, *c): return subprocess.run([os.path.join(E2, 'debugfs'), '-R', ' '.join(c), img], capture_output=True)
 def cat(img, path):
