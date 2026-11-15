@@ -17,6 +17,12 @@ def missing_symbols(imports, providers):
     return sorted(imports - available)
 
 
+def unproven_flag_provider_imports(imports):
+    # Actual old/new vtables differ by one pointer-sized slot in both ABIs.
+    # Export-name closure cannot establish this interface's calling convention.
+    return sorted(name for name in imports if 'libui5flags' in name)
+
+
 class ImageInventory:
     def __init__(self, root, scratch):
         self.root, self.scratch = Path(root), Path(scratch)
@@ -163,7 +169,7 @@ def main():
             raise RuntimeError('Donor stage hash changed')
     repack = json.loads((stage / 'codec-repack-receipt.json').read_text())
     receipt = {'input': donor['input'], 'donor_files': donor['files'], 'codec_repack': repack,
-               'image_sha256': digest(args.image), 'consumer_failures': [], 'linkage': [],
+               'image_sha256': digest(args.image), 'consumer_failures': [], 'linkage': [], 'flag_provider_consumers': [],
                'device_validation': False,
                'limitations': ['Static ELF symbol and declared namespace checks do not prove runtime behavior or C++ object layout compatibility']}
     with tempfile.TemporaryDirectory(prefix='verify-final-graphics-') as scratch:
@@ -223,6 +229,9 @@ def main():
             abi = metadata['abi']
             if abi not in changed:
                 continue
+            uncertain = unproven_flag_provider_imports(metadata['imports'])
+            if uncertain:
+                receipt['flag_provider_consumers'].append({'context': context, 'file': virtual, 'imports': uncertain})
             affected_imports = metadata['imports'] & changed[abi]
             if not affected_imports:
                 continue
@@ -233,9 +242,9 @@ def main():
         receipt.update(native_files_scanned=len(inventory.natives), contexts=inventory.counts,
                        archives=inventory.archives, apex_packages=inventory.packages,
                        missing_exports={a: sorted(v) for a, v in changed.items()})
-        if receipt['consumer_failures']:
+        if receipt['consumer_failures'] or receipt['flag_provider_consumers']:
             Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
-            raise RuntimeError('Final consumers need unavailable graphics exports')
+            raise RuntimeError('Final consumers need unavailable graphics exports or unproven flag-provider ABI')
     receipt['status'] = 'pass'
     Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
     print('Final graphics coverage passed:', receipt['native_files_scanned'], 'native files, both ABIs, all APEX/APK consumers')

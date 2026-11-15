@@ -3,7 +3,7 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 from common import dump, extract_fs, protobuf_fields, run
-from verify_final import ImageInventory, missing_symbols
+from verify_final import ImageInventory, missing_symbols, unproven_flag_provider_imports
 
 
 def library(imports=(), exports=(), needed=()):
@@ -11,6 +11,14 @@ def library(imports=(), exports=(), needed=()):
 
 
 class VerificationTests(unittest.TestCase):
+    def test_changed_vtable_interface_rejected_despite_matching_export(self):
+        names = {'_ZN3com7android8graphics5libui5flags12get_providerEv', '_ZTVN3com7android8graphics5libui5flags13flag_providerE'}
+        self.assertEqual(set(unproven_flag_provider_imports(names)), names)
+        self.assertEqual(missing_symbols(names, [library(exports=names)]), [])
+
+    def test_unrelated_graphics_method_not_flag_provider(self):
+        self.assertEqual(unproven_flag_provider_imports({'_ZN7android19GraphicBufferMapperC2Ev'}), [])
+
     def test_debugfs_partial_failure_rejected_even_with_exit_zero(self):
         from subprocess import CompletedProcess
         failure = CompletedProcess(['debugfs'], 0, 'some extracted files', 'rdump: Input/output error')
