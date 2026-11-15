@@ -1,0 +1,28 @@
+name: Inspect pinned Safety Center target
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/gsi/gsi.zip
+          key: a17-input-v1-gsi-1cb1c5254299581246ba626faccd41566df25382cd0415d8b82bf2e2d80cbf6c
+      - uses: android-actions/setup-android@v4
+      - name: Install inspection tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq e2fsprogs erofs-utils
+          sdkmanager 'build-tools;35.0.0'
+      - name: Inspect exact APK and permission parser inputs
+        run: python3 tools/pixel/inspect_safety_target.py
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: safety-target-evidence
+          path: safety-target-evidence/
+          if-no-files-found: error
