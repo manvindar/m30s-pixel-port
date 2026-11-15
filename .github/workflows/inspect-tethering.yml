@@ -1,0 +1,23 @@
+name: Inspect pinned tethering patch inputs
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - run: sudo apt-get update && sudo apt-get install -y binutils-aarch64-linux-gnu
+      - run: |
+          mkdir -p diagnostic-bin
+          ln -s /usr/bin/aarch64-linux-gnu-objdump diagnostic-bin/objdump
+          export PATH="$PWD/diagnostic-bin:$PATH"
+          python3 tools/pixel/inspect_tethering.py
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: tethering-evidence
+          path: tethering-evidence/
+          if-no-files-found: error
