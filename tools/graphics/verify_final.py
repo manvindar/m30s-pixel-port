@@ -319,7 +319,7 @@ def main():
                 try:
                     providers, edges = inventory.closure(ctx, virtual, metadata)
                     for edge in edges:
-                        if edge['needed'] in ('libhidlbase.so', 'libcutils.so'):
+                        if edge['needed'] in ('libhidlbase.so', 'libcutils.so', 'libc++.so'):
                             ownership = inventory.metadata[edge['to']]
                             if ownership['abi'] != abi:
                                 raise RuntimeError('Final ownership provider ABI mismatch')

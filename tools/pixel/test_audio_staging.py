@@ -49,7 +49,8 @@ class AudioEvidenceTests(unittest.TestCase):
                         Path(args[-1]).write_bytes(Path(args[-2]).read_bytes() + b'patched')
                     return ' 0x000000006ffffffb (FLAGS_1) Flags: NOW GLOBAL\n'
                 def fake_stat(image, remote, **kwargs):
-                    if missing_provider and image == 'base' and remote == '/system/lib/libhidlbase.so':
+                    missing_path = missing_provider if isinstance(missing_provider, str) else '/system/lib/libhidlbase.so'
+                    if missing_provider and image == 'base' and remote == missing_path:
                         return None
                     if remote.endswith('/libdl.so'):
                         return 'Inode: 3 Type: symlink Mode: 0777 Fast link dest: /apex/com.android.runtime/lib64/bionic/libdl.so'
@@ -64,11 +65,17 @@ class AudioEvidenceTests(unittest.TestCase):
             finally:
                 os.chdir(old)
 
+    def test_missing_cpp_provider_rejected_for_each_abi(self):
+        for directory in ('lib', 'lib64'):
+            with self.subTest(abi=directory), self.assertRaisesRegex(RuntimeError, 'Required base ownership provider absent'):
+                self.exercise(missing_provider='/system/' + directory + '/libc++.so')
+
     def test_cycle_external_and_patched_provenance(self):
         r = self.exercise()
         self.assertFalse(r['acceptance']); self.assertFalse(r['final_readback'])
         self.assertFalse(r['runtime_execution'])
-        self.assertEqual(len(r['base_native_inputs']), 4)
+        self.assertEqual(len(r['base_native_inputs']), 6)
+        self.assertEqual({v['file'] for v in r['base_native_inputs'] if v['file'].endswith('/libc++.so')}, {'/system/lib/libc++.so', '/system/lib64/libc++.so'})
         self.assertEqual({v['abi'] for v in r['base_native_inputs']}, {'arm32', 'arm64'})
         self.assertTrue(all(not v['final_provider_acceptance'] for v in r['base_native_inputs']))
         self.assertEqual({v['name'] for v in r['external_requirements']}, {'libc.so', 'libdl.so'})

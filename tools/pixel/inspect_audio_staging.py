@@ -61,7 +61,7 @@ def main():
     total = 0
     receipt['base_native_inputs'] = []
     for directory, expected_abi in (('lib', 'arm32'), ('lib64', 'arm64')):
-        for name in ('libhidlbase.so', 'libcutils.so'):
+        for name in ('libhidlbase.so', 'libcutils.so', 'libc++.so'):
             remote = '/system/' + directory + '/' + name
             if stat(args.base, remote) is None:
                 raise RuntimeError('Required base ownership provider absent: ' + remote)
