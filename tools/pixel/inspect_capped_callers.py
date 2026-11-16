@@ -8,7 +8,7 @@ import sys
 import tempfile
 import zipfile
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'graphics'))
-from common import apex_manifest, digest, dump, elf, run, unpack_apex
+from common import apex_manifest, digest, dump, elf, extract_fs, run, unpack_apex
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'downloads'))
 from verified_input import obtain
 
@@ -24,6 +24,22 @@ def main():
     total = 0
     with tempfile.TemporaryDirectory() as scratch:
         tmp = Path(scratch)
+        decoded = {}
+        def member(fs, remote, target, optional=False):
+            with Path(fs).open('rb') as stream:
+                stream.seek(1024 + 56); ext4 = stream.read(2) == b'\x53\xef'
+            if ext4:
+                if optional and 'Inode:' not in run('debugfs', '-R', 'stat ' + remote, fs):
+                    return None
+                return dump(fs, remote, target)
+            if str(fs) not in decoded:
+                decoded[str(fs)] = extract_fs(fs, tmp / ('decoded-' + str(len(decoded))))
+            source = decoded[str(fs)] / remote.lstrip('/')
+            if optional and not source.exists(): return None
+            if not source.is_file() or source.is_symlink() or not source.stat().st_size:
+                raise RuntimeError('Missing or invalid extracted member: ' + remote)
+            target.parent.mkdir(parents=True, exist_ok=True); shutil.copyfile(source, target)
+            return target
         for label, pin, cache in [('latest', pins['gsi'], Path('download-cache/gsi/gsi.zip')),
                                   ('a14', A14, Path('download-cache/a14/crdroid.img.xz'))]:
             obtain(pin['url'], pin['sha256'], cache)
@@ -52,7 +68,7 @@ def main():
                         if manifest['name'] != context: raise RuntimeError('APEX name mismatch')
                         contexts[context] = payload; receipt['apex_manifests'][context] = manifest
                     fs = contexts[context]; path = row['file'].removeprefix('/apex/' + context)
-                target = dump(fs, path, out / 'callers' / (row['sha256'] + '.elf'))
+                target = member(fs, path, out / 'callers' / (row['sha256'] + '.elf'))
                 if digest(target) != row['sha256'] or target.stat().st_size != row['bytes']:
                     raise RuntimeError('Extracted source does not match exact final caller: ' + row['file'])
                 total += target.stat().st_size
@@ -62,11 +78,10 @@ def main():
                 if not context.startswith('com.android.vndk.'): continue
                 for directory in ('lib64', 'lib'):
                     remote = '/' + directory + '/libsync.so'
-                    stat = run('debugfs', '-R', 'stat ' + remote, payload)
-                    if 'Inode:' not in stat:
-                        receipt['absences'].append({'context': context, 'file': remote, 'stat': stat})
+                    target = member(payload, remote, out / 'providers' / context / directory / 'libsync.so', optional=True)
+                    if target is None:
+                        receipt['absences'].append({'context': context, 'file': remote, 'observation': 'Absent in verified filesystem inventory'})
                         continue
-                    target = dump(payload, remote, out / 'providers' / context / directory / 'libsync.so')
                     metadata = elf(target)
                     if metadata is None: raise RuntimeError('Invalid provider ELF')
                     (target.parent / 'versions.txt').write_text(run('readelf', '-d', '-V', target))

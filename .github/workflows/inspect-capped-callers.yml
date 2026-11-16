@@ -17,6 +17,8 @@ jobs:
         with:
           path: download-cache/a14/crdroid.img.xz
           key: a17-input-v1-a14-0a403c4de120adbb15e7219f7c2acc59337e6d7fc995eaf4ace7e9267e25a0dc
+      - name: Install read-only filesystem tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq e2fsprogs erofs-utils
       - name: Extract only exact missing callers and provider metadata
         run: python3 tools/pixel/inspect_capped_callers.py
       - uses: actions/upload-artifact@v6
