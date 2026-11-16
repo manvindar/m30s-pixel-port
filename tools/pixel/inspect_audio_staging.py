@@ -59,6 +59,30 @@ def main():
         receipt['base_interpreter_paths'].append({'file': remote, 'inode': inode,
             'limitation': 'Base path evidence only; final loader patches and symlink target must be verified'})
     total = 0
+    receipt['base_native_inputs'] = []
+    for directory, expected_abi in (('lib', 'arm32'), ('lib64', 'arm64')):
+        for name in ('libhidlbase.so', 'libcutils.so'):
+            remote = '/system/' + directory + '/' + name
+            if stat(args.base, remote) is None:
+                raise RuntimeError('Required base ownership provider absent: ' + remote)
+            target = dump(args.base, remote, out / 'base' / remote.lstrip('/'))
+            if not 0 < target.stat().st_size <= 4 * 1024 ** 2:
+                raise RuntimeError('Oversized base ownership provider: ' + remote)
+            info = elf(target)
+            if not info or info['abi'] != expected_abi:
+                raise RuntimeError('Wrong base ownership provider ABI: ' + remote)
+            total += target.stat().st_size
+            if total > 16 * 1024 ** 2:
+                raise RuntimeError('Retained binary evidence exceeds16MiB')
+            receipt['base_native_inputs'].append({'file': remote, 'sha256': digest(target),
+                'bytes': target.stat().st_size, 'abi': info['abi'], 'needed': info['needed'],
+                'exports': sorted(info['exports']), 'imports': sorted(info['imports']),
+                'abi_imports': sorted(info['abi_imports']),
+                'dynamic_text': run('readelf', '-d', '--wide', target),
+                'evidence_file': str(target.relative_to(out)),
+                'final_provider_acceptance': False,
+                'limitation': 'Pinned base provider; actual final hash and system/codec namespace edge must match'})
+            target.with_suffix('.readelf.txt').write_text(run('readelf', '-h', '-l', '-d', '-V', '-Ws', '--wide', target))
     with tempfile.TemporaryDirectory(prefix='audio-staging-') as tmp:
         tmp = Path(tmp)
         entry = dump(args.donor, '/system/bin/audioserver', out / 'system/bin/audioserver')

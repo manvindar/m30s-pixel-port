@@ -39,7 +39,7 @@ class AudioEvidenceTests(unittest.TestCase):
                 def metadata(path):
                     name = Path(path).name.removesuffix('.patched')
                     needs = sorted(m.KEEP) if name == 'audioserver' else ['libui.so', 'libc.so', 'libdl.so']
-                    return {'abi': 'arm32' if wrong_abi else 'arm64', 'needed': needs,
+                    return {'abi': 'arm32' if (wrong_abi and name == 'audioserver') or '/lib/' in str(path) else 'arm64', 'needed': needs,
                             'exports': {}, 'imports': {'dlopen@LIBC'}, 'abi_imports': {'dlopen@LIBC', 'weak_optional'}}
                 def fake_run(*args):
                     if args[0] == m.sys.executable:
@@ -63,6 +63,9 @@ class AudioEvidenceTests(unittest.TestCase):
         r = self.exercise()
         self.assertFalse(r['acceptance']); self.assertFalse(r['final_readback'])
         self.assertFalse(r['runtime_execution'])
+        self.assertEqual(len(r['base_native_inputs']), 4)
+        self.assertEqual({v['abi'] for v in r['base_native_inputs']}, {'arm32', 'arm64'})
+        self.assertTrue(all(not v['final_provider_acceptance'] for v in r['base_native_inputs']))
         self.assertEqual({v['name'] for v in r['external_requirements']}, {'libc.so', 'libdl.so'})
         link = next(v for v in r['external_requirements'] if v['name'] == 'libdl.so')
         self.assertIn('Fast link dest:', link['source_inode'])
