@@ -230,6 +230,12 @@ def main():
                     raise RuntimeError('Final patched libui readback mismatch')
                 try:
                     providers, edges = inventory.closure(ctx, virtual, metadata)
+                    for edge in edges:
+                        if edge['needed'] == 'libgralloctypes.so':
+                            decoder = inventory.metadata[edge['to']]
+                            receipt.setdefault('plane_decoder_providers', []).append({
+                                'context': edge['namespace'], 'abi': abi, 'file': edge['to'],
+                                **retain_provider(decoder)})
                     absent = missing_symbols(metadata['imports'], providers)
                     if absent:
                         receipt['donor_failures'].append({'context': ctx, 'abi': abi, 'file': virtual,
