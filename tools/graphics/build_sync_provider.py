@@ -34,7 +34,7 @@ def main():
         output = out / directory / 'libsync.so'; output.parent.mkdir()
         command = [str(tool / (target + '-clang')), '-shared', '-fPIC', '-O2', '-Werror',
                    '-I' + str(src), str(src / 'sync.c'), '-Wl,--version-script=' + str(src / 'libsync.map.txt'),
-                   '-Wl,-soname,libsync.so', '-Wl,--no-undefined', '-Wl,--build-id=sha1', '-o', str(output)]
+                   '-Wl,-soname,libsync.so', '-Wl,--as-needed', '-Wl,--no-undefined', '-Wl,--build-id=sha1', '-o', str(output)]
         run(*command)
         # common.elf uses readelf from PATH; workflow installs the matching LLVM tools.
         metadata = elf(output)
