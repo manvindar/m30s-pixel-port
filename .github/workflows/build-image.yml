@@ -116,6 +116,9 @@ jobs:
             ${{ env.ANDROID_HOME }}/ndk/${{ env.NDK_VERSION }}
           key: a17-sdk-v1-${{ runner.os }}-bt35.0.0-api34-ndk${{ env.NDK_VERSION }}
 
+      - name: Host system-write recovery regressions
+        run: python3 -m unittest discover -s tools/flash -v
+
       - name: Public AOSP SafetyCenter test identity and host regressions
         run: |
           mkdir safety-keys
