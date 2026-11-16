@@ -33,7 +33,17 @@ current sign, USB, voltage and temperature. Python tests reject source drift and
 verify the original stays unchanged. The generated builder matches its generator,
 and the complete health shim compiles to DEX.
 
-This is a source/build fix. It has not been installed on the phone; the currently
-running experimental image still contains the old correction. No battery reset,
-calibration write or charging control change was performed. Reported kernel SOC
-is not an independent measurement of physical battery health or calibration.
+## Owner-authorized installation
+
+Installed the corrected health JAR on 2026-11-16, after preserving and verifying
+the original. Installed SHA-256:
+`b753d1853801a552178683360e50a689acdf309e2a802f8ff5ac1951bcc02332`.
+Only `/system/etc/healthshim.jar` was replaced; root was returned to read-only.
+Restarting only `healthshim` updated Android to **100% Full**, matching kernel
+capacity 100 and status Full. Android remained boot-complete; no reboot occurred.
+The original JAR and installation receipt are retained privately for rollback.
+The earlier whole-image readback hash describes the image before this file fix.
+
+No battery reset, calibration write or charging control change was performed.
+Reported kernel SOC is not an independent measurement of physical battery health
+or calibration. Discharge behavior across a real charge cycle remains untested.
