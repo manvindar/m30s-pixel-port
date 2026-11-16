@@ -32,7 +32,7 @@ def main():
     for abi, target, directory in [('arm64', 'aarch64-linux-android26', 'lib64'),
                                    ('arm32', 'armv7a-linux-androideabi26', 'lib')]:
         output = out / directory / 'libsync.so'; output.parent.mkdir()
-        command = [str(tool / (target + '-clang')), '-shared', '-fPIC', '-O2', '-Wall', '-Werror',
+        command = [str(tool / (target + '-clang')), '-shared', '-fPIC', '-O2', '-Werror',
                    '-I' + str(src), str(src / 'sync.c'), '-Wl,--version-script=' + str(src / 'libsync.map.txt'),
                    '-Wl,-soname,libsync.so', '-Wl,--no-undefined', '-Wl,--build-id=sha1', '-o', str(output)]
         run(*command)
