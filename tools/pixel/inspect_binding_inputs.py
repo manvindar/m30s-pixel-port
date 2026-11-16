@@ -140,6 +140,28 @@ def main():
             'needed': metadata['needed'], 'runtime_execution': False}
         target.with_suffix('.readelf.txt').write_text(
             run('readelf', '--dyn-syms', '--version-info', '--dynamic', '--wide', target))
+        # Inspect the shipping loader which consumes generated namespace rules.
+        loader = runtime_root / 'bin/linker64'
+        if not loader.is_file() or loader.is_symlink():
+            raise RuntimeError('Required runtime ARM64 loader absent')
+        if not 0 < loader.stat().st_size <= 4 * 1024 ** 2:
+            raise RuntimeError('Runtime loader exceeds bounded size')
+        loader_meta = elf(loader)
+        if loader_meta is None or loader_meta['abi'] != 'arm64':
+            raise RuntimeError('Runtime loader wrong ELF ABI')
+        total += loader.stat().st_size
+        if total > 16 * 1024 ** 2:
+            raise RuntimeError('Binding input evidence exceeds16MiB')
+        loader_target = out / 'runtime/bin/linker64'
+        shutil.copyfile(loader, loader_target)
+        receipt['loader_input'] = {
+            'source_apex_sha256': digest(runtime),
+            'file': '/apex/com.android.runtime/bin/linker64',
+            'evidence_file': str(loader_target.relative_to(out)),
+            'sha256': digest(loader_target), 'bytes': loader_target.stat().st_size,
+            'abi': loader_meta['abi'], 'runtime_execution': False}
+        loader_target.with_suffix('.readelf.txt').write_text(
+            run('readelf', '--dyn-syms', '--version-info', '--dynamic', '--wide', loader_target))
     if len(receipt['files']) != sum(1 for _, required in targets if required) + sum(
             1 for remote, required in targets if not required and remote not in {r['file'] for r in receipt['absences']}):
         raise RuntimeError('Incomplete binding evidence receipt')
