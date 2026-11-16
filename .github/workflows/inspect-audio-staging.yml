@@ -1,0 +1,53 @@
+name: Inspect pinned staged audio closure
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  GSI_URL: https://dl.google.com/developers/android/cinnamonbun/images/gsi/aosp_arm64-exp-DP11.261030.003-16847878-1cb1c525.zip
+  GSI_SHA256: 1cb1c5254299581246ba626faccd41566df25382cd0415d8b82bf2e2d80cbf6c
+  DONOR_URL: https://sourceforge.net/projects/misterztr-gsi/files/LineageOS/Android%2016/LineageOS-23.2-20260524-GAPPS-EXT4-GSI.7z/download
+  DONOR_SHA256: 22b3c069445cc3d54819361a1636f7b27ff455dc547f300b868cecddb1b2e22d
+  DONOR_IMG: LineageOS-23.2-20260524-GAPPS-EXT4-GSI.img
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: manvindar/tb-x606v-android17
+          ref: 44cde4e25a160d95900ad12e3415b5527792be06
+          path: tablet
+      - uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: download-cache/gsi/gsi.zip
+          key: a17-input-v1-gsi-1cb1c5254299581246ba626faccd41566df25382cd0415d8b82bf2e2d80cbf6c
+      - uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: download-cache/audio/donor.7z
+          key: a17-input-v1-audio-22b3c069445cc3d54819361a1636f7b27ff455dc547f300b868cecddb1b2e22d
+      - name: Install read-only tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq e2fsprogs p7zip-full
+          python3 -m pip install capstone==5.0.6
+      - name: Verify inputs and inspect staging only
+        run: |
+          python3 tools/downloads/verified_input.py "$GSI_URL" "$GSI_SHA256" download-cache/gsi/gsi.zip
+          python3 tools/downloads/verified_input.py "$DONOR_URL" "$DONOR_SHA256" download-cache/audio/donor.7z
+          python3 - <<'PY'
+          import shutil
+          if shutil.disk_usage('.').free < 18 * 1024**3:
+              raise RuntimeError('Insufficient space for bounded source extraction')
+          PY
+          unzip -q download-cache/gsi/gsi.zip system.img
+          7z x -y download-cache/audio/donor.7z "$DONOR_IMG"
+          python3 tools/pixel/inspect_audio_staging.py --base system.img --donor "$DONOR_IMG" --tablet tablet
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: audio-staging-evidence
+          path: audio-staging-evidence/
+          if-no-files-found: error
