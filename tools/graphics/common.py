@@ -76,6 +76,18 @@ def unpack_apex(package, directory):
     return original, directory / 'apex_payload.img', directory / 'apex_manifest.pb'
 
 
+def dynamic_symbols(text):
+    # Type names can contain spaces (current ARM64 IFUNC: '<OS specific>: 10').
+    # Anchor binding/visibility/index/name instead of assuming fixed columns.
+    records = []
+    pattern = re.compile(r'^\s*\d+:\s+[0-9a-fA-F]+\s+\d+\s+.+?\s+(GLOBAL|WEAK)\s+\S+\s+(\S+)\s+(\S+)(?:\s+\(\d+\))?\s*$')
+    for line in text.splitlines():
+        match = pattern.match(line)
+        if match:
+            records.append(match.groups())
+    return records
+
+
 def elf(path):
     with Path(path).open('rb') as stream:
         head = stream.read(20)
@@ -88,14 +100,10 @@ def elf(path):
         return {'abi': None, 'exports': set(), 'imports': set(), 'needed': []}
     symbols = run('readelf', '--dyn-syms', '--wide', path)
     exports, imports, abi_imports = set(), set(), set()
-    for line in symbols.splitlines():
-        fields = line.split()
-        if len(fields) < 8 or fields[4] not in ('GLOBAL', 'WEAK'):
-            continue
-        name = fields[7]
-        if fields[6] == 'UND':
+    for binding, index, name in dynamic_symbols(symbols):
+        if index == 'UND':
             abi_imports.add(name.replace('@@', '@'))
-            if fields[4] != 'WEAK':
+            if binding != 'WEAK':
                 imports.add(name.replace('@@', '@'))
         else:
             exports.add(name.replace('@@', '@'))

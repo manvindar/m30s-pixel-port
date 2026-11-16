@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 import unittest
 from unittest.mock import patch
-from common import dump, extract_fs, protobuf_fields, run
+from common import dynamic_symbols, dump, extract_fs, protobuf_fields, run
 from verify_final import compatibility_failed, ImageInventory, missing_symbols, unproven_flag_provider_imports, unresolved_mapper_interface
 
 
@@ -11,6 +11,13 @@ def library(imports=(), exports=(), needed=()):
 
 
 class VerificationTests(unittest.TestCase):
+    def test_measured_arm64_indirect_function_type_preserves_version(self):
+        row = '   516: 00000000000e7580   100 <OS specific>: 10 GLOBAL DEFAULT   15 memcpy@@LIBC'
+        self.assertEqual(dynamic_symbols(row), [('GLOBAL', '15', 'memcpy@@LIBC')])
+        row = '    39: 0000000000000000     0 FUNC    GLOBAL DEFAULT  UND sync_merge@LIBSYNC (4)'
+        self.assertEqual(dynamic_symbols(row), [('GLOBAL', 'UND', 'sync_merge@LIBSYNC')])
+        self.assertEqual(dynamic_symbols('Symbol table .dynsym contains entries:\nNum: Value Size Type Bind Vis Ndx Name'), [])
+
     def test_donor_failure_alone_still_rejects_final_candidate(self):
         keys = ('donor_failures', 'consumer_failures', 'flag_provider_consumers', 'mapper_callsite_candidates')
         clean = dict.fromkeys(keys, [])
