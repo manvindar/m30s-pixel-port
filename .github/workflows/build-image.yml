@@ -11,6 +11,10 @@ on:
         description: Publish public flashable images as a prerelease
         type: boolean
         default: true
+      experimental_dirty_flash:
+        description: Defer only unknown graphics caller review for an unpublished system-only device experiment
+        type: boolean
+        default: false
       kernel_tag:
         description: Reviewed dated performance kernel; older baseline kernels remain available
         default: kernel-4.14.113-perf-20261110-profile1
@@ -53,6 +57,10 @@ jobs:
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v7
+
+      - name: Reject publishing experimental dirty-flash candidates
+        if: ${{ inputs.experimental_dirty_flash && inputs.publish }}
+        run: echo "Experimental dirty-flash candidates must use publish=false" >&2; exit 1
 
       - name: Patch library (tb-x606v-android17)
         uses: actions/checkout@v7
@@ -395,7 +403,14 @@ jobs:
         run: python3 tools/downloads/check_runner_space.py 12 runner-space-before-inventory.json
 
       - name: Final graphics native consumers and namespace closure
-        run: python3 tools/graphics/verify_final.py system-a17-pixel.img legacy_graphics graphics-compatibility-verification.json
+        env:
+          EXPERIMENTAL_DIRTY_FLASH: ${{ inputs.experimental_dirty_flash }}
+        run: |
+          graphics_options=()
+          if [ "$EXPERIMENTAL_DIRTY_FLASH" = true ]; then
+            graphics_options+=(--experimental-dirty-flash)
+          fi
+          python3 tools/graphics/verify_final.py system-a17-pixel.img legacy_graphics graphics-compatibility-verification.json "${graphics_options[@]}"
 
       - name: Compress, split, checksums
         env:
@@ -420,6 +435,9 @@ jobs:
           import json, os
           from pathlib import Path
           Path('out/build-receipt.json').write_text(json.dumps({
+              'experimental_dirty_flash': json.loads(Path('graphics-compatibility-verification.json').read_text())['experimental_dirty_flash'],
+              'graphics_acceptance': False,
+              'unreviewed_graphics_callers': json.loads(Path('graphics-compatibility-verification.json').read_text())['mapper_callsite_candidates'],
               'source_commit': os.environ['GITHUB_SHA'],
               'android_build': os.environ['ANDROID_BUILD'],
               'android_channel': os.environ['ANDROID_CHANNEL'],

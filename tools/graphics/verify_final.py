@@ -32,11 +32,16 @@ def unresolved_mapper_interface(imports, exports):
     return sorted(name for name in imports | exports if any(token in name for token in exposed))
 
 
-def compatibility_failed(receipt):
-    # Every failure category remains a publication blocker, even while collecting
-    # independent caller evidence after a donor-linkage failure.
-    return any(receipt[key] for key in ('donor_failures', 'consumer_failures',
-                                       'flag_provider_consumers', 'mapper_callsite_candidates'))
+def compatibility_failed(receipt, experimental_dirty_flash=False):
+    # Only absent static caller review may be deferred for an explicit device
+    # experiment. Mechanical failures and reviewed binding drift still reject.
+    if any(receipt[key] for key in ('donor_failures', 'consumer_failures',
+                                    'flag_provider_consumers')):
+        return True
+    candidates = receipt['mapper_callsite_candidates']
+    if not experimental_dirty_flash:
+        return bool(candidates)
+    return any(item.get('review_binding_rejection') for item in candidates)
 
 
 class ImageInventory:
@@ -206,6 +211,8 @@ def reviewed_binding(inventory, context, virtual, metadata, stage, requires_deco
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('image'); parser.add_argument('stage'); parser.add_argument('receipt')
+    parser.add_argument('--experimental-dirty-flash', action='store_true',
+                        help='Defer only unknown static caller coverage; compatibility remains unaccepted')
     args = parser.parse_args()
     stage = Path(args.stage)
     reviewed_interfaces = load_reviews()
@@ -217,6 +224,7 @@ def main():
     receipt = {'input': donor['input'], 'donor_files': donor['files'], 'codec_repack': repack,
                'image_sha256': digest(args.image), 'consumer_failures': [], 'linkage': [], 'flag_provider_consumers': [], 'mapper_callsite_candidates': [],
                'device_validation': False, 'donor_failures': [],
+               'experimental_dirty_flash': args.experimental_dirty_flash, 'acceptance': False,
                'limitations': ['Static ELF symbol and declared namespace checks do not prove runtime behavior or C++ object layout compatibility']}
     with tempfile.TemporaryDirectory(prefix='verify-final-graphics-') as scratch:
         tmp = Path(scratch)
@@ -449,12 +457,13 @@ def main():
         receipt.update(native_files_scanned=len(inventory.natives), contexts=inventory.counts,
                        archives=inventory.archives, apex_packages=inventory.packages,
                        missing_exports={a: sorted(v) for a, v in changed.items()})
-        if compatibility_failed(receipt):
+        if compatibility_failed(receipt, args.experimental_dirty_flash):
             Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
             raise RuntimeError('Donor linkage or final consumer graphics compatibility failed; complete retained evidence required')
-    receipt['status'] = 'pass'
+    receipt['status'] = 'experimental-mechanical-pass' if args.experimental_dirty_flash else 'pass'
+    receipt['unreviewed_caller_count'] = len(receipt['mapper_callsite_candidates'])
     Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
-    print('Final graphics coverage passed:', receipt['native_files_scanned'], 'native files, both ABIs, all APEX/APK consumers')
+    print('Final graphics mechanical checks passed; experimental=' + str(args.experimental_dirty_flash) + '; static unknown callers=' + str(receipt['unreviewed_caller_count']), receipt['native_files_scanned'], 'native files, both ABIs, all APEX/APK consumers')
 
 
 if __name__ == '__main__':
@@ -462,7 +471,7 @@ if __name__ == '__main__':
         main()
     except Exception as error:
         import sys
-        if len(sys.argv) == 4:
+        if len(sys.argv) in (4, 5) and (len(sys.argv) == 4 or sys.argv[4] == '--experimental-dirty-flash'):
             target = Path(sys.argv[3])
             partial = json.loads(target.read_text()) if target.is_file() else {}
             partial.update(status='failure', error=str(error), device_validation=False)
