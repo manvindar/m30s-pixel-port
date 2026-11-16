@@ -113,6 +113,9 @@ def main():
         'source_commit': args.source, 'actions_run': args.run, 'system_sha256': expected,
         'complete_reconstructed_twrp_zip_sha256': archive_sha,
         'system_bytes': size, 'boot_sha256': BOOT_SHA, 'graphics_acceptance': False,
+        'ci_profile1_boot_replaced': True, 'original_ci_boot_sha256': raw_hashes['boot-a17.img'],
+        'build_receipt_scope': 'Original CI System/Vendor/VBMETA; CI baseline Boot replaced by separately verified fixed Boot',
+        'final_kernel_provenance': 'kernel-provenance.json',
         'exact_rebuilt_system_device_tested': False, 'twrp_installer_device_tested': False,
         'installer_scope': 'system-only; preserves boot/vendor/data; never auto-reboots',
         'unreviewed_caller_count': graphics['unreviewed_caller_count']}, indent=2) + '\n')

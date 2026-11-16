@@ -5,7 +5,7 @@ Complete experimental Android 17 QPR3 Beta 4 (DP11.261030.003) images for Samsun
 - `vendor-a17.img.xz`, `boot-acpm-fixed.img`, `vbmeta-disabled.img`: first-install components. Existing installations retain an already installed ACPM-fixed Boot and compatible Vendor/VBMETA. Older v0.6 boots need a separate backed-up fixed-Boot update before using the system-only ZIP; no data wipe. No recovery/modem/EFS/bootloader images are included.
 - `TWRP-INSTALL.md`: dirty-upgrade and first-install instructions. VBMETA is a Download mode step; the retained M30s TWRP fstab does not expose its GUI target.
 - `SHA256SUMS`, `IMAGE-SHA256SUMS`, build and package receipts: exact compressed/raw identities and explicit experimental compatibility limits.
-- `kernel-source-acpm-fixed.tar.gz` and `kernel.config`: corresponding modified Samsung kernel source and exact build configuration for the included fixed boot. Kernel build instructions accompany the source.
+- `kernel-source-acpm-fixed.tar.gz` and `kernel.config`: corresponding modified Samsung kernel source and exact build configuration for the included fixed boot. `build-receipt.json` describes the original CI components, whose baseline Boot was replaced during packaging; `kernel-provenance.json` and `package-receipt.json` describe the final fixed Boot. Kernel build instructions accompany the source.
 
 Battery reporting preserves Samsung kernel capacity instead of Lenovo's charge-counter ratio. The original tablet ROM Tuner interface and the compact M30s app share a validated Exynos backend. CPU caps/governors, touch boost, swappiness and animation controls are supported; GPU reads use Mali. No thermal override or overclock is enabled. Named tablet profiles and MediaTek-only controls are unavailable.
 
