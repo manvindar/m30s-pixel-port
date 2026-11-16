@@ -22,7 +22,7 @@ class AudioEvidenceTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'Nonregular'):
                 m.stat('image', '/system/bin/audioserver')
 
-    def exercise(self, wrong_abi=False, source_drift=False):
+    def exercise(self, wrong_abi=False, source_drift=False, wrong_provider_abi=False, missing_provider=False):
         import os
         with tempfile.TemporaryDirectory() as tmp:
             old = Path.cwd(); os.chdir(tmp)
@@ -39,13 +39,18 @@ class AudioEvidenceTests(unittest.TestCase):
                 def metadata(path):
                     name = Path(path).name.removesuffix('.patched')
                     needs = sorted(m.KEEP) if name == 'audioserver' else ['libui.so', 'libc.so', 'libdl.so']
-                    return {'abi': 'arm32' if (wrong_abi and name == 'audioserver') or '/lib/' in str(path) else 'arm64', 'needed': needs,
+                    abi = 'arm32' if (wrong_abi and name == 'audioserver') or '/lib/' in str(path) else 'arm64'
+                    if wrong_provider_abi and '/base/' in str(path):
+                        abi = 'arm64' if abi == 'arm32' else 'arm32'
+                    return {'abi': abi, 'needed': needs,
                             'exports': {}, 'imports': {'dlopen@LIBC'}, 'abi_imports': {'dlopen@LIBC', 'weak_optional'}}
                 def fake_run(*args):
                     if args[0] == m.sys.executable:
                         Path(args[-1]).write_bytes(Path(args[-2]).read_bytes() + b'patched')
                     return ' 0x000000006ffffffb (FLAGS_1) Flags: NOW GLOBAL\n'
                 def fake_stat(image, remote, **kwargs):
+                    if missing_provider and image == 'base' and remote == '/system/lib/libhidlbase.so':
+                        return None
                     if remote.endswith('/libdl.so'):
                         return 'Inode: 3 Type: symlink Mode: 0777 Fast link dest: /apex/com.android.runtime/lib64/bionic/libdl.so'
                     return None if remote.endswith('/libc.so') else 'Inode: 2 Type: regular Mode: 0755'
@@ -79,6 +84,14 @@ class AudioEvidenceTests(unittest.TestCase):
             self.assertIn('weak_optional', v['abi_imports'])
             self.assertIn('GLOBAL', v['dynamic_text'])
         self.assertIn({'consumer': '/system/lib64/a16audio/libui.so', 'needed': 'libui.so'}, r['declared_edges'])
+
+    def test_required_ownership_provider_absence_rejected(self):
+        with self.assertRaisesRegex(RuntimeError, 'Required base ownership provider absent'):
+            self.exercise(missing_provider=True)
+
+    def test_wrong_ownership_provider_abi_rejected(self):
+        with self.assertRaisesRegex(RuntimeError, 'Wrong base ownership provider ABI'):
+            self.exercise(wrong_provider_abi=True)
 
     def test_patch_source_drift_rejected(self):
         with self.assertRaisesRegex(RuntimeError, 'Pinned patch source drift'):
