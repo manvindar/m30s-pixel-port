@@ -236,7 +236,7 @@ def main():
                             'missing': absent, 'edges': edges, 'providers': [retain_provider(p) for p in providers]})
                     # Each newly added interface must resolve every import too.
                     for edge in edges:
-                        if 'android.hardware.graphics.' not in edge['needed']:
+                        if 'android.hardware.graphics.' not in edge['needed'] and edge['needed'] != 'libsync.so':
                             continue
                         target = inventory.metadata[edge['to']]
                         dep_providers, _ = inventory.closure(edge['namespace'], edge['to'], target)
@@ -251,6 +251,16 @@ def main():
                     edges = []
                 receipt['linkage'].append({'context': context, 'abi': abi, 'libui_sha256': digest(actual), 'edges': edges})
                 if context == 'codec':
+                    sync_pins = repack['sync_provider']['source']['outputs'][abi]
+                    sync = inventory.own(final_context, 'libsync.so', abi)
+                    if sync is None or sync[0] != final_context:
+                        raise RuntimeError('Codec-local genuine sync provider missing')
+                    sync_ctx, sync_virtual, sync_metadata = sync
+                    sync_actual = Path(sync_metadata['source_path'])
+                    required_sync = {n + '@LIBSYNC' for n in ('sync_file_info', 'sync_file_info_free', 'sync_merge', 'sync_wait')}
+                    if digest(sync_actual) != sync_pins['sha256'] or sync_actual.stat().st_size != sync_pins['bytes'] or not required_sync <= sync_metadata['exports']:
+                        raise RuntimeError('Final codec sync provider pin/version mismatch')
+                    receipt.setdefault('sync_provider_readback', []).append({'abi': abi, 'context': sync_ctx, 'file': sync_virtual, 'sha256': digest(sync_actual), 'exports': sorted(sync_metadata['exports'])})
                     bind = root / 'system/etc/bpf.a17' / ('libui_swcodec64.so' if abi == 'arm64' else 'libui_swcodec32.so')
                     if not bind.is_file() or digest(bind) != digest(patched):
                         raise RuntimeError('Codec bind copy differs from verified APEX payload')

@@ -11,7 +11,7 @@ import shutil
 import struct
 import tempfile
 import zipfile
-from common import digest, dump, run, unpack_apex
+from common import digest, dump, run, unpack_apex, elf
 from stage_legacy import LEGACY
 
 
@@ -55,8 +55,22 @@ def main():
     parser.add_argument('ui64'); parser.add_argument('ui32')
     args = parser.parse_args()
     stage = Path(args.stage)
-    receipt = {'input_package_sha256': digest(args.input), 'replacements': [], 'added': [],
-               'namespace_strategy': 'Legacy interfaces reside inside codec payload; manifest requirements unchanged'}
+    sync_root = stage / 'sync-provider'
+    sync_receipt = json.loads((sync_root / 'receipt.json').read_text())
+    source_pins = json.loads((Path(__file__).resolve().parent / 'libsync-source/pins.json').read_text())
+    if sync_receipt['source'] != source_pins or len(sync_receipt['variants']) != 2 or {v['abi'] for v in sync_receipt['variants']} != {'arm64', 'arm32'}:
+        raise RuntimeError('Incomplete or unpinned codec sync implementation receipt')
+    for variant in sync_receipt['variants']:
+        library = sync_root / variant['path']
+        pin = source_pins['outputs'][variant['abi']]
+        if digest(library) != pin['sha256'] or library.stat().st_size != pin['bytes']:
+            raise RuntimeError('Codec sync provider stage hash mismatch')
+        metadata = elf(library)
+        required = {n + '@LIBSYNC' for n in ('sync_file_info', 'sync_file_info_free', 'sync_merge', 'sync_wait')}
+        if metadata['abi'] != variant['abi'] or not required <= metadata['exports'] or metadata['needed'] != ['libc.so']:
+            raise RuntimeError('Invalid codec sync implementation ABI/versions/dependencies')
+    receipt = {'sync_provider': sync_receipt, 'input_package_sha256': digest(args.input), 'replacements': [], 'added': [],
+               'namespace_strategy': 'Legacy interfaces and pinned genuine LIBSYNC implementations reside inside codec payload; local providers precede declared external requirements; libc remains external'}
     with tempfile.TemporaryDirectory(prefix='codec-graphics-') as scratch:
         tmp = Path(scratch)
         original, payload, _ = unpack_apex(args.input, tmp / 'input')
@@ -97,7 +111,11 @@ def main():
             if not label.startswith('u:object_r:'):
                 raise RuntimeError('Missing codec library SELinux label')
             label_file = tmp / (directory + '-label'); label_file.write_bytes(label.encode() + b'\x00')
-            planned = [(original_path, library, 'replacements')]
+            sync_path = '/' + directory + '/libsync.so'
+            if 'Inode:' in run('debugfs', '-R', 'stat ' + sync_path, pay):
+                raise RuntimeError('Unexpected existing codec-local sync provider')
+            planned = [(original_path, library, 'replacements'),
+                       (sync_path, sync_root / directory / 'libsync.so', 'added')]
             for name in LEGACY:
                 destination = '/' + directory + '/' + name
                 stat = run('debugfs', '-R', 'stat ' + destination, pay)
