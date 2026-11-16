@@ -357,8 +357,13 @@ jobs:
         run: |
           export A17_TOOLS="$PWD/tablet/tools"
           DEV=""; [ "$DEV_TOOLS" = true ] && DEV="--dev-tools"
+          python3 tools/downloads/verified_input.py \
+            https://github.com/manvindar/m30s-pixel-port/releases/download/v0.7-a17-m30s-fixes-20261116/RomTuner-Tablet-M30s.apk \
+            6a9bc65cfde17e49292d802ec383cf3de1a79e6506fa9e2d2d368375b9a07eae tablet-tuner-signed.apk
+          "$BT/apksigner" verify --print-certs tablet-tuner-signed.apk > tablet-tuner-signer.txt
+          grep -Fx 'Signer #1 certificate SHA-256 digest: 17bb00988f8ac7c2a74109c5e77a834e6c4a34ddcfa2f004efa141377e623fb8' tablet-tuner-signer.txt
           python3 tools/img/build_a17.py --gsi system.img --donor "$DONOR_IMG" --vndk-dir vndk30 --a14fs a14fs \
-            --pixel-phone pixel_stage --legacy-graphics legacy_graphics --gapps gapps/*.zip $DEV --build-tools "$BT" --out system-a17-pixel.img
+            --pixel-phone pixel_stage --legacy-graphics legacy_graphics --gapps gapps/*.zip --tablet-tuner-apk tablet-tuner-signed.apk $DEV --build-tools "$BT" --out system-a17-pixel.img
           rm -rf system.img "$DONOR_IMG" pixel_stage; ls -la *.img; df -h /
 
       - name: Pinned reviewed kernel

@@ -41,6 +41,7 @@ ap.add_argument('--out', required=True); ap.add_argument('--gapps', help='MindTh
 ap.add_argument('--port-repo', default=os.path.join(HERE, '..', '..', 'tb-x606v-android16-port'), help='Android 16 port repo (ROM Tuner, boot animations)')
 ap.add_argument('--dev-tools', action='store_true', help='development safety net (tools/debug): boot_watchdog reboots into recovery when a boot does not finish, bootdiag writes the boot logcat to /data/local/tmp/bootdiag')
 ap.add_argument('--experimental', action='store_true', help='EXPERIMENTAL features, off in release builds: virtual compass service (tools/compass; its vendor half is installed by tools/compass/install.sh, never by the image)')
+ap.add_argument('--tablet-tuner-apk', help='externally signed tablet-interface APK; preserve installed app signing identity');
 ap.add_argument('--no-m30s-tuner', action='store_true', help='omit the M30s ROM Tuner app and root backend');
 ap.add_argument('--no-tuner', action='store_true', default=True); ap.add_argument('--with-bootdiag', action='store_true', help='boot diagnostics service (logcat/kmsg into /data/local/tmp/bootdiag, costs performance)')
 ap.add_argument('--dolby', help='directory with DaxUI.apk, daxService.patched.apk (or daxService.apk) and com.dolby.daxservice.xml from the stock Lenovo firmware')
@@ -447,10 +448,14 @@ if not a.no_m30s_tuner:
         env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))
     mkdir('/system/app/M30sRomTuner')
     put(os.path.join(tuner_out, 'RomTuner-M30s.apk'), '/system/app/M30sRomTuner/M30sRomTuner.apk', '644')
-    run('sh', os.path.join(tuner, 'build.sh'), tuner_out + '-tablet', os.path.join(TOOLS, 'pixel'),
-        env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT, M30S_TUNER_FLAVOR='tablet'))
+    tablet_apk = a.tablet_tuner_apk
+    if not tablet_apk:
+        run('sh', os.path.join(tuner, 'build.sh'), tuner_out + '-tablet', os.path.join(TOOLS, 'pixel'),
+            env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT, M30S_TUNER_FLAVOR='tablet'))
+        tablet_apk = os.path.join(tuner_out + '-tablet', 'RomTuner-Tablet-M30s.apk')
+    run(os.path.join(BT, 'apksigner'), 'verify', tablet_apk)
     mkdir('/system/app/TabletRomTuner')
-    put(os.path.join(tuner_out + '-tablet', 'RomTuner-Tablet-M30s.apk'), '/system/app/TabletRomTuner/TabletRomTuner.apk', '644')
+    put(tablet_apk, '/system/app/TabletRomTuner/TabletRomTuner.apk', '644')
     put(os.path.join(tuner, 'device', 'm30s_tunerd.sh'), '/system/bin/m30s_tunerd.sh', '755')
     put(tmpf('m30s_tunerd.rc', rc_fix(os.path.join(tuner, 'device', 'm30s_tunerd.rc'))), '/system/etc/init/m30s_tunerd.rc', '644')
 if a.dev_tools:
