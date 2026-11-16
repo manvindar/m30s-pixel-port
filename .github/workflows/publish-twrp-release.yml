@@ -39,11 +39,19 @@ jobs:
         run: |
           gh run download "$CANDIDATE_RUN" -R "$GITHUB_REPOSITORY" -n "m30s-a17-pixel-candidate-$CANDIDATE_RUN" -D candidate
           mkdir fixed
-          gh release download "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" -p boot-acpm-fixed.img -D fixed
+          gh release download "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" -p boot-acpm-fixed.img -p kernel-source-acpm-fixed.tar.gz -p kernel.config -p kernel-provenance.json -p KERNEL-BUILD.md -D fixed
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          p = Path('fixed'); r = json.loads((p / 'kernel-provenance.json').read_text())
+          for name, key in [('kernel-source-acpm-fixed.tar.gz', 'corresponding_source_sha256'), ('kernel.config', 'config_sha256')]:
+              with (p / name).open('rb') as f: assert hashlib.file_digest(f, 'sha256').hexdigest() == r[key]
+          PY
       - name: Regression checks and complete image/ZIP verification
         run: |
           python3 -m unittest discover -s tools/release -v
           python3 tools/release/package_twrp.py candidate fixed/boot-acpm-fixed.img out --source "$CANDIDATE_SOURCE" --run "$CANDIDATE_RUN"
+          cp fixed/kernel-source-acpm-fixed.tar.gz fixed/kernel.config fixed/kernel-provenance.json fixed/KERNEL-BUILD.md out/
           cp docs/TWRP-RELEASE.md out/TWRP-INSTALL.md
           cp docs/XDA-A17-TWRP.md out/XDA-POST.md
           cp docs/A17-TWRP-RELEASE-NOTES.md out/RELEASE-NOTES.md
