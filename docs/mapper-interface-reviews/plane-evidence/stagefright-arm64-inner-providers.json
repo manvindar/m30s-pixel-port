@@ -1,0 +1,164 @@
+{
+  "patched": {
+    "functions": [
+      {
+        "name": "_ZNK7android13GraphicBuffer15getNativeBufferEv",
+        "value": 352968,
+        "size": 12,
+        "defined": true,
+        "type": 2,
+        "evidence": "stagefright-patched-562c8-inner.asm"
+      },
+      {
+        "name": "_ZN7android19GraphicBufferMapper4lockEPK13native_handlelRKNS_4RectEONS_4base14unique_fd_implINS7_13DefaultCloserEEE",
+        "value": 255164,
+        "size": 388,
+        "defined": true,
+        "type": 2,
+        "evidence": "stagefright-patched-3e4bc-inner.asm"
+      },
+      {
+        "name": "_ZN7android19GraphicBufferMapper9lockYCbCrEPK13native_handlelRKNS_4RectEONS_4base14unique_fd_implINS7_13DefaultCloserEEE",
+        "value": 251192,
+        "size": 392,
+        "defined": true,
+        "type": 2,
+        "evidence": "stagefright-patched-3d538-inner.asm"
+      }
+    ],
+    "tables": {
+      "_ZTVN7android14Gralloc3MapperE": {
+        "10": {
+          "symbol": "_ZNK7android14Gralloc3Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "11": {
+          "symbol": "_ZNK7android14Gralloc3Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "12": {
+          "symbol": "_ZNK7android14Gralloc3Mapper6unlockEPK13native_handle",
+          "addend": 0,
+          "relocation_type": 257
+        }
+      },
+      "_ZTVN7android14Gralloc4MapperE": {
+        "10": {
+          "symbol": "_ZNK7android14Gralloc4Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "11": {
+          "symbol": "_ZNK7android14Gralloc4Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "12": {
+          "symbol": "_ZNK7android14Gralloc4Mapper6unlockEPK13native_handle",
+          "addend": 0,
+          "relocation_type": 257
+        }
+      },
+      "_ZTVN7android14Gralloc5MapperE": {
+        "10": {
+          "symbol": "_ZNK7android14Gralloc5Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "11": {
+          "symbol": "_ZNK7android14Gralloc5Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "12": {
+          "symbol": "_ZNK7android14Gralloc5Mapper6unlockEPK13native_handle",
+          "addend": 0,
+          "relocation_type": 257
+        }
+      },
+      "_ZTVN7android14Gralloc2MapperE": {
+        "10": {
+          "symbol": "_ZNK7android14Gralloc2Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "11": {
+          "symbol": "_ZNK7android14Gralloc2Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "12": {
+          "symbol": "_ZNK7android14Gralloc2Mapper6unlockEPK13native_handle",
+          "addend": 0,
+          "relocation_type": 257
+        }
+      }
+    }
+  },
+  "latest": {
+    "functions": [
+      {
+        "name": "_ZN7android19GraphicBufferMapper9lockYCbCrEPK13native_handlelRKNS_4RectEONS_4base14unique_fd_implINS7_13DefaultCloserEEE",
+        "value": 272220,
+        "size": 396,
+        "defined": true,
+        "type": 2,
+        "evidence": "stagefright-latest-4275c-inner.asm"
+      },
+      {
+        "name": "_ZN7android19GraphicBufferMapper4lockEPK13native_handlelRKNS_4RectEONS_4base14unique_fd_implINS7_13DefaultCloserEEE",
+        "value": 273592,
+        "size": 372,
+        "defined": true,
+        "type": 2,
+        "evidence": "stagefright-latest-42cb8-inner.asm"
+      },
+      {
+        "name": "_ZNK7android13GraphicBuffer15getNativeBufferEv",
+        "value": 363064,
+        "size": 12,
+        "defined": true,
+        "type": 2,
+        "evidence": "stagefright-latest-58a38-inner.asm"
+      }
+    ],
+    "tables": {
+      "_ZTVN7android14Gralloc4MapperE": {
+        "10": {
+          "symbol": "_ZNK7android14Gralloc4Mapper4lockEPK13native_handlemRKNS_4RectEiPPv",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "11": {
+          "symbol": "_ZNK7android14Gralloc4Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "12": {
+          "symbol": "_ZNK7android14Gralloc4Mapper6unlockEPK13native_handle",
+          "addend": 0,
+          "relocation_type": 257
+        }
+      },
+      "_ZTVN7android14Gralloc5MapperE": {
+        "10": {
+          "symbol": "_ZNK7android14Gralloc5Mapper4lockEPK13native_handlemRKNS_4RectEiPPv",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "11": {
+          "symbol": "_ZNK7android14Gralloc5Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+          "addend": 0,
+          "relocation_type": 257
+        },
+        "12": {
+          "symbol": "_ZNK7android14Gralloc5Mapper6unlockEPK13native_handle",
+          "addend": 0,
+          "relocation_type": 257
+        }
+      }
+    }
+  }
+}

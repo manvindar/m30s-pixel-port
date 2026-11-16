@@ -1,0 +1,83 @@
+{
+  "text_bytes": 1449848,
+  "text_start": "0xa0000",
+  "text_end": "0x201f78",
+  "functions": 3636,
+  "mini_debug_bytes": 162744,
+  "unknown_instructions": [],
+  "function_extent_gaps": [
+    {
+      "start": "0xa0744",
+      "end": "0xa0750",
+      "bytes": 12,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0xa0af0",
+      "end": "0xa1000",
+      "bytes": 1296,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0xa78bc",
+      "end": "0xa78c0",
+      "bytes": 4,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0xab688",
+      "end": "0xab690",
+      "bytes": 8,
+      "unique_words": [
+        "00000000"
+      ]
+    }
+  ],
+  "GOT_page216000_materializations": 1961,
+  "mapper_GOT_loads": [
+    {
+      "page": "0x1cb0d8",
+      "load": "0x1cb0dc",
+      "got": "0x216950",
+      "destination": "x0"
+    },
+    {
+      "page": "0x1cb0ec",
+      "load": "0x1cb0f0",
+      "got": "0x216958",
+      "destination": "x20"
+    },
+    {
+      "page": "0x1cb110",
+      "load": "0x1cb114",
+      "got": "0x216950",
+      "destination": "x0"
+    }
+  ],
+  "all_mapper_PLT_calls": [
+    {
+      "address": "0x1cb108",
+      "instruction": "bl\t0x20a6d0 <_ZN7android19GraphicBufferMapperC1Ev@plt>"
+    },
+    {
+      "address": "0x1cb158",
+      "instruction": "bl\t0x20a688 <_ZN7android19GraphicBufferMapper4lockEPK13native_handlejRKNS_4RectEPPv@plt>"
+    },
+    {
+      "address": "0x1cb238",
+      "instruction": "bl\t0x20a670 <_ZN7android19GraphicBufferMapper9lockYCbCrEPK13native_handlejRKNS_4RectEP13android_ycbcr@plt>"
+    },
+    {
+      "address": "0x1cb2b4",
+      "instruction": "bl\t0x20a6a0 <_ZN7android19GraphicBufferMapper6unlockEPK13native_handlePNS_4base14unique_fd_implINS4_13DefaultCloserEEE@plt>"
+    }
+  ],
+  "receiver_spill": "1cb244 strx21[sp,#60], only matching reload1cb2a8 to x0 beforeunlock; allfunctionsame-sp60 references inventoried",
+  "unrelated_same_offset": "178d90 uses page21c000+958, unrelated singleton, excluded by actualpageorigin"
+}

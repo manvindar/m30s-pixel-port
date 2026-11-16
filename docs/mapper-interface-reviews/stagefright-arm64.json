@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "status": "proposed-exact-hash-bound-public-mapper-interface-review",
+  "full_rom_acceptance": false,
+  "runtime_verified": false,
+  "abi": "arm64",
+  "consumer": {
+    "context": "system",
+    "file": "/system/lib64/libstagefright.so",
+    "sha256": "a1a7ee44b25790058c3596797ef3f7f147b3e3ba06f37162fdbb0f1ce6ad126f",
+    "bytes": 2243272
+  },
+  "patched_system_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+  "latest_system_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+  "interface_symbols": [
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+  ],
+  "decoding": {
+    "text_bytes": 1449848,
+    "exact_functions": 3636,
+    "mini_debug_bytes": 162744,
+    "unknown_instructions": 0,
+    "extent_gaps": "4 gaps, all rawword00000000",
+    "actual_GOT_page216000_materializations_scanned": 1961,
+    "mapper_loads": 3,
+    "all_mapper_PLT_calls": 4,
+    "unrelated_numeric_offset": "178d90 usespage21c000+958 and unrelated8byteSingleton; actualpage/GOT origins distinguish it"
+  },
+  "affected_receiver_paths": [
+    {
+      "function": "SoftwareRenderer::render(void const*,size_t,int64_t,int64_t,uint64_t,sp<AMessage>const&)",
+      "entry": "0x1ca9a0",
+      "bytes": 5628,
+      "instance_load": "1cb0ec/1cb0f0 GOT216958;1cb0f4 x21=[x20]",
+      "allocation16": "1cb0fc w0=16;1cb100new;1cb104x21=x0",
+      "constructor": "1cb108->20a6d0",
+      "owned_singleton_store": "1cb10c [x20]=x21",
+      "lock": "1cb14c x0=x21;1cb158->20a688",
+      "lockYCbCr": "1cb22c x0=x21;1cb238->20a670",
+      "receiver_spill": "1cb244strx21[sp,#60]; onlymatchingreload1cb2a8x0=[sp,#60]",
+      "unlock": "1cb2ac x2=null;1cb2b4->20a6a0",
+      "receiver_lifetime_end": "Afterlockspills, x21 reused as loopcounter/ANativeWindow methodtarget; spilledreceiveronlyreloadedforunlock and publiccallclobbersx0. No mapperreceiverfield/virtual/helperargument/otherstore. Conservativeregistertrace661states plus exactspill2references manuallyclosed.",
+      "noreturn_edge": "Traceoutside1cbf9c is fallthrough after1cbf98 __android_log_assert, actualfatalnoreturn; not accepted normalreturn/escape"
+    }
+  ],
+  "mapper_object": {
+    "allocation_bytes": 16,
+    "pointer_offset": 0,
+    "HAL_version_offset": 8,
+    "HAL_version_bytes": 4,
+    "actual_patched_ctor": "Originalthisx19at357b8;pointer357bc/357ec+0,version3580c32bit+8, fits16",
+    "consumer_inline_HAL_version": false,
+    "consumer_inline_getMapper": false
+  },
+  "no_direct_consumer_Gralloc_virtual_calls": true,
+  "changed_slot10_cross_DSO_from_consumer": false,
+  "internal_provider_virtual_origins": {
+    "lock": "Actualpatchedpublic220B wrapper3e368 calls own retainedoverload3e4bc;3e578x6=localstride,3e57cx7=localbpp,3e594loadsaddresspoint+0x40/tableindex10 with old matching8argument signature. Latestpublic42bdc calls own42cb8 matchingnew6argument signature. Extraints stay inside eachprovider; consumerreceivesonlyvoidpointer8.",
+    "lockYCbCr": "Patchedown3d538 addresspoint+0x48/tableindex11 at3d608;latestown4275c at4282c;same android_ycbcr*protocol",
+    "unlock": "Patched318fc addresspoint+0x50/tableindex12;same nativehandle/returnedFDprotocol; consumerpassesnullptr outputunique_fd, no fdobjectlayoutcrosses"
+  },
+  "external_protocols": {
+    "lock": {
+      "usage": "consumerw2=0x20(32bit);providerbothmovw2,w2zeroextends",
+      "Rect": {
+        "bytes": 16,
+        "fields": "four32bitcoords0/4/8/12",
+        "consumer": "base=x29-0x98,left/top0 via1cb124 zerostorecoveringfirst8,right/bottomwidthheight via1cb128",
+        "actual_legacy_Backends": "G2void48d34/48d38,G3void4a2fc/4a300,G2YCbCr48ee4/48ee8,G3YCbCr4a4c4/4a4c8 read exactly0..15"
+      },
+      "pointer_output": {
+        "bytes": 8,
+        "base": "x29-0xa0",
+        "initialization": "1cb124zero",
+        "patchedwrite": "3e3c4loadsinternaldata;3e3ccstrx9[calleroutput]onlyonsuccess",
+        "latestwrite": "42c58loadsinternaldata;42c64strx9[calleroutput]onlyonsuccess"
+      },
+      "status": "1cb15c cbzw0->success1cb240;nonzero1cb160..1cbf44->fatalassert1cbef0 before outputconsumption"
+    },
+    "lockYCbCr": {
+      "output_bytes": 80,
+      "base": "x29-0x60",
+      "initialization": "1cb130zero32bytesat-0x50;1cb134zero32at-0x30;1cb138zero16at-0x60;coversexact[-96,-17]",
+      "fields": {
+        "y": 0,
+        "cb": 8,
+        "cr": 16,
+        "ystride": 24,
+        "cstride": 32,
+        "chroma_step": 40,
+        "reserved": "48..79"
+      },
+      "actual_patched_publiccopy": "3d474checksinternalresultstatus;3d47c..3d488 memcpy80 into calleroutput onlysuccess",
+      "actual_latest_publiccopy": "426bcchecksstatus;426c4..426d0 memcpy80 onlysuccess",
+      "consumer_fieldreads": "y1cb3fc/-0x60;cb/cr1cb3f0/-0x58pair;ystride1cb424/-0x48;cstride1cb46c/-0x40;additionalformatloopsreusefields. Reservedunread;noPlaneLayout/vectorcrossesconsumerinterface.",
+      "status": "1cb23c cbnzw0->1cbf38error/fatal;onlyzeroentersoutputprocessing1cb240"
+    },
+    "unlock": {
+      "output_fd_object": "nullptr at1cb2ac, so unique_fdobjectlayoutnotexposed",
+      "status": "1cb2b8 cbnzw0->1cbef8error/fatal;zero continuesnormalrender"
+    }
+  },
+  "native_handle_field": {
+    "consumer": "1cb154/1cb234/1cb2b0 nativehandle fromANativeWindowBuffer+0x60",
+    "actual_provider_coordinate": "PatchedGraphicBuffergetNativeBuffer562cc/latest58a3c returnsoriginalthis+0x10;existingactualinitWithHandlestoreshandleoriginalthis+0x70 in both, soANativeWindowBuffer+0x60 touchedfieldmatches",
+    "evidence": "stagefright-patched-562c8-inner.asm;stagefright-latest-58a38-inner.asm;libgui-arm64-graphicbuffer-field.json",
+    "scope": "Onlytouchednativehandlefield, notallANativeWindowBuffer/GraphicBufferfields"
+  },
+  "legacy_2_3_status": {
+    "no_assumed_ENOSYS": "G2/3lockslots10/11 are actual namedlockimplementations, not the metadata-38default. No assertion theysucceedorruntimecompatible.",
+    "failure_handling": "Ifbackendreturns-38oranynonzero, publicwrappersreturnerrorwithoutcopyingoutputs; consumerchecksstatusandfatalasserts beforedatause; zero-initializationnotusedasfakepass.",
+    "limitation": "Errors terminate renderer/process as retainedcaller requires; nogracefulfallbackclaim"
+  },
+  "closed_public_mapper_receiver_slice": true,
+  "limitations": [
+    "Exactpublicmapperinterfaceonly; oldinternalchangedslot10 remains confined to matchingoldproviderwrapper and mustnotbeexemptedforother directnewconsumer calls",
+    "Independentfinalhash/linker/providerbinding required; no namespaceassumptions",
+    "No wholeSoftwareRenderer/ANativeWindow/GraphicBuffer/ROM ABI acceptance",
+    "No runtimevideo/render/deviceevidence",
+    "Retainedcallerfatalasserts on lock/unlock failure; staticlayoutproofdoesnotprove successfullegacyHALoperation"
+  ],
+  "evidence": [
+    "stagefright-arm64-functions.json",
+    "stagefright-arm64-mini-debug.elf",
+    "stagefright-arm64-reference-inventory.json",
+    "stagefright-arm64-mapper-relocations.json",
+    "stagefright-arm64-function-1ca9a0.asm",
+    "stagefright-arm64-provider-methods.json",
+    "stagefright-arm64-inner-providers.json",
+    "stagefright-arm64-receiver-trace.json",
+    "stagefright_receiver_trace.py",
+    "stagefright-legacy-lock-methods.json",
+    "libgui-arm64-graphicbuffer-field.json"
+  ]
+}

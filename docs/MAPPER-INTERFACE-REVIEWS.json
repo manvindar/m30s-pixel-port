@@ -128,6 +128,24 @@
       "evidence": "mapper-interface-reviews/media-jni-arm32.json",
       "scope": "affected_mapper_receiver_interface_only",
       "runtime_validation": false
+    },
+    {
+      "id": "stagefright-arm64",
+      "context": "system",
+      "file": "/system/lib64/libstagefright.so",
+      "abi": "arm64",
+      "sha256": "a1a7ee44b25790058c3596797ef3f7f147b3e3ba06f37162fdbb0f1ce6ad126f",
+      "bytes": 2243272,
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+      "latest_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+      "decoder_sha256": null,
+      "evidence": "mapper-interface-reviews/stagefright-arm64.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
     }
   ],
   "code_evidence": [
@@ -450,6 +468,56 @@
       "file": "mapper-interface-reviews/plane-evidence/final-provider-arm32-6aec.asm",
       "sha256": "e6bdf170573dce6cb36dda76359dfde336cbc8fb8da6db3b863109dbcb9d725e",
       "bytes": 2199
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-arm64-receiver-trace.json",
+      "sha256": "d44fc79efe8bb1129b0caf532416ce48fcaca1872d98aa603cb812f5b62168c2",
+      "bytes": 1742
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-arm64-reference-inventory.json",
+      "sha256": "e0c7f0fbb65136fb5b874656ec812751ae85e439d0f939f88591f61333e091d5",
+      "bytes": 2062
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-arm64-inner-providers.json",
+      "sha256": "f66675f26cec8db7a978043da3ab8c67b2bbb50aa37ed16d543c513b47a49737",
+      "bytes": 5247
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-patched-318ac-mapper.asm",
+      "sha256": "4f26bd60287a7d5326c9f23c1ad0185ddf874f28238117d9b6f4965711f54348",
+      "bytes": 5290
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-patched-3d3d0-mapper.asm",
+      "sha256": "7eba48841483f48397458e8244b3f977f2c93b0f43d22a3e378c31249792eb94",
+      "bytes": 4009
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-patched-3e368-mapper.asm",
+      "sha256": "e1a90aead4b324a7fbd49697a94e1173ce138a1c7ddcd2ad95931fa202381310",
+      "bytes": 2771
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-latest-42624-mapper.asm",
+      "sha256": "d25e234b82c738d27a3d23d0bbbd780936b61a9a4c68644da121631fb1e45b29",
+      "bytes": 3942
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-latest-42bdc-mapper.asm",
+      "sha256": "63000b82c9767143e953498053f7486ab1b120d68b784a88d41e396825fcb356",
+      "bytes": 2764
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-legacy-lock-methods.json",
+      "sha256": "0bc9402b01510545fb14202a3443b8be84e96c7100e59cc3ea513d4cdbd104ce",
+      "bytes": 923
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/stagefright-arm64-mapper-slice.asm",
+      "sha256": "4285fe62c4b4afd6d4ed18ce2ff8f76e55efcf2fd027199bb7379cb4168d8a12",
+      "bytes": 7805
     }
   ],
   "retained_large_evidence": [
