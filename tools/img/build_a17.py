@@ -397,8 +397,10 @@ if exists(S, '/system/etc/init/cpustatsd.rc'):
 # lights and vibrator shims: not in the first M30s image (see docs/phase3prep/A17-BUILD.md); health shim below is kept
 # health: same pattern, the AIDL IHealth/default shim that gives BatteryService the real level, voltage and temperature (its vintf fragment goes on /vendor, see tools/scripts/apply_vendor_a17.sh).
 # Install order matters on a live system: with the fragment declared and no service registered, BatteryService waits for the HAL forever.
-run('sh', os.path.join(TOOLS, 'health', 'build.sh'), env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))
-put(os.path.join(TOOLS, 'health', 'out', 'healthshim.jar'), '/system/etc/healthshim.jar', '644')
+health = wp('m30s-health')
+run(sys.executable, os.path.join(HERE, '..', 'health', 'stage_m30s.py'), os.path.join(TOOLS, 'health'), health)
+run('sh', os.path.join(health, 'build.sh'), env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))
+put(os.path.join(health, 'out', 'healthshim.jar'), '/system/etc/healthshim.jar', '644')
 put(os.path.join(TOOLS, 'health', 'healthshim.sh'), '/system/bin/healthshim.sh', '755'); put(os.path.join(TOOLS, 'health', 'healthshim.rc'), '/system/etc/init/healthshim.rc', '644')
 # fingerprint: Android 17's FingerprintService only speaks the AIDL IFingerprint HAL, the Samsung vendor only HIDL IBiometricsFingerprint@2.1. tools/fphal/shim (Java, app_process, like the health shim)
 # registers IFingerprint/default and forwards to the HIDL HAL. The vintf fragment is a framework one (no vendor reflash); the feature file switches FingerprintService on.

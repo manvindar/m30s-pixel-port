@@ -116,6 +116,16 @@ jobs:
             ${{ env.ANDROID_HOME }}/ndk/${{ env.NDK_VERSION }}
           key: a17-sdk-v1-${{ runner.os }}-bt35.0.0-api34-ndk${{ env.NDK_VERSION }}
 
+      - name: Samsung battery percentage regressions
+        run: |
+          python3 -m unittest discover -s tools/health -v
+          health_test_root=$(mktemp -d)
+          python3 tools/health/stage_m30s.py tablet/tools/health "$health_test_root/fixed"
+          javac -d "$health_test_root/upstream-classes" tablet/tools/health/src/HealthCore.java tools/health/M30sCoreTest.java
+          java -cp "$health_test_root/upstream-classes" shim.M30sCoreTest upstream
+          javac -d "$health_test_root/fixed-classes" "$health_test_root/fixed/src/HealthCore.java" tools/health/M30sCoreTest.java
+          java -cp "$health_test_root/fixed-classes" shim.M30sCoreTest
+
       - name: Host system-write recovery regressions
         run: python3 -m unittest discover -s tools/flash -v
 

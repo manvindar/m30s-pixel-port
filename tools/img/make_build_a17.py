@@ -183,5 +183,8 @@ if a.legacy_graphics:
     put(rebuilt, A + 'com.android.media.swcodec.apex', mode, uid, gid, context)"""
 sub(old, new)
 
+# Samsung charge_full is nominal; the tablet counter-ratio correction is inapplicable.
+sub("run('sh', os.path.join(TOOLS, 'health', 'build.sh'), env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))\nput(os.path.join(TOOLS, 'health', 'out', 'healthshim.jar'), '/system/etc/healthshim.jar', '644')", "health = wp('m30s-health')\nrun(sys.executable, os.path.join(HERE, '..', 'health', 'stage_m30s.py'), os.path.join(TOOLS, 'health'), health)\nrun('sh', os.path.join(health, 'build.sh'), env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))\nput(os.path.join(health, 'out', 'healthshim.jar'), '/system/etc/healthshim.jar', '644')")
+
 open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build_a17.py'), 'w').write(s)
 print(f'build_a17.py written, {n} substitutions', file=sys.stderr)
