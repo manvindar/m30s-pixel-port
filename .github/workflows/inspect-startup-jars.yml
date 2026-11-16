@@ -1,0 +1,32 @@
+name: Inspect exact flashed startup JARs
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Read exact candidate identity
+        run: gh api repos/manvindar/m30s-pixel-port/actions/runs/43807393475 > run.json
+      - name: Download existing candidate only
+        run: gh run download 43807393475 -R manvindar/m30s-pixel-port -n m30s-a17-pixel-candidate-43807393475 -D candidate
+      - name: Test and extract two exact JARs
+        run: |
+          python3 -m unittest discover -s tools/pixel -p test_extract_startup_jars.py -v
+          python3 tools/pixel/extract_startup_jars.py candidate run.json startup-jar-evidence
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: exact-startup-jar-evidence
+          path: |
+            run.json
+            startup-jar-evidence/receipt.json
+            startup-jar-evidence/framework.jar
+            startup-jar-evidence/services.jar
+          if-no-files-found: error
