@@ -28,6 +28,7 @@ def main():
                ('/system/bin/linkerconfig', False),
                ('/system/bin/init', True),
                ('/system/etc/linker.config.json', False),
+               ('/system/etc/linker.config.pb', True),
                ('/system/etc/init/audioserver.rc', True),
                ('/system/build.prop', True),
                ('/system/etc/ld.config.txt', False),
