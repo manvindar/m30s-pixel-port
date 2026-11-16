@@ -16,6 +16,12 @@ class AudioEvidenceTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'Nonregular'):
                 m.stat('image', '/system/bin/audioserver')
 
+    def test_symlink_only_allowed_as_external_evidence(self):
+        with patch.object(m, 'run', return_value='Inode: 10 Type: symlink Mode: 0777 Fast link dest: /apex/libdl.so'):
+            self.assertIn('Fast link dest:', m.stat('image', '/system/lib64/libdl.so', external_link=True))
+            with self.assertRaisesRegex(RuntimeError, 'Nonregular'):
+                m.stat('image', '/system/bin/audioserver')
+
     def exercise(self, wrong_abi=False, source_drift=False):
         import os
         with tempfile.TemporaryDirectory() as tmp:
@@ -32,14 +38,16 @@ class AudioEvidenceTests(unittest.TestCase):
                     return target
                 def metadata(path):
                     name = Path(path).name.removesuffix('.patched')
-                    needs = sorted(m.KEEP) if name == 'audioserver' else ['libui.so', 'libc.so']
+                    needs = sorted(m.KEEP) if name == 'audioserver' else ['libui.so', 'libc.so', 'libdl.so']
                     return {'abi': 'arm32' if wrong_abi else 'arm64', 'needed': needs,
                             'exports': {}, 'imports': {}}
                 def fake_run(*args):
                     if args[0] == m.sys.executable:
                         Path(args[-1]).write_bytes(Path(args[-2]).read_bytes() + b'patched')
                     return 'evidence'
-                def fake_stat(image, remote):
+                def fake_stat(image, remote, **kwargs):
+                    if remote.endswith('/libdl.so'):
+                        return 'Inode: 3 Type: symlink Mode: 0777 Fast link dest: /apex/com.android.runtime/lib64/bionic/libdl.so'
                     return None if remote.endswith('/libc.so') else 'Inode: 2 Type: regular Mode: 0755'
                 argv = ['inspect', '--base', 'base', '--donor', 'donor', '--tablet', 'tablet']
                 with patch.object(m.sys, 'argv', argv), patch.object(m, 'dump', side_effect=fake_dump), \
@@ -55,7 +63,10 @@ class AudioEvidenceTests(unittest.TestCase):
         r = self.exercise()
         self.assertFalse(r['acceptance']); self.assertFalse(r['final_readback'])
         self.assertFalse(r['runtime_execution'])
-        self.assertEqual([v['name'] for v in r['external_requirements']], ['libc.so'])
+        self.assertEqual({v['name'] for v in r['external_requirements']}, {'libc.so', 'libdl.so'})
+        link = next(v for v in r['external_requirements'] if v['name'] == 'libdl.so')
+        self.assertIn('Fast link dest:', link['source_inode'])
+        self.assertNotIn('/system/lib64/a16audio/libdl.so', {v['file'] for v in r['files']})
         rows = {v['file']: v for v in r['files']}
         self.assertEqual(len(rows), len(r['files']))
         for name in ('libaudiopermission.so', 'audiopolicy-aidl-cpp.so'):

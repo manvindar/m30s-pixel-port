@@ -19,10 +19,12 @@ KEEP = {'libui.so', 'libgralloctypes.so', 'libgui.so', 'libnativewindow.so',
         'libaudiopermission.so', 'audiopolicy-aidl-cpp.so'}
 
 
-def stat(image, path):
+def stat(image, path, *, external_link=False):
     value = run('debugfs', '-R', 'stat ' + path, image)
     if 'Inode:' not in value:
         return None
+    if external_link and re.search(r'Type:\s+symlink', value):
+        return value
     if not re.search(r'Type:\s+regular', value):
         raise RuntimeError('Nonregular audio input: ' + path)
     return value
@@ -49,6 +51,11 @@ def main():
         if digest(p) != PATCH_SHA256[name]:
             raise RuntimeError('Pinned patch source drift: ' + name)
         receipt['patch_sources'][name] = digest(p)
+    receipt['base_interpreter_paths'] = []
+    for remote in ('/system/bin/linker64', '/system/bin/bootstrap/linker64'):
+        inode = stat(args.base, remote, external_link=True)
+        receipt['base_interpreter_paths'].append({'file': remote, 'inode': inode,
+            'limitation': 'Base path evidence only; final loader patches and symlink target must be verified'})
     total = 0
     with tempfile.TemporaryDirectory(prefix='audio-staging-') as tmp:
         tmp = Path(tmp)
@@ -89,10 +96,11 @@ def main():
             if len(seen) > 256:
                 raise RuntimeError('Audio dependency count exceeds bound')
             remote = '/system/lib64/' + name
-            attrs = stat(args.donor, remote)
-            if attrs is None:
+            attrs = stat(args.donor, remote, external_link=True)
+            if attrs is None or re.search(r'Type:\s+symlink', attrs):
                 receipt['external_requirements'].append({'name': name, 'source_path': remote,
-                    'reason': 'Absent from donor system/lib64; actual final APEX/vendor provider unresolved'})
+                    'source_inode': attrs, 'reason': ('Donor system symlink: target/provider not copied or accepted' if attrs else
+                    'Absent from donor system/lib64; actual final APEX/vendor provider unresolved')})
                 continue
             source = dump(args.donor, remote, tmp / name)
             if source.stat().st_size > 16 * 1024 ** 2:
