@@ -1,0 +1,29 @@
+name: Inspect exact capped graphics callers and frozen sync providers
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/gsi/gsi.zip
+          key: a17-input-v1-gsi-1cb1c5254299581246ba626faccd41566df25382cd0415d8b82bf2e2d80cbf6c
+      - uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/a14/crdroid.img.xz
+          key: a17-input-v1-a14-0a403c4de120adbb15e7219f7c2acc59337e6d7fc995eaf4ace7e9267e25a0dc
+      - name: Install read-only filesystem tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq e2fsprogs erofs-utils
+      - name: Extract only exact missing callers and provider metadata
+        run: python3 tools/pixel/inspect_capped_callers.py
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: capped-caller-evidence
+          path: capped-caller-evidence/
+          if-no-files-found: error
