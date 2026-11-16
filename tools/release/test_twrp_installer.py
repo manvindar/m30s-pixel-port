@@ -76,3 +76,17 @@ esac''')
         self.assertNotEqual(r.returncode, 0)
         self.assertIn('stay in recovery', r.stdout)
         self.assertNotIn('System readback verified', r.stdout)
+
+    def test_mounted_system_rejects_before_write(self):
+        (self.root / 'mounts').write_text(str(self.root / 'system') + ' /system ext4 ro 0 0\n')
+        r = self.run_installer()
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn('Unmount', r.stdout)
+        self.assertFalse((self.root / 'write-attempted').exists())
+
+    def test_incorrect_readback_rejects_success(self):
+        self.command('dd', 'cat >/dev/null; printf corrupt > "$FIXTURE/system"')
+        r = self.run_installer()
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn('Readback mismatch', r.stdout)
+        self.assertNotIn('System readback verified', r.stdout)

@@ -87,14 +87,25 @@ def main():
     (out / 'IMAGE-SHA256SUMS').write_text(f'{expected}  system-a17-pixel.img\n' +
         f"{raw_hashes['vendor-a17.img']}  vendor-a17.img\n" + f'{BOOT_SHA}  boot-acpm-fixed.img\n' +
         f"{raw_hashes['vbmeta-disabled.img']}  vbmeta-disabled.img\n")
+    archive_sha = digest(archive)
     if archive.stat().st_size >= 2_000_000_000:
         with archive.open('rb') as src:
             i = 0
-            while data := src.read(1900 * 1024 * 1024):
-                (out / (archive.name + f'.part-{i:02d}')).write_bytes(data); i += 1
+            while True:
+                first = src.read(1024 * 1024)
+                if not first: break
+                with (out / (archive.name + f'.part-{i:02d}')).open('wb') as dst:
+                    dst.write(first)
+                    remaining = 1899 * 1024 * 1024
+                    while remaining:
+                        block = src.read(min(1024 * 1024, remaining))
+                        if not block: break
+                        dst.write(block); remaining -= len(block)
+                i += 1
         archive.unlink()
     (out / 'package-receipt.json').write_text(json.dumps({
         'source_commit': args.source, 'actions_run': args.run, 'system_sha256': expected,
+        'complete_reconstructed_twrp_zip_sha256': archive_sha,
         'system_bytes': size, 'boot_sha256': BOOT_SHA, 'graphics_acceptance': False,
         'exact_rebuilt_system_device_tested': False, 'twrp_installer_device_tested': False,
         'installer_scope': 'system-only; preserves boot/vendor/data; never auto-reboots',
