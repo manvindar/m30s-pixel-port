@@ -1,0 +1,63 @@
+name: Publish checked full TWRP release
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_run:
+        description: Exact successful unpublished Build image run
+        required: true
+      candidate_source:
+        description: Full candidate source commit
+        required: true
+      tag:
+        description: Existing draft release tag carrying verified fixed boot/source
+        required: true
+permissions:
+  contents: write
+  actions: read
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CANDIDATE_RUN: ${{ inputs.candidate_run }}
+      CANDIDATE_SOURCE: ${{ inputs.candidate_source }}
+      RELEASE_TAG: ${{ inputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check exact successful build identity
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$CANDIDATE_RUN" > run.json
+          python3 - <<'PY'
+          import json, os
+          r = json.load(open('run.json'))
+          assert r['conclusion'] == 'success' and r['status'] == 'completed'
+          assert r['head_sha'] == os.environ['CANDIDATE_SOURCE']
+          assert r['path'] == '.github/workflows/build-image.yml'
+          PY
+      - name: Download candidate and verified fixed boot
+        run: |
+          gh run download "$CANDIDATE_RUN" -R "$GITHUB_REPOSITORY" -n "m30s-a17-pixel-candidate-$CANDIDATE_RUN" -D candidate
+          mkdir fixed
+          gh release download "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" -p boot-acpm-fixed.img -D fixed
+      - name: Regression checks and complete image/ZIP verification
+        run: |
+          python3 -m unittest discover -s tools/release -v
+          python3 tools/release/package_twrp.py candidate fixed/boot-acpm-fixed.img out --source "$CANDIDATE_SOURCE" --run "$CANDIDATE_RUN"
+          cp docs/TWRP-RELEASE.md out/TWRP-INSTALL.md
+          cp docs/XDA-A17-TWRP.md out/XDA-POST.md
+          cp docs/A17-TWRP-RELEASE-NOTES.md out/RELEASE-NOTES.md
+          (cd out && sha256sum * > SHA256SUMS)
+      - name: Upload full checked assets before publishing
+        run: |
+          gh release upload "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" out/* --clobber
+          gh release edit "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" --draft=false --prerelease=false --latest --title 'Galaxy M30s Android 17 QPR3 Beta 4 — full TWRP release' --notes-file out/RELEASE-NOTES.md
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: twrp-package-verification
+          path: |
+            run.json
+            out/package-receipt.json
+            out/SHA256SUMS
+          if-no-files-found: warn

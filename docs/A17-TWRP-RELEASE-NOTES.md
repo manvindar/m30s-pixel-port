@@ -1,0 +1,14 @@
+Complete experimental Android 17 QPR3 Beta 4 (DP11.261030.003) images for Samsung Galaxy M30s **SM-M307F**, with battery reporting and ROM Tuner fixes integrated into System.
+
+- `M30s-A17-TWRP-system-upgrade.zip`: guarded TWRP **System-only** dirty upgrade; preserves compatible Boot/Vendor and all data. If split, reconstruct all parts on a computer before installing. Recovery needs xz or busybox xzcat. Exact ACPM-fixed boot and a known compatible vendor are required.
+- `system-a17-pixel.img.xz.part-*`: complete System image; join/decompress on a computer, verify, then TWRP **Install Image → System**. Raw size 5033164800 bytes.
+- `vendor-a17.img.xz`, `boot-acpm-fixed.img`, `vbmeta-disabled.img`: first-install components. Existing compatible Pixel installations retain these partitions. No recovery/modem/EFS/bootloader images are included.
+- `TWRP-INSTALL.md`: dirty-upgrade and first-install instructions. VBMETA is a Download mode step; the retained M30s TWRP fstab does not expose its GUI target.
+- `SHA256SUMS`, `IMAGE-SHA256SUMS`, build and package receipts: exact compressed/raw identities and explicit experimental compatibility limits.
+- `kernel-source-acpm-fixed.tar.gz` and `kernel.config`: corresponding modified Samsung kernel source and exact build configuration for the included fixed boot. Kernel build instructions accompany the source.
+
+Battery reporting preserves Samsung kernel capacity instead of Lenovo's charge-counter ratio. The original tablet ROM Tuner interface and the compact M30s app share a validated Exynos backend. CPU caps/governors, touch boost, swappiness and animation controls are supported; GPU reads use Mali. No thermal override or overclock is enabled. Named tablet profiles and MediaTek-only controls are unavailable.
+
+**Experimental release:** the exact rebuilt System and ZIP installer have not been device-tested. The earlier System candidate passed full write/readback and booted; battery/tuner updates were subsequently verified separately. All image and mechanical checks must pass to publish; graphics acceptance remains false in receipts because caller/binding review is incomplete. No full runtime compatibility claim is made.
+
+Known issues: initial Package Manager startup crash recovered but is not fixed; camera-provider aborts appeared later, so camera reliability is unresolved. Telephony/mobile data, audio quality, Bluetooth pairing, a real battery discharge cycle and long-term stability are unverified. SELinux is permissive and userdata encryption unsupported. Back up externally and retain matching stock firmware. First installation from encrypted stock erases data; an existing Pixel upgrade does not format or wipe data. Performance gains are unmeasured.
