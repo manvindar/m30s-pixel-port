@@ -7,7 +7,7 @@ import sys
 import tempfile
 import zipfile
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'graphics'))
-from common import digest, dump, elf, extract_fs, run
+from common import digest, dump, elf, extract_fs, run, unpack_apex
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'downloads'))
 from verified_input import obtain
 
@@ -99,6 +99,46 @@ def main():
                 target.with_suffix(target.suffix + '.readelf.txt').write_text(
                     run('readelf', '--dyn-syms', '--version-info', '--dynamic', '--wide', target))
             receipt['files'].append(record)
+        # Measured pinned init contains /apex/com.android.runtime/bin/linkerconfig.
+        # Inspect that exact package, not an assumed standalone /system binary.
+        runtime_remote = '/system/apex/com.android.runtime.apex'
+        runtime = tmp / 'runtime.apex'
+        if ext4:
+            if 'Inode:' not in run('debugfs', '-R', 'stat ' + runtime_remote, image):
+                raise RuntimeError('Required measured runtime APEX absent')
+            dump(image, runtime_remote, runtime)
+        else:
+            source = decoded / runtime_remote.lstrip('/')
+            if not source.is_file() or source.is_symlink():
+                raise RuntimeError('Required measured runtime APEX absent')
+            shutil.copyfile(source, runtime)
+        if not 0 < runtime.stat().st_size <= 32 * 1024 ** 2:
+            raise RuntimeError('Runtime APEX exceeds bounded package size')
+        _, payload, manifest = unpack_apex(runtime, tmp / 'runtime-unpacked')
+        runtime_root = extract_fs(payload, tmp / 'runtime-decoded')
+        generator = runtime_root / 'bin/linkerconfig'
+        if not generator.is_file() or generator.is_symlink():
+            raise RuntimeError('Measured runtime linkerconfig generator absent')
+        if not 0 < generator.stat().st_size <= 4 * 1024 ** 2:
+            raise RuntimeError('Runtime generator exceeds bounded size')
+        metadata = elf(generator)
+        if metadata is None or metadata['abi'] != 'arm64':
+            raise RuntimeError('Runtime generator wrong ELF ABI')
+        total += generator.stat().st_size
+        if total > 16 * 1024 ** 2:
+            raise RuntimeError('Binding input evidence exceeds16MiB')
+        target = out / 'runtime/bin/linkerconfig'
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(generator, target)
+        receipt['generator_input'] = {
+            'source_apex': runtime_remote, 'apex_sha256': digest(runtime),
+            'apex_bytes': runtime.stat().st_size, 'manifest_sha256': digest(manifest),
+            'file': '/apex/com.android.runtime/bin/linkerconfig',
+            'evidence_file': str(target.relative_to(out)), 'sha256': digest(target),
+            'bytes': target.stat().st_size, 'abi': metadata['abi'],
+            'needed': metadata['needed'], 'runtime_execution': False}
+        target.with_suffix('.readelf.txt').write_text(
+            run('readelf', '--dyn-syms', '--version-info', '--dynamic', '--wide', target))
     if len(receipt['files']) != sum(1 for _, required in targets if required) + sum(
             1 for remote, required in targets if not required and remote not in {r['file'] for r in receipt['absences']}):
         raise RuntimeError('Incomplete binding evidence receipt')
