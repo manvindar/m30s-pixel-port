@@ -7,6 +7,7 @@ ZIP=$3
 ui() { printf 'ui_print %s\nui_print\n' "$*" > /proc/self/fd/$OUTFD; }
 fail() { ui "ERROR: $*"; exit 1; }
 [ "$(id -u)" = 0 ] || fail 'Recovery root required'
+[ -n "$(getprop ro.twrp.version)" ] || [ "$(getprop ro.bootmode)" = recovery ] || fail 'TWRP/recovery required; never run in Android'
 [ "$(getprop ro.product.device)" = m30s ] || fail 'Galaxy M30s recovery required'
 SYSTEM=/dev/block/by-name/system
 BOOT=/dev/block/by-name/boot
@@ -14,6 +15,7 @@ VENDOR=/dev/block/by-name/vendor
 [ -b "$SYSTEM" ] && [ -b "$BOOT" ] && [ -b "$VENDOR" ] || fail 'Required partitions absent'
 [ "$(blockdev --getsize64 "$SYSTEM")" = 5033164800 ] || fail 'System geometry differs'
 [ -r /proc/mounts ] || fail 'Cannot inspect mounted partitions'
+awk '$2=="/system" || $2=="/system_root" || ($2=="/" && $3=="ext4") {found=1} END {exit !found}' /proc/mounts && fail 'Unmount System/System Root before installing' 
 for part in "$SYSTEM" "$BOOT" "$VENDOR"; do
     resolved=$(readlink -f "$part")
     awk -v a="$part" -v b="$resolved" '$1==a || $1==b {found=1} END {exit !found}' /proc/mounts && fail "Unmount $part before installing"
