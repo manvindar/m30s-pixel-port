@@ -174,6 +174,35 @@ class ImageInventory:
         return providers, edges
 
 
+def reviewed_binding(inventory, context, virtual, metadata, stage, requires_decoder):
+    """Validate direct declared dependency edges, never substitute transitive providers."""
+    providers, edges = inventory.closure(context, virtual, metadata)
+    directory = 'lib64' if metadata['abi'] == 'arm64' else 'lib'
+    expected = '/system/' + directory + '/libui.so'
+    direct = [e for e in edges if e['from'] == virtual and e['needed'] == 'libui.so']
+    if context != 'system' or len(direct) != 1 or direct[0]['namespace'] != 'system' or direct[0]['to'] != expected:
+        raise RuntimeError('Reviewed caller lacks exact direct system libui edge')
+    ui = inventory.metadata[expected]
+    if ui['abi'] != metadata['abi']:
+        raise RuntimeError('Reviewed caller libui ABI mismatch')
+    decoder_hash = None
+    if requires_decoder:
+        decoder_edges = [e for e in edges if e['from'] == expected and e['needed'] == 'libgralloctypes.so']
+        decoder_path = '/system/' + directory + '/libgralloctypes.so'
+        if len(decoder_edges) != 1 or decoder_edges[0]['namespace'] != 'system' or decoder_edges[0]['to'] != decoder_path:
+            raise RuntimeError('Reviewed libui lacks exact direct decoder edge')
+        decoder = inventory.metadata[decoder_path]
+        if decoder['abi'] != metadata['abi']:
+            raise RuntimeError('Reviewed libui decoder ABI mismatch')
+        decoder_hash = digest(decoder['source_path'])
+    return {'namespace': 'system', 'libui_sha256': digest(ui['source_path']),
+            'latest_libui_sha256': digest(stage / 'latest/system' / directory / 'libui.so'),
+            'decoder_sha256': decoder_hash,
+            'missing_imports': missing_symbols(metadata['imports'], providers),
+            'direct_ui_edge': direct[0], 'edges': edges,
+            'limitations': ['Declared final image binding; runtime loader state not verified']}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('image'); parser.add_argument('stage'); parser.add_argument('receipt')
@@ -352,20 +381,10 @@ def main():
                     # consumer allowlist or matching symbol names.
                     if any(r['sha256'] == identity for r in reviewed_interfaces):
                         try:
-                            providers, edges = inventory.closure(context, virtual, metadata)
-                            ui_edges = [e for e in edges if e['needed'] == 'libui.so']
-                            directory = 'lib64' if abi == 'arm64' else 'lib'
-                            expected = '/system/' + directory + '/libui.so'
-                            if not ui_edges or any(e['namespace'] != 'system' or e['to'] != expected for e in ui_edges):
-                                raise RuntimeError('Reviewed caller resolves unexpected libui binding')
-                            ui = inventory.metadata[expected]
-                            decoder = inventory.own('system', 'libgralloctypes.so', abi)
-                            binding = {'namespace': 'system', 'libui_sha256': digest(ui['source_path']),
-                                'latest_libui_sha256': digest(stage / 'latest/system' / directory / 'libui.so'),
-                                'decoder_sha256': digest(decoder[2]['source_path']) if decoder else None,
-                                'missing_imports': missing_symbols(metadata['imports'], providers),
-                                'edges': edges,
-                                'limitations': ['Declared final image binding; runtime loader state not verified']}
+                            requires_decoder = any(r['sha256'] == identity and r['decoder_sha256']
+                                                   for r in reviewed_interfaces)
+                            binding = reviewed_binding(inventory, context, virtual, metadata,
+                                                       stage, requires_decoder)
                         except RuntimeError as error:
                             binding = {'error': str(error)}
                     reviewed = match_review(reviewed_interfaces, context, virtual, abi, identity, size, mapper, binding)
