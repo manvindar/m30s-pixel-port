@@ -1,0 +1,25 @@
+{
+  "repository": "https://android.googlesource.com/platform/system/core",
+  "commit": "68be0c2c0006a0740d0b1809abe4717308f90d15",
+  "files": {
+    "sync.c": {
+      "source_path": "libsync/sync.c",
+      "sha256": "98d0865ac110044ac8153d445145542ba81b24951931e25ea12561ff48b56e1a"
+    },
+    "libsync.map.txt": {
+      "source_path": "libsync/libsync.map.txt",
+      "sha256": "977e84fa5f63dc8038284a99966d77e6934694c17e2a6c87fc225dd36015d6d8"
+    },
+    "android/sync.h": {
+      "source_path": "libsync/include/ndk/sync.h",
+      "sha256": "aca9fbefc5eb2d170451555b191bd9b15b13440aac9ec09a631c9b8bda025c28"
+    },
+    "NOTICE": {
+      "source_path": "libsync/NOTICE",
+      "sha256": "efcb3b0d1a6686c84546d85d1ad53ae01b0535443972c1f33eb248ae24b8357d"
+    }
+  },
+  "ndk": "26.1.10909125",
+  "api": 26,
+  "purpose": "Experimental codec-local genuine LIBSYNC provider; no graphics acceptance"
+}
