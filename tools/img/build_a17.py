@@ -627,5 +627,20 @@ if a.gapps:
     print('10 google apps')
     if a.out_gapps: shutil.copyfile(a.out, a.out_gapps)
     add_gapps(a.out_gapps or a.out)
+# Check the actual completed image against the exact staged fixes before cleanup.
+fixes = [('/system/etc/healthshim.jar', open(os.path.join(health, 'out', 'healthshim.jar'), 'rb').read(), '644')]
+if not a.no_m30s_tuner:
+    fixes += [('/system/app/M30sRomTuner/M30sRomTuner.apk', open(os.path.join(tuner_out, 'RomTuner-M30s.apk'), 'rb').read(), '644'),
+              ('/system/app/TabletRomTuner/TabletRomTuner.apk', open(tablet_apk, 'rb').read(), '644'),
+              ('/system/bin/m30s_tunerd.sh', open(os.path.join(tuner, 'device', 'm30s_tunerd.sh'), 'rb').read(), '755'),
+              ('/system/etc/init/m30s_tunerd.rc', rc_fix(os.path.join(tuner, 'device', 'm30s_tunerd.rc')).encode(), '644')]
+fix_receipt = {'status': 'complete-image-readback-pass', 'files': [], 'runtime_acceptance': False}
+for remote, expected, mode in fixes:
+    actual = cat(a.out_gapps or a.out, remote)
+    assert actual == expected, 'Final M30s fix readback mismatch: ' + remote
+    actual_mode, uid, gid, ctx = attrs(a.out_gapps or a.out, remote)
+    assert (actual_mode, uid, gid, ctx) == (mode, 0, 0, SYS), 'Final M30s fix attributes mismatch: ' + remote
+    fix_receipt['files'].append({'path': remote, 'sha256': hashlib.sha256(actual).hexdigest(), 'bytes': len(actual), 'mode': mode})
+open('m30s-fixes-verification.json', 'w').write(json.dumps(fix_receipt, indent=2) + '\n')
 if not a.keep_work and not a.workdir: shutil.rmtree(W, ignore_errors=True)
 for p in filter(None, (a.out, a.out_gapps)): print('image:', p, os.path.getsize(p), 'bytes')

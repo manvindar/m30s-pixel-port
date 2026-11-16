@@ -39,6 +39,12 @@ def main():
     ap.add_argument('--source', required=True); ap.add_argument('--run', required=True)
     args = ap.parse_args(); c = args.candidate
     build, graphics = validate_receipts(c, args.source, args.run)
+    fixes = json.loads((c / 'm30s-fixes-verification.json').read_text())
+    if fixes['status'] != 'complete-image-readback-pass' or len(fixes['files']) != 5:
+        raise RuntimeError('Integrated battery/tuner final readback missing')
+    tablet_rows = [r for r in fixes['files'] if r['path'] == '/system/app/TabletRomTuner/TabletRomTuner.apk']
+    if len(tablet_rows) != 1 or tablet_rows[0]['sha256'] != '6a9bc65cfde17e49292d802ec383cf3de1a79e6506fa9e2d2d368375b9a07eae':
+        raise RuntimeError('Matching-signed tablet APK final identity mismatch')
     # Verify every original distributed candidate file before repackaging.
     for line in (c / 'SHA256SUMS').read_text().splitlines():
         expected, name = line.split(maxsplit=1); name = name.lstrip('*')
@@ -81,7 +87,7 @@ def main():
     for p in parts: shutil.copy2(p, out / p.name)
     shutil.copy2(args.boot, out / 'boot-acpm-fixed.img')
     for name in ['vendor-a17.img.xz', 'vbmeta-disabled.img', 'build-receipt.json',
-                 'graphics-compatibility-verification.json', 'image-fixes-verification.json',
+                 'graphics-compatibility-verification.json', 'image-fixes-verification.json', 'm30s-fixes-verification.json',
                  'system-readback-manifest.json']:
         shutil.copy2(c / name, out / name)
     (out / 'IMAGE-SHA256SUMS').write_text(f'{expected}  system-a17-pixel.img\n' +

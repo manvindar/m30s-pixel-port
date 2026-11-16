@@ -209,5 +209,22 @@ if a.dev_tools:
     for f, mode""")
 s = s.replace('no ROM Tuner (MediaTek only)', 'M30s ROM Tuner (MediaTek backend excluded)')
 
+sub("if not a.keep_work and not a.workdir: shutil.rmtree(W, ignore_errors=True)", """# Check the actual completed image against the exact staged fixes before cleanup.
+fixes = [('/system/etc/healthshim.jar', open(os.path.join(health, 'out', 'healthshim.jar'), 'rb').read(), '644')]
+if not a.no_m30s_tuner:
+    fixes += [('/system/app/M30sRomTuner/M30sRomTuner.apk', open(os.path.join(tuner_out, 'RomTuner-M30s.apk'), 'rb').read(), '644'),
+              ('/system/app/TabletRomTuner/TabletRomTuner.apk', open(tablet_apk, 'rb').read(), '644'),
+              ('/system/bin/m30s_tunerd.sh', open(os.path.join(tuner, 'device', 'm30s_tunerd.sh'), 'rb').read(), '755'),
+              ('/system/etc/init/m30s_tunerd.rc', rc_fix(os.path.join(tuner, 'device', 'm30s_tunerd.rc')).encode(), '644')]
+fix_receipt = {'status': 'complete-image-readback-pass', 'files': [], 'runtime_acceptance': False}
+for remote, expected, mode in fixes:
+    actual = cat(a.out_gapps or a.out, remote)
+    assert actual == expected, 'Final M30s fix readback mismatch: ' + remote
+    actual_mode, uid, gid, ctx = attrs(a.out_gapps or a.out, remote)
+    assert (actual_mode, uid, gid, ctx) == (mode, 0, 0, SYS), 'Final M30s fix attributes mismatch: ' + remote
+    fix_receipt['files'].append({'path': remote, 'sha256': hashlib.sha256(actual).hexdigest(), 'bytes': len(actual), 'mode': mode})
+open('m30s-fixes-verification.json', 'w').write(json.dumps(fix_receipt, indent=2) + '\\n')
+if not a.keep_work and not a.workdir: shutil.rmtree(W, ignore_errors=True)""")
+
 open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build_a17.py'), 'w').write(s)
 print(f'build_a17.py written, {n} substitutions', file=sys.stderr)

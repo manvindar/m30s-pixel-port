@@ -446,7 +446,7 @@ jobs:
           sed -e "s|@COMMIT@|$GITHUB_SHA|g" -e "s|@KERNEL_TAG@|$KERNEL_TAG|g" docs/FLASH.md > out/FLASH.md
           cp docs/RELEASE-NOTES.md out/RELEASE-NOTES.md
           cp docs/A17-UPSTREAM.json out/A17-UPSTREAM.json
-          cp image-fixes-verification.json graphics-compatibility-verification.json out/
+          cp image-fixes-verification.json graphics-compatibility-verification.json m30s-fixes-verification.json out/
           cp legacy_graphics/donor-receipt.json out/legacy-graphics-donor-receipt.json
           cp legacy_graphics/codec-repack-receipt.json legacy_graphics/runtime-budget-receipt.json out/
           if [ -f kernel/kernel-label-receipt.json ]; then
