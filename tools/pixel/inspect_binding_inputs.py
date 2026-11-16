@@ -68,6 +68,11 @@ def main():
             record = {'file': remote, 'evidence_file': str(target.relative_to(out)),
                       'sha256': digest(target), 'bytes': size}
             metadata = elf(target)
+            expected_abi = {'/system/lib/libgralloctypes.so': 'arm32',
+                            '/system/lib64/libgralloctypes.so': 'arm64',
+                            '/system/bin/linkerconfig': 'arm64'}.get(remote)
+            if expected_abi and (metadata is None or metadata['abi'] != expected_abi):
+                raise RuntimeError('Invalid binding input ELF ABI: ' + remote)
             if metadata is not None:
                 record.update(abi=metadata['abi'], exports=sorted(metadata['exports']),
                               imports=sorted(metadata['imports']), needed=metadata['needed'])
