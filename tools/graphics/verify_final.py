@@ -319,6 +319,18 @@ def main():
                 try:
                     providers, edges = inventory.closure(ctx, virtual, metadata)
                     for edge in edges:
+                        if edge['needed'] in ('libhidlbase.so', 'libcutils.so'):
+                            ownership = inventory.metadata[edge['to']]
+                            if ownership['abi'] != abi:
+                                raise RuntimeError('Final ownership provider ABI mismatch')
+                            retained = retain_provider(ownership)
+                            if 'evidence_file' not in retained:
+                                raise RuntimeError('Required final ownership provider evidence capped')
+                            receipt.setdefault('ownership_providers', []).append({
+                                'graphics_context': context, 'context': edge['namespace'],
+                                'abi': abi, 'from': edge['from'], 'needed': edge['needed'],
+                                'file': edge['to'], 'final_image_readback': True,
+                                'binding_acceptance': False, **retained})
                         if edge['needed'] == 'libgralloctypes.so':
                             decoder = inventory.metadata[edge['to']]
                             receipt.setdefault('plane_decoder_providers', []).append({
