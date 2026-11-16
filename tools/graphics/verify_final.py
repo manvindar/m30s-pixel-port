@@ -211,6 +211,37 @@ def main():
             else:
                 record['evidence_limit'] = '64MiB cap; missing evidence is not a pass'
             return record
+        # Preserve loader inputs for bounded binding review. File paths and APEX
+        # manifests alone are not proof of generated runtime namespaces.
+        configuration_dir = stage / 'binding-configuration'
+        configuration_dir.mkdir(exist_ok=True)
+        receipt['binding_configuration'] = []
+        configuration_bytes = 0
+        for context, data in inventory.contexts.items():
+            for path in sorted(data['root'].rglob('*')):
+                if path.is_symlink() or not path.is_file():
+                    continue
+                if path.name not in ('linker.config.json', 'ld.config.txt', 'audioserver.rc'):
+                    continue
+                size = path.stat().st_size
+                if size > 512 * 1024 or configuration_bytes + size > 2 * 1024 ** 2:
+                    raise RuntimeError('Binding configuration evidence exceeds bounded limit')
+                identity = digest(path)
+                target = configuration_dir / (identity + '-' + path.name)
+                shutil.copyfile(path, target)
+                configuration_bytes += size
+                receipt['binding_configuration'].append({'context': context,
+                    'file': str(path.relative_to(data['root'])), 'sha256': identity,
+                    'bytes': size, 'evidence_file': str(target.relative_to(stage))})
+        receipt['binding_configuration_limitations'] = ['Runtime-generated /linkerconfig files are not present in a system image; retained inputs do not establish bindings']
+        receipt['audio_loader_inputs'] = []
+        for context, virtual, metadata in inventory.natives:
+            if context == 'system' and (virtual == '/system/bin/audioserver' or virtual == '/system/bin/linkerconfig'):
+                receipt['audio_loader_inputs'].append({'file': virtual, **retain_provider(metadata)})
+            elif context == 'system' and virtual.startswith('/system/lib64/a16audio/'):
+                receipt['audio_loader_inputs'].append({'file': virtual, 'sha256': digest(metadata['source_path']),
+                    'abi': metadata['abi'], 'needed': metadata['needed'],
+                    'mapper_symbols': unresolved_mapper_interface(metadata.get('abi_imports', metadata['imports']), metadata['exports'])})
         changed = {}
         for abi, directory in [('arm64', 'lib64'), ('arm32', 'lib')]:
             changed[abi] = set()

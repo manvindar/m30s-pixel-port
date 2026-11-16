@@ -470,6 +470,7 @@ jobs:
             legacy_graphics/tethering-*-receipt.json
             legacy_graphics/bluetooth-receipt.json
             legacy_graphics/abi-consumers/
+            legacy_graphics/binding-configuration/
             legacy_graphics/latest/**/libui.so
             legacy_graphics/system/**/libui.so
             legacy_graphics/codec/**/libui.so
