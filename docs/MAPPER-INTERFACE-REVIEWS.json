@@ -110,6 +110,24 @@
       "evidence": "mapper-interface-reviews/libgui-arm64.json",
       "scope": "affected_mapper_receiver_interface_only",
       "runtime_validation": false
+    },
+    {
+      "id": "media-jni-arm32",
+      "context": "system",
+      "file": "/system/lib/libmedia_jni_utils.so",
+      "abi": "arm32",
+      "sha256": "83587929f18e3aaa432fcb82b7c7ceff1dad5f94470cf494d092abb20360b920",
+      "bytes": 12216,
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "e763c2271067df3894f8c884dc79a4b093812f223f8c4a643c55d5a4215623c9",
+      "latest_libui_sha256": "236132fe5b182194b25f8f9547e850f8e13ce5315862f4256d054ad770e221f2",
+      "decoder_sha256": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4",
+      "evidence": "mapper-interface-reviews/media-jni-arm32.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
     }
   ],
   "code_evidence": [
@@ -402,6 +420,36 @@
       "file": "mapper-interface-reviews/preapex-evidence/provider-comparison.json",
       "sha256": "6cd4be26f9592f6fdaf41bd514265f83409d3c6fa4461005b79bcaca18838780",
       "bytes": 4650
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/media-jni-arm32-function-2e90.asm",
+      "sha256": "e0b9c6425408d0d8fd56fdf265f62ec3bc1e6d9bbb53d4a31b0dc6fa6dd423ae",
+      "bytes": 9345
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/media-jni-arm32-function-304c.asm",
+      "sha256": "bdbf474ff60eb9349362351c4aadfd19525ab65f177b77ad55eb92737a5c7616",
+      "bytes": 9354
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/media-jni-arm32-bounded-tables.json",
+      "sha256": "9134910600f8d9cfcaeed3f30c9f6946b40a1bb1b14c76e875115f5695701571",
+      "bytes": 1187
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/final-provider-arm32-7924.asm",
+      "sha256": "8c7db6e692b1d13f09195f3ec350be83c41ddcda22f1c1d4eed7ea096b78b5fe",
+      "bytes": 4581
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/final-provider-arm32-7760.asm",
+      "sha256": "12da336ef71ea4ff4951a9d5f0b013449819c1bbe5750e65489b28ab2c9584b9",
+      "bytes": 8750
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/final-provider-arm32-6aec.asm",
+      "sha256": "e6bdf170573dce6cb36dda76359dfde336cbc8fb8da6db3b863109dbcb9d725e",
+      "bytes": 2199
     }
   ],
   "retained_large_evidence": [

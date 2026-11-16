@@ -1,0 +1,73 @@
+[
+  {
+    "instruction": "0x2386",
+    "base": "0x238a",
+    "count": 60,
+    "width": 1,
+    "unique_targets": [
+      "0x23c6",
+      "0x23e0"
+    ],
+    "table_byte_range": [
+      "0x238a",
+      "0x23c6"
+    ],
+    "target_inside_table": false
+  },
+  {
+    "instruction": "0x23fa",
+    "base": "0x23fe",
+    "count": 44,
+    "width": 1,
+    "unique_targets": [
+      "0x242a",
+      "0x2452"
+    ],
+    "table_byte_range": [
+      "0x23fe",
+      "0x242a"
+    ],
+    "target_inside_table": false
+  },
+  {
+    "instruction": "0x2520",
+    "base": "0x2524",
+    "count": 60,
+    "width": 2,
+    "unique_targets": [
+      "0x259c",
+      "0x2636",
+      "0x264e",
+      "0x2662",
+      "0x26bc",
+      "0x26f2",
+      "0x2746",
+      "0x2776",
+      "0x27c2",
+      "0x27da",
+      "0x282c",
+      "0x2860",
+      "0x29dc"
+    ],
+    "table_byte_range": [
+      "0x2524",
+      "0x259c"
+    ],
+    "target_inside_table": false
+  },
+  {
+    "instruction": "0x2d06",
+    "base": "0x2d0a",
+    "count": 60,
+    "width": 1,
+    "unique_targets": [
+      "0x2d46",
+      "0x2dc0"
+    ],
+    "table_byte_range": [
+      "0x2d0a",
+      "0x2d46"
+    ],
+    "target_inside_table": false
+  }
+]
