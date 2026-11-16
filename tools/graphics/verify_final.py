@@ -265,6 +265,32 @@ def main():
                     'file': str(path.relative_to(data['root'])), 'sha256': identity,
                     'bytes': size, 'evidence_file': str(target.relative_to(stage))})
         receipt['binding_configuration_limitations'] = ['Runtime-generated /linkerconfig files are not present in a system image; retained inputs do not establish bindings']
+        receipt['final_loader_inputs'] = []
+        for context, virtual, metadata in inventory.natives:
+            required_runtime = (context == 'com.android.runtime' and
+                                virtual == '/apex/com.android.runtime/bin/linker64')
+            bootstrap = context == 'system' and virtual == '/system/bin/bootstrap/linker64'
+            if not (required_runtime or bootstrap):
+                continue
+            if metadata['abi'] != 'arm64':
+                raise RuntimeError('Wrong final ARM64 loader ABI: ' + virtual)
+            retained = retain_provider(metadata)
+            if 'evidence_file' not in retained:
+                raise RuntimeError('Required final loader binary evidence capped: ' + virtual)
+            receipt['final_loader_inputs'].append({'context': context, 'file': virtual,
+                'abi': metadata['abi'], 'final_image_readback': True,
+                'binding_acceptance': False, **retained})
+        if not any(row['context'] == 'com.android.runtime' for row in receipt['final_loader_inputs']):
+            raise RuntimeError('Required final runtime ARM64 loader absent')
+        interpreter_virtual, interpreter_metadata = inventory.get('/system/bin/linker64')
+        if interpreter_metadata is None or interpreter_metadata['abi'] != 'arm64':
+            raise RuntimeError('Final audioserver interpreter path does not resolve to ARM64 ELF')
+        interpreter_retained = retain_provider(interpreter_metadata)
+        if 'evidence_file' not in interpreter_retained:
+            raise RuntimeError('Required final audioserver interpreter evidence capped')
+        receipt['final_audio_interpreter_route'] = {'requested': '/system/bin/linker64',
+            'resolved': interpreter_virtual, 'final_image_readback': True,
+            'binding_acceptance': False, **interpreter_retained}
         receipt['audio_loader_inputs'] = []
         for context, virtual, metadata in inventory.natives:
             if context == 'system' and (virtual == '/system/bin/audioserver' or virtual == '/system/bin/linkerconfig'):
