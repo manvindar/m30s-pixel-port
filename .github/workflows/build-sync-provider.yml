@@ -1,0 +1,24 @@
+name: Build pinned genuine codec LIBSYNC provider
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  provider:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pinned Android Native Development Kit
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'ndk;26.1.10909125'
+      - name: Build both implementations and verify genuine versions
+        run: |
+          export PATH="$ANDROID_HOME/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
+          python3 tools/graphics/build_sync_provider.py "$ANDROID_HOME/ndk/26.1.10909125" sync-provider-evidence
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: sync-provider-evidence
+          path: sync-provider-evidence/
+          if-no-files-found: error
