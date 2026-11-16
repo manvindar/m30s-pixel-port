@@ -40,11 +40,11 @@ class AudioEvidenceTests(unittest.TestCase):
                     name = Path(path).name.removesuffix('.patched')
                     needs = sorted(m.KEEP) if name == 'audioserver' else ['libui.so', 'libc.so', 'libdl.so']
                     return {'abi': 'arm32' if wrong_abi else 'arm64', 'needed': needs,
-                            'exports': {}, 'imports': {}}
+                            'exports': {}, 'imports': {'dlopen@LIBC'}, 'abi_imports': {'dlopen@LIBC', 'weak_optional'}}
                 def fake_run(*args):
                     if args[0] == m.sys.executable:
                         Path(args[-1]).write_bytes(Path(args[-2]).read_bytes() + b'patched')
-                    return 'evidence'
+                    return ' 0x000000006ffffffb (FLAGS_1) Flags: NOW GLOBAL\n'
                 def fake_stat(image, remote, **kwargs):
                     if remote.endswith('/libdl.so'):
                         return 'Inode: 3 Type: symlink Mode: 0777 Fast link dest: /apex/com.android.runtime/lib64/bionic/libdl.so'
@@ -73,6 +73,8 @@ class AudioEvidenceTests(unittest.TestCase):
             v = rows['/system/lib64/a16audio/' + name]
             self.assertNotEqual(v['source_sha256'], v['sha256'])
             self.assertTrue(v['patch'])
+            self.assertIn('weak_optional', v['abi_imports'])
+            self.assertIn('GLOBAL', v['dynamic_text'])
         self.assertIn({'consumer': '/system/lib64/a16audio/libui.so', 'needed': 'libui.so'}, r['declared_edges'])
 
     def test_patch_source_drift_rejected(self):

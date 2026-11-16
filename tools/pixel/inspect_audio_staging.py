@@ -16,7 +16,9 @@ PATCH_SHA256 = {
     'patch_server_codes.py': '080536e63b0526ba02218318b3f2af6c40303ef23dbfc099a1c1ad4228e018c7',
     'patch_audiopermission.py': 'ee9012c1f3026d1a8f640e89f8c55cc9a1adfd0ce539ea74090264dc35dd85bf'}
 KEEP = {'libui.so', 'libgralloctypes.so', 'libgui.so', 'libnativewindow.so',
-        'libaudiopermission.so', 'audiopolicy-aidl-cpp.so'}
+        'libaudiopermission.so', 'audiopolicy-aidl-cpp.so',
+        'libvndksupport.so', 'libaudiohal.so', 'libhidlbase.so', 'libEGL.so',
+        'libapexsupport.so', 'libhardware.so', 'libcutils.so', 'libbinder_ndk.so'}
 
 
 def stat(image, path, *, external_link=False):
@@ -72,7 +74,11 @@ def main():
         entry.with_suffix('.readelf.txt').write_text(run('readelf', '-h', '-l', '-d', '-V', '-Ws', '--wide', entry))
         receipt['files'].append({'file': '/system/bin/audioserver', 'sha256': digest(entry),
                                  'bytes': entry.stat().st_size, 'needed': meta['needed'],
-                                 'abi': meta['abi'], 'attributes': 'audioserver-base.stat.txt'})
+                                 'abi': meta['abi'], 'attributes': 'audioserver-base.stat.txt',
+                                 'evidence_file': str(entry.relative_to(out)),
+                                 'exports': sorted(meta['exports']), 'imports': sorted(meta['imports']),
+                                 'abi_imports': sorted(meta['abi_imports']),
+                                 'dynamic_text': run('readelf', '-d', '--wide', entry)})
         total += entry.stat().st_size
         rc = dump(args.base, '/system/etc/init/audioserver.rc', tmp / 'audioserver.rc').read_text()
         first, rest = rc.split('\n', 1)
@@ -121,7 +127,9 @@ def main():
             item = {'file': virtual, 'source_sha256': source_hash, 'sha256': digest(target),
                     'bytes': target.stat().st_size, 'abi': info['abi'], 'needed': info['needed'],
                     'staged_mode': '0644', 'staged_uid': 0, 'staged_gid': 0,
-                    'patch': script, 'exports': sorted(info['exports']), 'imports': sorted(info['imports'])}
+                    'patch': script, 'exports': sorted(info['exports']), 'imports': sorted(info['imports']),
+                    'abi_imports': sorted(info['abi_imports']),
+                    'dynamic_text': run('readelf', '-d', '--wide', target)}
             if name in KEEP:
                 final = dump(args.donor, remote, out / virtual.lstrip('/'))
                 if script:
