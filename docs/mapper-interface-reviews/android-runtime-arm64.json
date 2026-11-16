@@ -1,0 +1,75 @@
+{
+  "scope": "Exact retained ARM64 android_runtime mapper singleton/preload and Smpte2094_50 metadata path only",
+  "inputs": {
+    "consumer": {
+      "path": "retained-evidence/provider-callers-43776923589/legacy_graphics/abi-consumers/1f2fd09804020c020b8ed344d987933d7003f7084583acaaaba1163741c2fd8a.elf",
+      "bytes": 3368088,
+      "sha256": "1f2fd09804020c020b8ed344d987933d7003f7084583acaaaba1163741c2fd8a"
+    },
+    "patched": {
+      "path": "retained-evidence/provider-callers-43776923589/legacy_graphics/patched/system/lib64/libui.so",
+      "bytes": 477736,
+      "sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b"
+    },
+    "latest": {
+      "path": "retained-evidence/bt-graphics-evidence-43772935293/latest-system-arm64-libui.so",
+      "bytes": 459576,
+      "sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b"
+    }
+  },
+  "helper_closure": {
+    "identity": "Singleton<GraphicBufferMapper>::getInstance",
+    "extent": "0x2aae90..0x2aaef0",
+    "incoming_direct_calls": [
+      "0x2aacc4"
+    ],
+    "other_address_references_identified": false,
+    "evidence": "helper-address-coverage.json",
+    "limitation": "Static address/reference inventory, not runtime dynamic-loader proof"
+  },
+  "preload": {
+    "caller": "0x2c055c, BTI + tail branch to preloadHal PLT",
+    "patched": "0x61588 size44, API helper and legacy static preloads",
+    "latest": "0x5db1c size8, static Gralloc4 preload",
+    "receiver_argument_consumed": false,
+    "evidence": "preloadHal-provider.json"
+  },
+  "argument_and_lifetime": {
+    "optional_vector_layout": "begin/end/capacity at0/8/16; engagement byte24; indirect value passed inx2",
+    "consumer": "0x2aac4c size352; mapper held inx22 during allocation/copy, restoredx0 at2aad1c; setter2aad34; own copy destroyed2aad38..54; original destroyed2aad58..74",
+    "wrapper": "Patched3b7c8 and latest5e1c0 each copy into provider-local optional/vector, dispatch table offset0x158/slot45, destroy own local copy",
+    "copy_helpers": "Patched3b764 size100 + __vallocate51550 size68 and latest43bdc size108 both initialize24-byte vector, allocate end-begin bytes, copy bytes and setend; signed-length rejection retained in both"
+  },
+  "backend": {
+    "legacy": "Patched G2/G3/G4 setter default483fc returns-38 without reading optional/vector; latestG4 also default-38",
+    "gralloc5": "Patched538d4 size356; latest5701c size364; encode first forsize, allocate/resize own inline128-byte/heap buffer, encodeagain, reject negative result/insufficient allocated span, call endpoint then locally free serialized buffer",
+    "c_endpoint": "load function pointer from AIMapper+0x58; x0 native_handle, w1 metadata24, x2 serialized bytes, w3 encoded length; no optional/vector object or GraphicBufferMapper receiver forwarded",
+    "endpoint_lifetime": "Buffer valid through synchronous function call and freed afterreturn. Actual HAL retention/implementation behavior unverified."
+  },
+  "encoding": {
+    "optional": "Patched56044/latest58474 each124bytes: flag24 zero =>return0, otherwise header then vector",
+    "writers": "Patched55cc8 size248/latest3f3ac size232 use vectorbegin/end0/8, emit uint64 byte length then payload; writer cursor/remaining/size fields0/8/16",
+    "header": "53-byte android.hardware.graphics.common.StandardMetadataType, prefixed8-byte length; then64-bit24; then64-bitvectorlength andpayload. Engaged encodedlength=77+payloadlength; disengaged=0. Exact header bytes retained header-bytes.json",
+    "bounds": "Both writers track signed32-bit encodedsize, reject overflow with-3, prevent stores/copies exceeding remaining destinationcapacity; no destination =>size-only calculation",
+    "differences": "Register allocation/prologue/branch scheduling and private inlineallocator implementation differ. No touched public vector/optional field or encoded format difference identified."
+  },
+  "evidence_files": [
+    "exact-encoder-functions.json",
+    "header-bytes.json",
+    "setter-argument-path.asm",
+    "patched-55cc8-exact.asm",
+    "latest-3f3ac-exact.asm",
+    "patched-56044-exact.asm",
+    "latest-58474-exact.asm",
+    "patched-538d4-exact.asm",
+    "latest-5701c-exact.asm",
+    "patched-31380-exact.asm"
+  ],
+  "remaining": [
+    "Exact final namespace/provider/version resolution including AIMapper binding and its implementation",
+    "Other caller/ABI/APEX/virtual lock interface review",
+    "Final rebuilt-image identity/import/dependency gates and device runtime validation"
+  ],
+  "whole_rom_acceptance": false,
+  "gate_changes": false
+}

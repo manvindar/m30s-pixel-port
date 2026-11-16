@@ -1,0 +1,79 @@
+[
+  {
+    "variant": "patched",
+    "address": 351432,
+    "size": 248,
+    "name": "_ZN7android8hardware8graphics6mapper14MetadataWriter5writeERKNSt3__16vectorIhNS4_9allocatorIhEEEE",
+    "evidence_file": "patched-55cc8-exact.asm"
+  },
+  {
+    "variant": "patched",
+    "address": 352324,
+    "size": 124,
+    "name": "_ZN7android8hardware8graphics6mapper13MetadataValueINS2_16StandardMetadataILN4aidl7android8hardware8graphics6common20StandardMetadataTypeE24EE6HeaderENSt3__18optionalINSD_6vectorIhNSD_9allocatorIhEEEEEEvE6encodeERKSJ_Pvm",
+    "evidence_file": "patched-56044-exact.asm"
+  },
+  {
+    "variant": "patched",
+    "address": 352448,
+    "size": 104,
+    "name": "_ZN7android8hardware8graphics6mapper14MetadataWriter11writeHeaderINS2_16StandardMetadataILN4aidl7android8hardware8graphics6common20StandardMetadataTypeE24EE6HeaderEEERS3_v",
+    "evidence_file": "patched-560c0-exact.asm"
+  },
+  {
+    "variant": "patched",
+    "address": 342228,
+    "size": 356,
+    "name": "_ZN7androidL19setStandardMetadataILN4aidl7android8hardware8graphics6common20StandardMetadataTypeE24EEE14AIMapper_ErrorP8AIMapperPK13native_handleRKNS_8hardware8graphics6mapper16StandardMetadataIXT_EE10value_typeE.__uniq.282129501360071516068243990103499330813",
+    "evidence_file": "patched-538d4-exact.asm"
+  },
+  {
+    "variant": "patched",
+    "address": 243556,
+    "size": 100,
+    "name": "_ZNSt3__16vectorIhNS_9allocatorIhEEEC2B9nqn230000ERKS3_",
+    "evidence_file": "patched-3b764-exact.asm"
+  },
+  {
+    "variant": "patched",
+    "address": 201600,
+    "size": 48,
+    "name": "_ZNSt3__16vectorIhN7android18InlineStdAllocatorIhLm128EEEE16__destroy_vectorclB9nqn230000Ev",
+    "evidence_file": "patched-31380-exact.asm"
+  },
+  {
+    "variant": "latest",
+    "address": 258988,
+    "size": 232,
+    "name": "_ZN7android8hardware8graphics6mapper14MetadataWriter5writeERKNSt3__16vectorIhNS4_9allocatorIhEEEE",
+    "evidence_file": "latest-3f3ac-exact.asm"
+  },
+  {
+    "variant": "latest",
+    "address": 361588,
+    "size": 124,
+    "name": "_ZN7android8hardware8graphics6mapper13MetadataValueINS2_16StandardMetadataILN4aidl7android8hardware8graphics6common20StandardMetadataTypeE24EE6HeaderENSt3__18optionalINSD_6vectorIhNSD_9allocatorIhEEEEEEvE6encodeERKSJ_Pvm",
+    "evidence_file": "latest-58474-exact.asm"
+  },
+  {
+    "variant": "latest",
+    "address": 361712,
+    "size": 104,
+    "name": "_ZN7android8hardware8graphics6mapper14MetadataWriter11writeHeaderINS2_16StandardMetadataILN4aidl7android8hardware8graphics6common20StandardMetadataTypeE24EE6HeaderEEERS3_v",
+    "evidence_file": "latest-584f0-exact.asm"
+  },
+  {
+    "variant": "latest",
+    "address": 356380,
+    "size": 364,
+    "name": "_ZN7androidL19setStandardMetadataILN4aidl7android8hardware8graphics6common20StandardMetadataTypeE24EEE14AIMapper_ErrorP8AIMapperPK13native_handleRKNS_8hardware8graphics6mapper16StandardMetadataIXT_EE10value_typeE.__uniq.282129501360071516068243990103499330813",
+    "evidence_file": "latest-5701c-exact.asm"
+  },
+  {
+    "variant": "latest",
+    "address": 277468,
+    "size": 108,
+    "name": "_ZNSt3__16vectorIhNS_9allocatorIhEEEC2B9nqn230000ERKS3_",
+    "evidence_file": "latest-43bdc-exact.asm"
+  }
+]

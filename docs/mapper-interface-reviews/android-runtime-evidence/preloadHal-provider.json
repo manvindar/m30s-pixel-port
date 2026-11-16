@@ -1,0 +1,20 @@
+[
+  {
+    "age": "patched",
+    "name": "_ZN7android19GraphicBufferMapper10preloadHalEv",
+    "value": 398728,
+    "size": 44,
+    "defined": true,
+    "type": 2,
+    "evidence": "patched-preloadHal.asm"
+  },
+  {
+    "age": "latest",
+    "name": "_ZN7android19GraphicBufferMapper10preloadHalEv",
+    "value": 383772,
+    "size": 8,
+    "defined": true,
+    "type": 2,
+    "evidence": "latest-preloadHal.asm"
+  }
+]

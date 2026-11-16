@@ -146,6 +146,24 @@
       "evidence": "mapper-interface-reviews/stagefright-arm64.json",
       "scope": "affected_mapper_receiver_interface_only",
       "runtime_validation": false
+    },
+    {
+      "id": "android-runtime-arm64",
+      "context": "system",
+      "file": "/system/lib64/libandroid_runtime.so",
+      "abi": "arm64",
+      "sha256": "1f2fd09804020c020b8ed344d987933d7003f7084583acaaaba1163741c2fd8a",
+      "bytes": 3368088,
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+      "latest_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+      "decoder_sha256": null,
+      "evidence": "mapper-interface-reviews/android-runtime-arm64.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
     }
   ],
   "code_evidence": [
@@ -518,6 +536,96 @@
       "file": "mapper-interface-reviews/plane-evidence/stagefright-arm64-mapper-slice.asm",
       "sha256": "4285fe62c4b4afd6d4ed18ce2ff8f76e55efcf2fd027199bb7379cb4168d8a12",
       "bytes": 7805
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/helper-address-coverage.json",
+      "sha256": "58e3497a6c40ecf23e2b6a85463492f5f650caff475a47b14dd7487b31ff3fc9",
+      "bytes": 427
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/preloadHal-provider.json",
+      "sha256": "1a753e02b10aea1f106d635ba6ef9628d0f867fbc60b5ec04a475f3e0fcca298",
+      "bytes": 414
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/exact-encoder-functions.json",
+      "sha256": "63bc32556c28a334fc46810bc0230b51c21e86dcc0238165cab412845a7142bb",
+      "bytes": 3205
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/header-bytes.json",
+      "sha256": "aad9ac4a30a7691fcc1068b251cd1d22467385cf66a47827ab0cfa32b88c86c0",
+      "bytes": 476
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/setter-argument-path.asm",
+      "sha256": "f64cbdde451657d384c12696c39e6683e9f2e6cc0e335a8cf1bcbbd63ce0dd31",
+      "bytes": 3098
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/affected-paths.asm",
+      "sha256": "74c3e80c9ab69320b44774d08785078ed440362740f8959f7e7f2bb2faba809f",
+      "bytes": 3329
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/patched-3b7c8-setter.asm",
+      "sha256": "a5bd7e186cdaf07350d250725c8b6c673ae7ddaa28cd2fd303a1bc6be81b8224",
+      "bytes": 2514
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/latest-5e1c0-setter.asm",
+      "sha256": "8350df7d4505a177836318e51536abd80cd440f61feb538c55a98bd86bd6f4c3",
+      "bytes": 2749
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/patched-55cc8-exact.asm",
+      "sha256": "f1632a394517a3b151f386ee2e6e4432b977721c20cb51ddd9b5f90a62f17143",
+      "bytes": 3693
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/latest-3f3ac-exact.asm",
+      "sha256": "d74a4ccf90026e8c42251058ca4e6a77c56e515dfd739e8f3431fd95866a654a",
+      "bytes": 3562
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/patched-56044-exact.asm",
+      "sha256": "69f2f7d69dff7308095fed1a9cb5b0667c8cff23a6bb7b950b8123d47078ac33",
+      "bytes": 1943
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/latest-58474-exact.asm",
+      "sha256": "24ec57e7cd309d2b563550cad159ae713fbce84ef46bbcea206c8c9a4138924e",
+      "bytes": 1929
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/patched-538d4-exact.asm",
+      "sha256": "51b370fa5b48e2a2b876bda118c5ff017069643c2300c929f1ea375b0200ea32",
+      "bytes": 4807
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/latest-5701c-exact.asm",
+      "sha256": "d3c9cf0fd9336d36e46e6ca90b3d8f25d14457a17e31b0dbc714ec19e1a0d0e4",
+      "bytes": 5093
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/patched-31380-exact.asm",
+      "sha256": "e3e2e5a4b65a1814ec3a1ec2602c975cf899afa995a74ccd15b7bbe90b9157f5",
+      "bytes": 778
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/patched-preloadHal.asm",
+      "sha256": "3b9f09f49dd0ec62dc104990d19dd6a86b3eebb0d84c963df981b0023135e809",
+      "bytes": 712
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/latest-preloadHal.asm",
+      "sha256": "eb82daed24b88c85e3d65ca8ee158ac99ef74bf8f1b11bcdcb2a6ae17512b7ff",
+      "bytes": 305
+    },
+    {
+      "file": "mapper-interface-reviews/android-runtime-evidence/setter-vtable-slots.json",
+      "sha256": "da55b5301ed7b522c5c5efdb50b1db998c8c0debd291ba4fad26d546f6148278",
+      "bytes": 1213
     }
   ],
   "retained_large_evidence": [
