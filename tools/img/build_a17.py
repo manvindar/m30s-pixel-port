@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Android 17 (Google aosp_arm64 GSI DP11.261016.003) -> Galaxy M30s (SM-M307F) system image. FORKED from the tablet builder by tools/img/make_build_a17.py (do not edit by hand).
 Differences from the tablet: 4800 MiB partition, VNDK v30 + SELinux mapping 30.0 (from the Android 14 GSI, --vndk-dir) for the Android 11 Samsung vendor, Samsung identity props,
-no ROM Tuner (MediaTek only), no lights/vibrator shims in this first image (health shim kept), Bluetooth class of device of a phone.
+M30s ROM Tuner (MediaTek backend excluded), no lights/vibrator shims in this first image (health shim kept), Bluetooth class of device of a phone.
 Original doc follows.
 
 (tablet text) Android 17 -> TB-X606V system image: every change that was applied to the tested tablet, rebuilt offline.
@@ -41,6 +41,7 @@ ap.add_argument('--out', required=True); ap.add_argument('--gapps', help='MindTh
 ap.add_argument('--port-repo', default=os.path.join(HERE, '..', '..', 'tb-x606v-android16-port'), help='Android 16 port repo (ROM Tuner, boot animations)')
 ap.add_argument('--dev-tools', action='store_true', help='development safety net (tools/debug): boot_watchdog reboots into recovery when a boot does not finish, bootdiag writes the boot logcat to /data/local/tmp/bootdiag')
 ap.add_argument('--experimental', action='store_true', help='EXPERIMENTAL features, off in release builds: virtual compass service (tools/compass; its vendor half is installed by tools/compass/install.sh, never by the image)')
+ap.add_argument('--no-m30s-tuner', action='store_true', help='omit the M30s ROM Tuner app and root backend');
 ap.add_argument('--no-tuner', action='store_true', default=True); ap.add_argument('--with-bootdiag', action='store_true', help='boot diagnostics service (logcat/kmsg into /data/local/tmp/bootdiag, costs performance)')
 ap.add_argument('--dolby', help='directory with DaxUI.apk, daxService.patched.apk (or daxService.apk) and com.dolby.daxservice.xml from the stock Lenovo firmware')
 ap.add_argument('--pixel', help='NikGapps-full-arm64-16-*.zip: source of the Pixel apps (Android 16 build; the launcher itself comes from --pixel-launcher-apk)')
@@ -439,6 +440,19 @@ if not a.no_tuner:
     ov = os.path.join(R, 'overlays')                                 # font overlays and the pure black overlay (signed with the AOSP platform test key, like the rest)
     for f in sorted(os.listdir(ov)) if os.path.isdir(ov) else []:
         if f.endswith('.apk'): mkdir('/system/product/overlay/' + f[:-4]); put(os.path.join(ov, f), '/system/product/overlay/%s/%s' % (f[:-4], f), '644')
+if not a.no_m30s_tuner:
+    tuner = os.path.join(HERE, '..', 'tuner')
+    tuner_out = wp('m30s-tuner')
+    run('sh', os.path.join(tuner, 'build.sh'), tuner_out, os.path.join(TOOLS, 'pixel'),
+        env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))
+    mkdir('/system/app/M30sRomTuner')
+    put(os.path.join(tuner_out, 'RomTuner-M30s.apk'), '/system/app/M30sRomTuner/M30sRomTuner.apk', '644')
+    run('sh', os.path.join(tuner, 'build.sh'), tuner_out + '-tablet', os.path.join(TOOLS, 'pixel'),
+        env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT, M30S_TUNER_FLAVOR='tablet'))
+    mkdir('/system/app/TabletRomTuner')
+    put(os.path.join(tuner_out + '-tablet', 'RomTuner-Tablet-M30s.apk'), '/system/app/TabletRomTuner/TabletRomTuner.apk', '644')
+    put(os.path.join(tuner, 'device', 'm30s_tunerd.sh'), '/system/bin/m30s_tunerd.sh', '755')
+    put(tmpf('m30s_tunerd.rc', rc_fix(os.path.join(tuner, 'device', 'm30s_tunerd.rc'))), '/system/etc/init/m30s_tunerd.rc', '644')
 if a.dev_tools:
     for f, mode in (('boot_watchdog.sh', '755'), ('bootdiag.sh', '755')): put(os.path.join(TOOLS, 'debug', f), '/system/bin/' + f, mode)
     for f in ('zz_boot_watchdog.rc', 'zz_bootdiag.rc'): put(os.path.join(TOOLS, 'debug', f), '/system/etc/init/' + f, '644')

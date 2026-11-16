@@ -116,6 +116,9 @@ jobs:
             ${{ env.ANDROID_HOME }}/ndk/${{ env.NDK_VERSION }}
           key: a17-sdk-v1-${{ runner.os }}-bt35.0.0-api34-ndk${{ env.NDK_VERSION }}
 
+      - name: M30s ROM Tuner regressions
+        run: python3 -m unittest discover -s tools/tuner/tests -v
+
       - name: Samsung battery percentage regressions
         run: |
           python3 -m unittest discover -s tools/health -v
