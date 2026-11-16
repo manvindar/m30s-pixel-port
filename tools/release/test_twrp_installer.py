@@ -27,7 +27,7 @@ class RecoveryFlowTests(unittest.TestCase):
         script = script.replace('/proc/mounts', str(self.root / 'mounts')).replace('/proc/self/fd/', '/dev/fd/')
         self.script = self.root / 'installer'; self.script.write_text(script)
         self.command('id', 'echo 0')
-        self.command('getprop', 'case "$1" in ro.product.device) echo "${MODEL:-m30s}";; ro.twrp.version) echo "${TWRP_VERSION-3.7}";; ro.bootmode) echo "${BOOTMODE:-recovery}";; esac')
+        self.command('getprop', 'case "$1" in ro.product.device) echo "${MODEL:-m30s}";; ro.product.model) echo "${MODEL_NAME:-SM-M307F}";; ro.twrp.version) echo "${TWRP_VERSION-3.7}";; ro.bootmode) echo "${BOOTMODE:-recovery}";; esac')
         self.command('blockdev', 'echo "${GEOMETRY:-5033164800}"')
         real_dd = shutil.which('dd')
         self.command('dd', f'touch "$FIXTURE/write-attempted"\n[ "${{FAIL_WRITE:-0}}" = 0 ] || exit 1\nexec "{real_dd}" "$@"')
@@ -58,7 +58,7 @@ esac''')
         self.assertIn('System readback verified', r.stdout)
 
     def test_wrong_model_geometry_boot_or_checksum_never_write(self):
-        for extra in ({'TWRP_VERSION': '', 'BOOTMODE': 'normal'}, {'MODEL': 'another-device'}, {'GEOMETRY': '1'}, {'BOOT_HASH': '0' * 64}):
+        for extra in ({'TWRP_VERSION': '', 'BOOTMODE': 'normal'}, {'MODEL': 'another-device'}, {'MODEL_NAME': 'SM-M307FN'}, {'GEOMETRY': '1'}, {'BOOT_HASH': '0' * 64}):
             with self.subTest(extra=extra):
                 self.assertNotEqual(self.run_installer(**extra).returncode, 0)
                 self.assertFalse((self.root / 'write-attempted').exists())

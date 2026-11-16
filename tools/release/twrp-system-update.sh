@@ -9,6 +9,7 @@ fail() { ui "ERROR: $*"; exit 1; }
 [ "$(id -u)" = 0 ] || fail 'Recovery root required'
 [ -n "$(getprop ro.twrp.version)" ] || [ "$(getprop ro.bootmode)" = recovery ] || fail 'TWRP/recovery required; never run in Android'
 [ "$(getprop ro.product.device)" = m30s ] || fail 'Galaxy M30s recovery required'
+[ "$(getprop ro.product.model)" = SM-M307F ] || fail 'Only the tested SM-M307F model is supported'
 SYSTEM=/dev/block/by-name/system
 BOOT=/dev/block/by-name/boot
 VENDOR=/dev/block/by-name/vendor
