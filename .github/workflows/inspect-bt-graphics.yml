@@ -2,6 +2,10 @@ name: Inspect Bluetooth patch and graphics ABI inputs
 on:
   workflow_dispatch:
     inputs:
+      sync_only:
+        type: boolean
+        default: false
+        description: Inspect pinned prior system and codec LIBSYNC definitions
       controlflow_only:
         type: boolean
         default: false
@@ -25,8 +29,11 @@ jobs:
       - name: Inspect selected measured evidence
         env:
           CONTROLFLOW: ${{ inputs.controlflow_only }}
+          SYNC_ONLY: ${{ inputs.sync_only }}
         run: |
-          if [ "$CONTROLFLOW" = true ]; then
+          if [ "$SYNC_ONLY" = true ]; then
+            python3 tools/pixel/inspect_sync_versions.py
+          elif [ "$CONTROLFLOW" = true ]; then
             sudo apt-get update && sudo apt-get install -y binutils-aarch64-linux-gnu
             python3 tools/pixel/inspect_bt_flow.py
           else
@@ -44,5 +51,7 @@ jobs:
         if: always()
         with:
           name: bt-graphics-evidence
-          path: bt-graphics-evidence/
+          path: |
+            bt-graphics-evidence/
+            sync-version-evidence/
           if-no-files-found: error
