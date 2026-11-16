@@ -129,11 +129,6 @@
       "bytes": 286
     },
     {
-      "file": "mapper-interface-reviews/codec-evidence/nativewindow-full-text.asm",
-      "sha256": "ecf3b99ec8ce86926927edc5028172b18ab56d4b4c4084f27019b311fa16986d",
-      "bytes": 108104
-    },
-    {
       "file": "mapper-interface-reviews/codec-evidence/nativewindow-got-page-refs.json",
       "sha256": "7b62045f33d1ffea388d718585c26b4820fe2fc9a98b459247ca34a0f89bda4e",
       "bytes": 4766
@@ -204,11 +199,6 @@
       "bytes": 1166
     },
     {
-      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-function-17bdc0.asm",
-      "sha256": "2b4eccf3a256696a5def211efca4dfaf1595d8a742ab4bf1f9a87e038ab96942",
-      "bytes": 93213
-    },
-    {
       "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-graphicbuffer-field.json",
       "sha256": "7eabb25a11af90225ecc0d563d92ed3145f78754fd44375b24fc37d4523a3a55",
       "bytes": 1324
@@ -217,11 +207,6 @@
       "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-mapper-relocations.json",
       "sha256": "3cb144f65fe0e5ab47ea1bb0aac58c06daeccb6bb6c3d97aa18a600c1064ba5d",
       "bytes": 1232
-    },
-    {
-      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-provider-methods.json",
-      "sha256": "e0c7260df325edad1591cc3e573fd1836a94f32469d46111962866dc8211e5f0",
-      "bytes": 48247
     },
     {
       "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-receiver-trace.json",
@@ -279,11 +264,6 @@
       "bytes": 1285
     },
     {
-      "file": "mapper-interface-reviews/plane-evidence/media-jni-utils-arm64-text.asm",
-      "sha256": "1d6dbea2d7df9ef6ba78ac1e8148721dbec8150e2be85e9eaf22cac62871b824",
-      "bytes": 76626
-    },
-    {
       "file": "mapper-interface-reviews/plane-evidence/media-jni-utils-inventory.json",
       "sha256": "1e01f4e5e3607763863caccf94de5c6676182dd41414db48a5caa4826b046437",
       "bytes": 3239
@@ -294,29 +274,14 @@
       "bytes": 5871
     },
     {
-      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-PC-reference-inventory.json",
-      "sha256": "cf6323481e845ce9118a291564be8e668c5cbd638ab0b4d75beea661f2c41bf5",
-      "bytes": 19132
-    },
-    {
       "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-bounded-tables.json",
       "sha256": "d48f7465c652e00315afbfc2b7a62a404cde9b39010477d0714111612d538335",
       "bytes": 1058
     },
     {
-      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-decode-inventory.json",
-      "sha256": "2748cf52861505bd4eb0b597f77c83c5814ccbe196180954ba4f7fdbbb5d1545",
-      "bytes": 45349
-    },
-    {
       "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-function-4960.asm",
       "sha256": "43aaa99d971d65455283b87b31cd33e859b9988eb9d7caaf3c950b4320dcc7f9",
       "bytes": 2620
-    },
-    {
-      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-functions.json",
-      "sha256": "8af186721988f1cf87ba9eafa1e5c8053a093b884b4875afda04c752cad669d2",
-      "bytes": 24043
     },
     {
       "file": "mapper-interface-reviews/plane-evidence/patched-arm32-39050-mapper.asm",
@@ -374,11 +339,6 @@
       "bytes": 1352
     },
     {
-      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-arm64-provider-methods.json",
-      "sha256": "4fa1df826abb7078c4ec2a3bef08ed04d97d44d23dacd9b6287d91129231e5ab",
-      "bytes": 80631
-    },
-    {
       "file": "mapper-interface-reviews/plane-evidence/virtual-camera-arm64-reference-inventory.json",
       "sha256": "083332d2d34d405bd63c7ef2ef0ea3445dbe28621dd722ac4fb89b75134b3a4e",
       "bytes": 5117
@@ -397,11 +357,6 @@
       "file": "mapper-interface-reviews/preapex-evidence/AHardwareBuffer-setDataSpace.asm",
       "sha256": "0f67546d644e15cb18d42b73b21117bdfdb49e5e3ffbb6a5b7e793591d4c1acf",
       "bytes": 2354
-    },
-    {
-      "file": "mapper-interface-reviews/preapex-evidence/got-flow-resolved.json",
-      "sha256": "70a163149fd32fb3fa61e473db9bd9fadc9ed776f810b5770f538b6284216418",
-      "bytes": 36120
     },
     {
       "file": "mapper-interface-reviews/preapex-evidence/latest-Mapper12setDataspaceEP.asm",
@@ -485,5 +440,53 @@
     43776923589,
     43778923819,
     43779962776
-  ]
+  ],
+  "retained_audit_evidence": [
+    {
+      "file": "mapper-interface-reviews/codec-evidence/nativewindow-full-text.asm",
+      "sha256": "ecf3b99ec8ce86926927edc5028172b18ab56d4b4c4084f27019b311fa16986d",
+      "bytes": 108104
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-function-17bdc0.asm",
+      "sha256": "2b4eccf3a256696a5def211efca4dfaf1595d8a742ab4bf1f9a87e038ab96942",
+      "bytes": 93213
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-provider-methods.json",
+      "sha256": "e0c7260df325edad1591cc3e573fd1836a94f32469d46111962866dc8211e5f0",
+      "bytes": 48247
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/media-jni-utils-arm64-text.asm",
+      "sha256": "1d6dbea2d7df9ef6ba78ac1e8148721dbec8150e2be85e9eaf22cac62871b824",
+      "bytes": 76626
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-PC-reference-inventory.json",
+      "sha256": "cf6323481e845ce9118a291564be8e668c5cbd638ab0b4d75beea661f2c41bf5",
+      "bytes": 19132
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-decode-inventory.json",
+      "sha256": "2748cf52861505bd4eb0b597f77c83c5814ccbe196180954ba4f7fdbbb5d1545",
+      "bytes": 45349
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-functions.json",
+      "sha256": "8af186721988f1cf87ba9eafa1e5c8053a093b884b4875afda04c752cad669d2",
+      "bytes": 24043
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-arm64-provider-methods.json",
+      "sha256": "4fa1df826abb7078c4ec2a3bef08ed04d97d44d23dacd9b6287d91129231e5ab",
+      "bytes": 80631
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/got-flow-resolved.json",
+      "sha256": "70a163149fd32fb3fa61e473db9bd9fadc9ed776f810b5770f538b6284216418",
+      "bytes": 36120
+    }
+  ],
+  "audit_note": "Broad generated inventories and full disassemblies are retained in the operator audit workspace; this patch carries the six reviews and bounded code excerpts. Audit file identities remain recorded; they are not claimed as shipped proof files."
 }
