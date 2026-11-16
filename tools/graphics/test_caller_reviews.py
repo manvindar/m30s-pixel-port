@@ -14,7 +14,7 @@ class CallerReviewTests(unittest.TestCase):
         records = load_reviews()
         expected = {'nativewindow-arm64', 'nativewindow-arm32', 'media-jni-arm64',
                     'media-jni-arm32', 'virtual-camera-arm64', 'preapex-arm64',
-                    'libgui-arm64', 'stagefright-arm64', 'android-runtime-arm64'}
+                    'libgui-arm64', 'stagefright-arm64', 'android-runtime-arm64', 'stagefright-arm32'}
         accepted = set()
         unknown = 0
         for row in rows:
@@ -51,7 +51,7 @@ class CallerReviewTests(unittest.TestCase):
             self.assertIsNone(check(row, dict(binding, error='unresolved dependency')))
             self.assertIsNone(check(row, {}))
         self.assertEqual(accepted, expected)
-        self.assertEqual((len(rows), unknown), (37, 28))
+        self.assertEqual((len(rows), unknown), (37, 27))
 
     def test_direct_ui_and_actual_ui_decoder_edges(self):
         caller = '/system/lib64/caller.so'

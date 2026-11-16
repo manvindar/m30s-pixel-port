@@ -164,6 +164,24 @@
       "evidence": "mapper-interface-reviews/android-runtime-arm64.json",
       "scope": "affected_mapper_receiver_interface_only",
       "runtime_validation": false
+    },
+    {
+      "id": "stagefright-arm32",
+      "context": "system",
+      "file": "/system/lib/libstagefright.so",
+      "sha256": "33284e82833d3f1c122c7fd0b95b9c873ebf3c49aeff6d75885cbb47d23d2406",
+      "bytes": 1623944,
+      "abi": "arm32",
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "e763c2271067df3894f8c884dc79a4b093812f223f8c4a643c55d5a4215623c9",
+      "latest_libui_sha256": "236132fe5b182194b25f8f9547e850f8e13ce5315862f4256d054ad770e221f2",
+      "decoder_sha256": null,
+      "evidence": "mapper-interface-reviews/stagefright-arm32.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
     }
   ],
   "code_evidence": [

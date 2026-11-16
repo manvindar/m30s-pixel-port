@@ -1,0 +1,242 @@
+{
+  "schema": 1,
+  "status": "exact-hash-bound-static-affected-interface-review",
+  "full_rom_acceptance": false,
+  "runtime_verified": false,
+  "abi": "arm32",
+  "consumer": {
+    "context": "system",
+    "file": "/system/lib/libstagefright.so",
+    "sha256": "33284e82833d3f1c122c7fd0b95b9c873ebf3c49aeff6d75885cbb47d23d2406",
+    "bytes": 1623944,
+    "interface_symbols": [
+      "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+      "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+    ]
+  },
+  "provider_sha256": {
+    "patched": "e763c2271067df3894f8c884dc79a4b093812f223f8c4a643c55d5a4215623c9",
+    "latest": "236132fe5b182194b25f8f9547e850f8e13ce5315862f4256d054ad770e221f2",
+    "prior": "a42097a7ef2cc42fef330bfc30471d3bd11bd4240b425bf70b1ddd746e1d7fc8"
+  },
+  "observed_receiver_path": {
+    "function": "SoftwareRenderer::render",
+    "entry": "0x14e604",
+    "size": 4480,
+    "Singleton_sLock": "14ebc6 literal14edc8,ADD14ebc8 =>181884",
+    "Singleton_sInstance": "14ebda literal14edcc,ADD14ebdc=>181888; r4=GOTdereference,r7=[r4]",
+    "allocation": "14ebe4 r0=8;14ebe6 new;14ebea r7=result;14ebec constructor;14ebf0 [r4]=r0",
+    "lock": "14ec34->17a640=>GOT183250",
+    "lockYCbCr": "14ec7e->17a630=>GOT18324c",
+    "receiver_spill": "14ec8cstrdr7,r6[sp,56];14ecf6reloadr0[sp,38]=>unlock",
+    "unlock": "14ecf8->17a650=>GOT183254; r2=null"
+  },
+  "layouts": {
+    "Rect": {
+      "bytes": 16,
+      "stack": "sp64",
+      "writes": "14ebf8 loads width/height [r8,44];14ec00stores right/bottom sp6c;14ec0e zero left/top sp64"
+    },
+    "void_pointer": {
+      "bytes": 4,
+      "stack": "sp8c",
+      "zero": "14ec1e",
+      "provider_success_write": "patched38a78..38a7e copies4bytes;latestwrapper355e8 same visible output protocol"
+    },
+    "android_ycbcr": {
+      "bytes": 56,
+      "stack": "sp98",
+      "zero": "14ec12/16/1a 3x16 bytes +14ec20spc8 +14ec22spcc",
+      "provider_success_copy": "patched38b70..38b90 and latest35764..35784 3x16+8bytes",
+      "caller_field_reads": "y+0;cb+4;cr+8;ystride+c;cstride+10; exact loads14ef06/14ef14/14ef24 and14efca",
+      "correction": "Earlier 40-byte expectation was wrong; actual pinned binaries copy56."
+    },
+    "native_handle": {
+      "caller_offset": "ANativeWindowBuffer+3c",
+      "provider_anchor": "patchedGraphicBuffergetNativeBuffer2ed0a/latest2ba5a returns originalthis+8; earlier actualGraphicBufferconstructor/initWithHandle stores handle+44;44-8=3c"
+    },
+    "mapper_object": {
+      "bytes": 8,
+      "pointer_offset": 0,
+      "version_offset": 4,
+      "consumer_field_access_observed": false
+    }
+  },
+  "status_checks": {
+    "generic_lock": "14ec38 CBZsuccess,otherwise14ec3e->14f5fa",
+    "ycbcr": "14ec82CMP;14ec84BNE14f644->14f5fa",
+    "error_behavior": "14f5fa composes fatalmessage,14f636 PLT174f30 resolves fatalassert; not gracefulfallback",
+    "unlock": "14ecfe BNE14f63e->14f5ee errorpath"
+  },
+  "provider_internal_calls": {
+    "generic_lock": "patched public389fc calls own386d4;38760 loads vptr+20 and38772call;data,stride,bpp pointers sp8/spc/sp10 remain internal. Latest public355e8 calls own352f0;3535e loads vptr+20 and3536ccall;onlydata pointersp8. Consumer never calls changed virtual directly in observed slice.",
+    "YCbCr": "patched38800 and latest353ec usevptr+24; same56bytepayload visiblewrapper",
+    "unlock": "patched38950loads vptr+28; same nativehandle/fenceprotocol"
+  },
+  "remaining_gaps": [
+    "Parent independentlyowns actualnamespace/providerbinding.",
+    "Compiler-pattern origincoverage andboundedrendererproof requireindependentreview; no whole-linearunknown-count pass or runtimeacceptance."
+  ],
+  "scope": "Evidence only; no gate/source modification, build, publication or device action.",
+  "bounded_renderer_closure": "stagefright-arm32-bounded-receiver-closure.json",
+  "renderer_decoding": {
+    "ranges": [
+      [
+        "0x14e604",
+        "0x14e8d4"
+      ],
+      [
+        "0x14e8ec",
+        "0x14edb0"
+      ],
+      [
+        "0x14ede4",
+        "0x14ee00"
+      ],
+      [
+        "0x14ee16",
+        "0x14f5b8"
+      ],
+      [
+        "0x14f5c8",
+        "0x14f684"
+      ]
+    ],
+    "literal_ranges": [
+      [
+        "0x14e8d4",
+        "0x14e8ec"
+      ],
+      [
+        "0x14edb0",
+        "0x14ede4"
+      ],
+      [
+        "0x14f5b8",
+        "0x14f5c8"
+      ],
+      [
+        "0x14f684",
+        "0x14f784"
+      ]
+    ],
+    "TBH": {
+      "instruction": "0x14edfc",
+      "base": "0x14ee00",
+      "entries": [
+        11,
+        1083,
+        1083,
+        1083,
+        1083,
+        278,
+        1083,
+        1083,
+        352,
+        1083,
+        170
+      ],
+      "targets": [
+        "0x14ee16",
+        "0x14f676",
+        "0x14f676",
+        "0x14f676",
+        "0x14f676",
+        "0x14f02c",
+        "0x14f676",
+        "0x14f676",
+        "0x14f0c0",
+        "0x14f676",
+        "0x14ef54"
+      ],
+      "bound": "14edf6 cmp r0,10;14edf8 BHI fatal;11halfwords14ee00..14ee16"
+    },
+    "code_bytes": 4110,
+    "data_bytes": 370,
+    "unknown_in_classified_code": []
+  },
+  "renderer_alias_closure": {
+    "trace_states": 401,
+    "allowed_argument_calls": [
+      "14ec34publiclock",
+      "14ec7epubliclockYCbCr",
+      "14ecf8publicunlock"
+    ],
+    "owned_store": "14ebf0SingletonsInstance",
+    "local_spill": "14ec8c[sp38];exactonlyreload14ecf6r0 before14ecf8unlock",
+    "no_receiver_field_load": true,
+    "no_receiver_indirect_call": true,
+    "no_receiver_return": true,
+    "other_actual_receiver_escape_calls": [],
+    "manual_false_positive_resolution": {
+      "14ecdcsp30store": "14ec98subr12,r2,1;14eca0ITTTVC;14eca6SUBVCr7,r2,1 overwritesreceiveron feasible normalpath;14eca8CMPVCflags;14ecaaBVS14e706 fatalabort. IffirstCMPoverflowsITskipsbutBVSisnecessarilytaken. Thussp30holds numeric bottomcoordinate, nevermapperreceiver.",
+      "14f2daMOVW": "MOVWzeroextends immediate16 to32 bits, fullyoverwritesr7;14f2e2MOVTthencompletes0x9f98841aCFIconstant before anyr7use. This isreceiver lifetime end, not escape."
+    },
+    "stack_slot_address_escape": "AllSPaddressmaterializations listed; noaddresssp38/sp3c. PassingRectsp64,outputsp8c,YCbCrsp98 andstringssp48 doesnot expose savedreceiver. Stack fixed afterprologue untilnormalepilogue;exactslotwriteandloadonly.",
+    "constructor_path": "14ebe4new8;14ebear7=r0;14ebecctor;14ebf0storesctorreturnedthis toSingleton. Existing actualpatchedconstructorreview provesoffset0pointerand4versionfits8; noconsumerdirectlayoutaccess."
+  },
+  "alternative_origin_inventory": "stagefright-arm32-alternative-origin-closure.json",
+  "root_independent_checks": {
+    "renderer": "stagefright-arm32-root-renderer-verification.json:1477 fresh actual instructions match;zero unknown",
+    "providers": "stagefright-arm32-root-provider-verification.json:both exacthashes and18 freshmethod matches",
+    "alternative_origins": "stagefright-arm32-root-prefix-verification.json:242falsepairs/237unique loads;exceptional loop r2 overwritten;2real rendererorigins",
+    "output_samples": "Generic pointer4B writes38a78..7e/3566a..70;YCbCr56B copies38b70..90/35764..84;renderer3x16+8 zero outputsp98..d0,Rect16B;nativehandle+3c",
+    "manual_alias_samples": "r7 mapper savedsp38 at14ec8c;reloadr0 at14ecf6 only;sp30 false alias underVC/VSfatal path;MOVW14f2da overwritesreceiver"
+  },
+  "conditions": [
+    "Only exact consumer path/context/ABI/size/hash/interface set",
+    "Actual direct caller->systemlibui edge and exact patched provider hash required",
+    "All declared imports/version/removed-export/flags/dependency gates retained",
+    "Final actual runtime namespace/loader/endpoint binding not proven by static slice",
+    "Compiler-pattern fulltext origin coverage is bounded; no proof against arbitrary obfuscated computed addressing"
+  ],
+  "closed_public_mapper_receiver_slice": true,
+  "retained_local_audit_hashes": [
+    {
+      "file": "stagefright-arm32-bounded-receiver-closure.json",
+      "sha256": "85460aa3b3f031d8cfdcef19dfea76f18e9909a3323db3491ecebd2c7c0cc2b3",
+      "bytes": 26897
+    },
+    {
+      "file": "stagefright-arm32-alternative-origin-closure.json",
+      "sha256": "b5df09a49f0bbfafb7df012c4345ebfe5421915ce07681483cba2449f2275fb8",
+      "bytes": 156177
+    },
+    {
+      "file": "stagefright-arm32-root-prefix-verification.json",
+      "sha256": "9bc20e1b3afeeba78e0aa35bf0cd8ecf4e11926e66f51e370fb933be39f5ce60",
+      "bytes": 26123
+    },
+    {
+      "file": "stagefright-arm32-root-renderer-verification.json",
+      "sha256": "6533a87bb70218341956f3e2a3c1eaacbd745ff07d0c7d042650e08f1f36d495",
+      "bytes": 345
+    },
+    {
+      "file": "stagefright-arm32-root-provider-verification.json",
+      "sha256": "7159810c465582636f02e962b202c7186fb3231c169b586c8158b4607d1418e3",
+      "bytes": 4252
+    },
+    {
+      "file": "stagefright-arm32-receiver-trace.json",
+      "sha256": "86dc92d1c84dd1a02138e044e21fa6c5174244fca75bdc583f7d40b9c284e215",
+      "bytes": 2249
+    },
+    {
+      "file": "stagefright-arm32-raw-mapper-origin-inventory.json",
+      "sha256": "32680b4e83d2c699f36c3bd8da2fad88b494fc53129392be060658ba282256c3",
+      "bytes": 56934
+    }
+  ],
+  "limitations": [
+    "Compiler-pattern alternative-origin coverage only; no arbitrary computed/obfuscated addressing proof",
+    "Global unknown instruction count is not an acceptance criterion",
+    "Retained renderer fatal errors remain; output layout compatibility does not prove successful HAL operation",
+    "Final exact provider/import/namespace and runtime endpoint checks remain required",
+    "No whole ROM, device or runtime acceptance"
+  ],
+  "published_bounded_excerpt": {
+    "file": "docs/mapper-interface-reviews/plane-evidence/stagefright-arm32-bounded-excerpts.asm",
+    "sha256": "a79f579a0aea0d77548edf441d92ad2baec0740f2be4009a0ceb4b77cad8736f"
+  }
+}
