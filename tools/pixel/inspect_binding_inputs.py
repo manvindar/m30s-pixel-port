@@ -20,10 +20,13 @@ def main():
     receipt = {'input': pins, 'files': [], 'absences': [], 'acceptance': False,
                'limitations': ['Pinned base inputs, not final staged image readback',
                                'Source audioserver.rc is modified by port staging',
-                               'Runtime-generated linkerconfig and actual bindings remain unproven']}
+                               'Runtime-generated linkerconfig and actual bindings remain unproven',
+                               'Missing standalone linkerconfig is recorded, not replaced by an assumed init generator'],
+               'binding_review_complete': False, 'generator_identified': False, 'directory_inventories': []}
     targets = [('/system/lib/libgralloctypes.so', True),
                ('/system/lib64/libgralloctypes.so', True),
-               ('/system/bin/linkerconfig', True),
+               ('/system/bin/linkerconfig', False),
+               ('/system/bin/init', True),
                ('/system/etc/linker.config.json', False),
                ('/system/etc/init/audioserver.rc', True),
                ('/system/build.prop', True),
@@ -43,6 +46,23 @@ def main():
                 raise RuntimeError('Unexpected sparse pinned image')
             stream.seek(1080); ext4 = stream.read(2) == b'\x53\xef'
         decoded = None if ext4 else extract_fs(image, tmp / 'decoded')
+        for directory in ('/system/bin', '/system/bin/bootstrap', '/system/apex'):
+            if ext4:
+                if 'Inode:' not in run('debugfs', '-R', 'stat ' + directory, image):
+                    receipt['directory_inventories'].append({'path': directory, 'absent': True})
+                    continue
+                listing = run('debugfs', '-R', 'ls -p ' + directory, image)
+            else:
+                directory_path = decoded / directory.lstrip('/')
+                if not directory_path.is_dir() or directory_path.is_symlink():
+                    receipt['directory_inventories'].append({'path': directory, 'absent': True})
+                    continue
+                listing = '\n'.join(sorted(p.name for p in directory_path.iterdir()))
+            if len(listing.encode()) > 512 * 1024:
+                raise RuntimeError('Oversized bounded generator directory inventory')
+            filename = directory.lstrip('/').replace('/', '-') + '.inventory.txt'
+            (out / filename).write_text(listing)
+            receipt['directory_inventories'].append({'path': directory, 'evidence_file': filename})
         for remote, required in targets:
             target = out / remote.lstrip('/')
             if ext4:
@@ -70,7 +90,7 @@ def main():
             metadata = elf(target)
             expected_abi = {'/system/lib/libgralloctypes.so': 'arm32',
                             '/system/lib64/libgralloctypes.so': 'arm64',
-                            '/system/bin/linkerconfig': 'arm64'}.get(remote)
+                            '/system/bin/linkerconfig': 'arm64', '/system/bin/init': 'arm64'}.get(remote)
             if expected_abi and (metadata is None or metadata['abi'] != expected_abi):
                 raise RuntimeError('Invalid binding input ELF ABI: ' + remote)
             if metadata is not None:
@@ -82,6 +102,7 @@ def main():
     if len(receipt['files']) != sum(1 for _, required in targets if required) + sum(
             1 for remote, required in targets if not required and remote not in {r['file'] for r in receipt['absences']}):
         raise RuntimeError('Incomplete binding evidence receipt')
+    receipt['status'] = 'pinned inputs extracted; namespace generator/bindings unresolved'
     (out / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
 
 if __name__ == '__main__':
