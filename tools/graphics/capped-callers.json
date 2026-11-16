@@ -1,0 +1,124 @@
+{
+  "run": 43776923589,
+  "targets": [
+    {
+      "context": "system",
+      "file": "/system/lib64/libstagefright.so",
+      "abi": "arm64",
+      "sha256": "a1a7ee44b25790058c3596797ef3f7f147b3e3ba06f37162fdbb0f1ce6ad126f",
+      "bytes": 2243272
+    },
+    {
+      "context": "com.android.media.swcodec",
+      "file": "/apex/com.android.media.swcodec/lib64/libcodec2_vndk.so",
+      "abi": "arm64",
+      "sha256": "e380b212e6c33a6852111c1a1cb8a7a6f4de36d945d8fcfe9ad298c71574f6f9",
+      "bytes": 888328
+    },
+    {
+      "context": "com.android.vndk.v30",
+      "file": "/apex/com.android.vndk.v30/lib/libui.so",
+      "abi": "arm32",
+      "sha256": "0f7a311815a578530e6e6d7d6b52d110a49a05424916285ae421e5fe3e00037b",
+      "bytes": 217740
+    },
+    {
+      "context": "com.android.vndk.v30",
+      "file": "/apex/com.android.vndk.v30/lib64/libui.so",
+      "abi": "arm64",
+      "sha256": "9719f113aef8ad8415023590685ee4a322a0e610666738864fbef9a166c89fa3",
+      "bytes": 289200
+    },
+    {
+      "context": "com.android.vndk.v31",
+      "file": "/apex/com.android.vndk.v31/lib/libui.so",
+      "abi": "arm32",
+      "sha256": "c2912776aef9bcb09c480e2f32a6572df7521b17f72a92e99c280428b6bf5c1f",
+      "bytes": 227612
+    },
+    {
+      "context": "com.android.vndk.v31",
+      "file": "/apex/com.android.vndk.v31/lib64/libui.so",
+      "abi": "arm64",
+      "sha256": "9804360fd5f2a66e803e1980386db3ef2afb8635db6d91035de3156138a19b6d",
+      "bytes": 299016
+    },
+    {
+      "context": "com.android.vndk.v32",
+      "file": "/apex/com.android.vndk.v32/lib/libui.so",
+      "abi": "arm32",
+      "sha256": "021999c2fb3317112b8d189ef91d163dc5003c8b9324743e653dc3d954eaf88a",
+      "bytes": 227720
+    },
+    {
+      "context": "com.android.vndk.v32",
+      "file": "/apex/com.android.vndk.v32/lib64/libui.so",
+      "abi": "arm64",
+      "sha256": "9433935d039b127c97d9c91e7e0ddc8dd4617978d3b75c5918e97b6318b6e6a6",
+      "bytes": 299016
+    },
+    {
+      "context": "com.android.vndk.v33",
+      "file": "/apex/com.android.vndk.v33/lib/libgui.so",
+      "abi": "arm32",
+      "sha256": "58d4e057aebaf4fe9c7610e1db0c123f72c0379c69b8341fca600e623c2cfe6d",
+      "bytes": 918196
+    },
+    {
+      "context": "com.android.vndk.v33",
+      "file": "/apex/com.android.vndk.v33/lib/libui.so",
+      "abi": "arm32",
+      "sha256": "a7055028d3ed0f2226539b07ecbd4c737529f46f48409682d60415bf8642e975",
+      "bytes": 246240
+    },
+    {
+      "context": "com.android.vndk.v33",
+      "file": "/apex/com.android.vndk.v33/lib64/libgui.so",
+      "abi": "arm64",
+      "sha256": "44c4217eb75093a4ab159479da18492e945239240d413b9f16f88e330335e277",
+      "bytes": 1295624
+    },
+    {
+      "context": "com.android.vndk.v33",
+      "file": "/apex/com.android.vndk.v33/lib64/libui.so",
+      "abi": "arm64",
+      "sha256": "8a5ea8ed53dbc6b42328156d6c0cdfa6eca2c1c6d6e784da6c1946f4380b750b",
+      "bytes": 320104
+    },
+    {
+      "context": "com.android.vndk.v34",
+      "file": "/apex/com.android.vndk.v34/lib/libgui.so",
+      "abi": "arm32",
+      "sha256": "1f00980bfa074efc6365ca89b36abc700d74271a467d1c4855f367298185cf2f",
+      "bytes": 973492
+    },
+    {
+      "context": "com.android.vndk.v34",
+      "file": "/apex/com.android.vndk.v34/lib/libui.so",
+      "abi": "arm32",
+      "sha256": "83fee5f621aba66fd3df7b7b6deecf699ff5658df42f55acd8e3afacd60b7dc7",
+      "bytes": 260268
+    },
+    {
+      "context": "com.android.vndk.v34",
+      "file": "/apex/com.android.vndk.v34/lib64/libgui.so",
+      "abi": "arm64",
+      "sha256": "d003b2b00137ea77593224562bf940ea44a45eff5f88386ec93fbe428536ccbe",
+      "bytes": 1487264
+    },
+    {
+      "context": "com.android.vndk.v34",
+      "file": "/apex/com.android.vndk.v34/lib64/libui.so",
+      "abi": "arm64",
+      "sha256": "60f82af247d3b081c0435b40bd95f19a35183bb0c08b7a313b681f47502440d4",
+      "bytes": 410576
+    }
+  ],
+  "apex_paths": {
+    "com.android.vndk.v30": "/system/system_ext/apex/com.android.vndk.v30.apex",
+    "com.android.vndk.v31": "/system/system_ext/apex/com.android.vndk.v31.apex",
+    "com.android.vndk.v32": "/system/system_ext/apex/com.android.vndk.v32.apex",
+    "com.android.vndk.v33": "/system/system_ext/apex/com.android.vndk.v33.apex",
+    "com.android.vndk.v34": "/system/system_ext/apex/com.android.vndk.v34.apex"
+  }
+}
