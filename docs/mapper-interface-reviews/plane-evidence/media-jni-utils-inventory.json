@@ -1,0 +1,101 @@
+{
+  "file": "retained-evidence/provider-callers-43776923589/legacy_graphics/abi-consumers/b6b501ae3b8e6f1857642b08b3a52212f28daa1011a1ef7a0d72b7870574401f.elf",
+  "sha256": "b6b501ae3b8e6f1857642b08b3a52212f28daa1011a1ef7a0d72b7870574401f",
+  "section": {
+    "address": "0x4000",
+    "bytes": 6456
+  },
+  "mapper_relocations": [
+    {
+      "address": "0x8248",
+      "symbol": "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+      "addend": 0,
+      "type": 1025
+    },
+    {
+      "address": "0x8250",
+      "symbol": "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE",
+      "addend": 0,
+      "type": 1025
+    },
+    {
+      "address": "0x82c0",
+      "symbol": "_ZN7android19GraphicBufferMapper15getPlaneLayoutsEPK13native_handlePNSt3__16vectorIN4aidl7android8hardware8graphics6common11PlaneLayoutENS4_9allocatorISB_EEEE",
+      "addend": 0,
+      "type": 1026
+    },
+    {
+      "address": "0x82d0",
+      "symbol": "_ZN7android19GraphicBufferMapperC1Ev",
+      "addend": 0,
+      "type": 1026
+    }
+  ],
+  "singleton_offset_candidates": [
+    {
+      "line": "50f8:      \tldr\tx0, [x0, #0x248]",
+      "preceding": [
+        "    50e4:      \tadrp\tx0, 0x8000",
+        "    50e8:      \tldr\tx8, [x23, #0x28]",
+        "    50ec:      \tmov\tx19, x2",
+        "    50f0:      \tmov\tx21, x1",
+        "    50f4:      \tstur\tx8, [x29, #-0x8]"
+      ]
+    },
+    {
+      "line": "5104:      \tldr\tx24, [x24, #0x250]",
+      "preceding": [
+        "    50f0:      \tmov\tx21, x1",
+        "    50f4:      \tstur\tx8, [x29, #-0x8]",
+        "    50f8:      \tldr\tx0, [x0, #0x248]",
+        "    50fc:      \tbl\t0x5a98 <pthread_mutex_lock@plt>",
+        "    5100:      \tadrp\tx24, 0x8000"
+      ]
+    },
+    {
+      "line": "5128:      \tldr\tx0, [x0, #0x248]",
+      "preceding": [
+        "    5114:      \tbl\t0x5a68 <_Znwm@plt>",
+        "    5118:      \tmov\tx22, x0",
+        "    511c:      \tbl\t0x5a80 <_ZN7android19GraphicBufferMapperC1Ev@plt>",
+        "    5120:      \tstr\tx22, [x24]",
+        "    5124:      \tadrp\tx0, 0x8000"
+      ]
+    },
+    {
+      "line": "531c:      \tldr\tx0, [x0, #0x248]",
+      "preceding": [
+        "    5308:      \tadrp\tx0, 0x8000",
+        "    530c:      \tldr\tx8, [x23, #0x28]",
+        "    5310:      \tmov\tx19, x2",
+        "    5314:      \tmov\tx21, x1",
+        "    5318:      \tstur\tx8, [x29, #-0x8]"
+      ]
+    },
+    {
+      "line": "5328:      \tldr\tx24, [x24, #0x250]",
+      "preceding": [
+        "    5314:      \tmov\tx21, x1",
+        "    5318:      \tstur\tx8, [x29, #-0x8]",
+        "    531c:      \tldr\tx0, [x0, #0x248]",
+        "    5320:      \tbl\t0x5a98 <pthread_mutex_lock@plt>",
+        "    5324:      \tadrp\tx24, 0x8000"
+      ]
+    },
+    {
+      "line": "534c:      \tldr\tx0, [x0, #0x248]",
+      "preceding": [
+        "    5338:      \tbl\t0x5a68 <_Znwm@plt>",
+        "    533c:      \tmov\tx22, x0",
+        "    5340:      \tbl\t0x5a80 <_ZN7android19GraphicBufferMapperC1Ev@plt>",
+        "    5344:      \tstr\tx22, [x24]",
+        "    5348:      \tadrp\tx0, 0x8000"
+      ]
+    }
+  ],
+  "indirect_text_branches": [
+    "4610:      \tbr\tx12",
+    "57f8:      \tblr\tx8"
+  ],
+  "unknown_decode": false
+}

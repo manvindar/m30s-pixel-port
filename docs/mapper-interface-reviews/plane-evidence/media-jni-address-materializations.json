@@ -1,0 +1,74 @@
+{
+  "address_materializations": [
+    {
+      "instruction": "0x50e4",
+      "kind": "ADRP",
+      "register": 0,
+      "target": "0x8000"
+    },
+    {
+      "instruction": "0x5100",
+      "kind": "ADRP",
+      "register": 24,
+      "target": "0x8000"
+    },
+    {
+      "instruction": "0x5124",
+      "kind": "ADRP",
+      "register": 0,
+      "target": "0x8000"
+    },
+    {
+      "instruction": "0x5308",
+      "kind": "ADRP",
+      "register": 0,
+      "target": "0x8000"
+    },
+    {
+      "instruction": "0x5324",
+      "kind": "ADRP",
+      "register": 24,
+      "target": "0x8000"
+    },
+    {
+      "instruction": "0x5348",
+      "kind": "ADRP",
+      "register": 0,
+      "target": "0x8000"
+    }
+  ],
+  "jump_table": {
+    "adrp_or_adr_table_base": "0x1956",
+    "branch_base": "0x4614",
+    "entries": 60,
+    "targets": [
+      "0x4614",
+      "0x46c8",
+      "0x46ec",
+      "0x470c",
+      "0x4740",
+      "0x477c",
+      "0x47ac",
+      "0x47dc",
+      "0x4828",
+      "0x4874",
+      "0x4898",
+      "0x48d8",
+      "0x4bdc"
+    ],
+    "min": "0x4614",
+    "max": "0x4bdc"
+  },
+  "exec_sections": [
+    {
+      "name": ".text",
+      "address": "0x4000",
+      "bytes": 6456
+    },
+    {
+      "name": ".plt",
+      "address": "0x5940",
+      "bytes": 608
+    }
+  ]
+}

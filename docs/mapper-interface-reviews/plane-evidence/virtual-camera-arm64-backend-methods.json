@@ -1,0 +1,98 @@
+[
+  {
+    "name": "_ZNK7android14Gralloc5Mapper12importBufferEPK13native_handlePS3_",
+    "value": 337276,
+    "size": 24,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-5257c-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc4Mapper9getHeightEPK13native_handlePm",
+    "value": 315224,
+    "size": 32,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-4cf58-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc5Mapper8getUsageEPK13native_handlePm",
+    "value": 338924,
+    "size": 68,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-52bec-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc5Mapper23getPixelFormatRequestedEPK13native_handlePNS_8hardware8graphics6common4V1_211PixelFormatE",
+    "value": 338780,
+    "size": 72,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-52b5c-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc4Mapper23getPixelFormatRequestedEPK13native_handlePNS_8hardware8graphics6common4V1_211PixelFormatE",
+    "value": 315288,
+    "size": 8,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-4cf98-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc5Mapper13getLayerCountEPK13native_handlePm",
+    "value": 264772,
+    "size": 68,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-40a44-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc4Mapper8getWidthEPK13native_handlePm",
+    "value": 315192,
+    "size": 32,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-4cf38-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc4Mapper12importBufferEPK13native_handlePS3_",
+    "value": 311504,
+    "size": 260,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-4c0d0-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc5Mapper9getHeightEPK13native_handlePm",
+    "value": 264320,
+    "size": 68,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-40880-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc4Mapper8getUsageEPK13native_handlePm",
+    "value": 316056,
+    "size": 32,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-4d298-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc4Mapper13getLayerCountEPK13native_handlePm",
+    "value": 315256,
+    "size": 32,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-4cf78-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc5Mapper8getWidthEPK13native_handlePm",
+    "value": 239432,
+    "size": 68,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-patched-3a748-backend.asm"
+  }
+]

@@ -1,0 +1,146 @@
+[
+  {
+    "abi": "arm64",
+    "hash": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+    "symbol": {
+      "name": "_ZN7android8gralloc420decodeExtendableTypeEPNS0_12InputHidlVecEPN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+      "value": 37284,
+      "size": 252,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm64-91a4.asm"
+  },
+  {
+    "abi": "arm64",
+    "hash": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+    "symbol": {
+      "name": "_ZN7android8gralloc426decodePlaneLayoutComponentEPNS0_12InputHidlVecEPN4aidl7android8hardware8graphics6common20PlaneLayoutComponentE",
+      "value": 40660,
+      "size": 200,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm64-9ed4.asm"
+  },
+  {
+    "abi": "arm64",
+    "hash": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+    "symbol": {
+      "name": "_ZN7android8gralloc427decodePlaneLayoutComponentsEPNS0_12InputHidlVecEPNSt3__16vectorIN4aidl7android8hardware8graphics6common20PlaneLayoutComponentENS3_9allocatorISA_EEEE",
+      "value": 41052,
+      "size": 192,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm64-a05c.asm"
+  },
+  {
+    "abi": "arm64",
+    "hash": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+    "symbol": {
+      "name": "_ZN7android8gralloc417decodePlaneLayoutEPNS0_12InputHidlVecEPN4aidl7android8hardware8graphics6common11PlaneLayoutE",
+      "value": 42312,
+      "size": 468,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm64-a548.asm"
+  },
+  {
+    "abi": "arm64",
+    "hash": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+    "symbol": {
+      "name": "_ZN7android8gralloc424decodePlaneLayoutsHelperEPNS0_12InputHidlVecEPNSt3__16vectorIN4aidl7android8hardware8graphics6common11PlaneLayoutENS3_9allocatorISA_EEEE",
+      "value": 42980,
+      "size": 208,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm64-a7e4.asm"
+  },
+  {
+    "abi": "arm64",
+    "hash": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+    "symbol": {
+      "name": "_ZN7android8gralloc418decodePlaneLayoutsERKNS_8hardware8hidl_vecIhEEPNSt3__16vectorIN4aidl7android8hardware8graphics6common11PlaneLayoutENS6_9allocatorISD_EEEE",
+      "value": 54428,
+      "size": 296,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm64-d49c.asm"
+  },
+  {
+    "abi": "arm32",
+    "hash": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4",
+    "symbol": {
+      "name": "_ZN7android8gralloc420decodeExtendableTypeEPNS0_12InputHidlVecEPN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+      "value": 27373,
+      "size": 72,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm32-6aec.asm"
+  },
+  {
+    "abi": "arm32",
+    "hash": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4",
+    "symbol": {
+      "name": "_ZN7android8gralloc417decodePlaneLayoutEPNS0_12InputHidlVecEPN4aidl7android8hardware8graphics6common11PlaneLayoutE",
+      "value": 30561,
+      "size": 322,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm32-7760.asm"
+  },
+  {
+    "abi": "arm32",
+    "hash": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4",
+    "symbol": {
+      "name": "_ZN7android8gralloc418decodePlaneLayoutsERKNS_8hardware8hidl_vecIhEEPNSt3__16vectorIN4aidl7android8hardware8graphics6common11PlaneLayoutENS6_9allocatorISD_EEEE",
+      "value": 37665,
+      "size": 248,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm32-9320.asm"
+  },
+  {
+    "abi": "arm32",
+    "hash": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4",
+    "symbol": {
+      "name": "_ZN7android8gralloc427decodePlaneLayoutComponentsEPNS0_12InputHidlVecEPNSt3__16vectorIN4aidl7android8hardware8graphics6common20PlaneLayoutComponentENS3_9allocatorISA_EEEE",
+      "value": 29669,
+      "size": 104,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm32-73e4.asm"
+  },
+  {
+    "abi": "arm32",
+    "hash": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4",
+    "symbol": {
+      "name": "_ZN7android8gralloc424decodePlaneLayoutsHelperEPNS0_12InputHidlVecEPNSt3__16vectorIN4aidl7android8hardware8graphics6common11PlaneLayoutENS3_9allocatorISA_EEEE",
+      "value": 31013,
+      "size": 158,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm32-7924.asm"
+  },
+  {
+    "abi": "arm32",
+    "hash": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4",
+    "symbol": {
+      "name": "_ZN7android8gralloc426decodePlaneLayoutComponentEPNS0_12InputHidlVecEPN4aidl7android8hardware8graphics6common20PlaneLayoutComponentE",
+      "value": 29373,
+      "size": 174,
+      "defined": true,
+      "type": 2
+    },
+    "file": "final-provider-arm32-72bc.asm"
+  }
+]

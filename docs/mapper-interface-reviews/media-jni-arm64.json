@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "status": "proposed-exact-hash-bound-mapper-interface-review",
+  "full_rom_acceptance": false,
+  "runtime_verified": false,
+  "consumer": {
+    "context": "system",
+    "file": "/system/lib64/libmedia_jni_utils.so",
+    "abi": "arm64",
+    "sha256": "b6b501ae3b8e6f1857642b08b3a52212f28daa1011a1ef7a0d72b7870574401f",
+    "bytes": 51824,
+    "executable_text_address": "0x4000",
+    "executable_text_bytes": 6456,
+    "interface_symbols": [
+      "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+      "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+    ]
+  },
+  "provider": {
+    "patched_system_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+    "final_gralloctypes_sha256": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+    "singleton_sizes": {
+      "sLock": 40,
+      "sInstance": 8
+    },
+    "mapper_allocation_bytes": 16,
+    "constructor_address": "0x357a4",
+    "constructor_bytes": 408,
+    "constructor_original_this_fields": {
+      "pointer": {
+        "offset": 0,
+        "bytes": 8
+      },
+      "HAL_version": {
+        "offset": 8,
+        "bytes": 4
+      }
+    }
+  },
+  "complete_affected_receiver_paths": [
+    {
+      "entry": "0x50c0",
+      "singleton_instance_materialization": [
+        "0x5100",
+        "0x5104"
+      ],
+      "instance_load": "0x5108",
+      "instance_register": "x22",
+      "absent_instance_path": {
+        "allocate16": "0x5110-0x5118",
+        "direct_constructor_call": "0x511c->0x5a80",
+        "store_owned_singleton": "0x5120"
+      },
+      "present_instance_path": "0x510c->0x5124",
+      "direct_receiver_use": "0x5138(x0=x22),0x514c->0x5a50(getPlaneLayouts)",
+      "receiver_lifetime_end": "0x5150(w22=status)",
+      "no_other_mapper_receiver_escape": true
+    },
+    {
+      "entry": "0x52e4",
+      "singleton_instance_materialization": [
+        "0x5324",
+        "0x5328"
+      ],
+      "instance_load": "0x532c",
+      "instance_register": "x22",
+      "absent_instance_path": {
+        "allocate16": "0x5334-0x533c",
+        "direct_constructor_call": "0x5340->0x5a80",
+        "store_owned_singleton": "0x5344"
+      },
+      "present_instance_path": "0x5330->0x5348",
+      "direct_receiver_use": "0x535c(x0=x22),0x5370->0x5a50(getPlaneLayouts)",
+      "receiver_lifetime_end": "0x5374(w22=status)",
+      "no_other_mapper_receiver_escape": true
+    }
+  ],
+  "address_coverage": {
+    "mapper_dynamic_relocation_count": 4,
+    "singleton_GOT_slots": [
+      "0x8248",
+      "0x8250"
+    ],
+    "all_six_GOT_page_materializations": [
+      "0x50e4",
+      "0x5100",
+      "0x5124",
+      "0x5308",
+      "0x5324",
+      "0x5348"
+    ],
+    "singleton_lock_loads": [
+      "0x50f8",
+      "0x5128",
+      "0x531c",
+      "0x534c"
+    ],
+    "singleton_instance_address_loads": [
+      "0x5104",
+      "0x5328"
+    ],
+    "ADR_direct_or_LDR_literal_to_singleton_GOT": 0,
+    "text_decode_unknown": 0,
+    "other_exec_section": ".plt (imports only)"
+  },
+  "all_indirect_text_control_flow": [
+    {
+      "address": "0x4610",
+      "instruction": "br x12",
+      "origin": "getLockedImageInfo inputpixel format jump table: w2-1 bounded0..59, table0x1956, base0x4614",
+      "entries": 60,
+      "unique_targets": 13,
+      "target_range": [
+        "0x4614",
+        "0x4bdc"
+      ],
+      "mapper_receiver": false
+    },
+    {
+      "address": "0x57f8",
+      "instruction": "blr x8",
+      "origin": "checkAndClearBlobFooter Fence strongpointer from[x22],x20 loaded0x57c4; refcount decremented before slot0x18 destructor call",
+      "mapper_receiver": false
+    }
+  ],
+  "virtual_signature_review": {
+    "consumer_calls_changed_lock_slot10": false,
+    "public_getPlaneLayouts_forwarding": "Byte-identical wrapper for both ages/system-codec; offset0xe8",
+    "patched_Gralloc2_3_slot31": "Local0x483fc returns-38(ENOSYS) without touching vector; caller checks nonzero and cleans its initialized vector",
+    "patched_Gralloc4_5_slot31": "Declared getPlaneLayouts same signature,index31; measured returned layout matches actual final decoder",
+    "legacy_gralloc2_3_error_behavior_preserved": true
+  },
+  "returned_data_layout": {
+    "outer_vector": {
+      "begin": 0,
+      "end": 8,
+      "capacity": 16
+    },
+    "PlaneLayout": {
+      "bytes": 88,
+      "components_vector_offset": 0,
+      "scalar_region": [
+        24,
+        87
+      ]
+    },
+    "PlaneLayoutComponent": {
+      "bytes": 48,
+      "ExtendableType_string_offset": 0,
+      "ExtendableType_value_offset": 24,
+      "offsetInBits": 32,
+      "sizeInBits": 40
+    },
+    "consumer_outer_stride": "0x58 observed0x5240 and0x54xx",
+    "consumer_component_stride": "0x30 observed0x5200",
+    "final_decoder_receipts": "review.json/provider-functions.json"
+  },
+  "boundaries": [
+    "Scope covers this exact consumer mapper-interface slice only; no blanket caller or ROM acceptance",
+    "Require finalhash equality and actual namespace/providerclosure in acceptance implementation",
+    "SystemARM32 decoderbinding remains unresolved outside thisARM64 review",
+    "OtherGraphicBuffer/nativewindow/object fields and other36mapper candidates remain separate requirements",
+    "Runtime success is unverified; Gralloc2/3 getPlaneLayouts is unsupported and can return-38"
+  ],
+  "evidence": [
+    "media-jni-utils-inventory.json",
+    "media-jni-address-materializations.json",
+    "media-jni-utils-arm64-text.asm",
+    "patched-arm64-mapper-constructor.asm",
+    "patched-donor-plane-slots.json",
+    "review.json"
+  ]
+}

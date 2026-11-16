@@ -1,0 +1,90 @@
+[
+  {
+    "age": "prior",
+    "symbol": {
+      "name": "_ZN7android13GraphicBuffer19fromAHardwareBufferEPK15AHardwareBuffer",
+      "value": 188983,
+      "size": 2,
+      "defined": true,
+      "type": 2
+    },
+    "file": "prior-arm32-2e236-graphicbuffer.asm"
+  },
+  {
+    "age": "prior",
+    "symbol": {
+      "name": "_ZN7android13GraphicBufferC2Ev",
+      "value": 188989,
+      "size": 528,
+      "defined": true,
+      "type": 2
+    },
+    "file": "prior-arm32-2e23c-graphicbuffer.asm"
+  },
+  {
+    "age": "prior",
+    "symbol": {
+      "name": "_ZN7android13GraphicBuffer19fromAHardwareBufferEP15AHardwareBuffer",
+      "value": 188981,
+      "size": 2,
+      "defined": true,
+      "type": 2
+    },
+    "file": "prior-arm32-2e234-graphicbuffer.asm"
+  },
+  {
+    "age": "prior",
+    "symbol": {
+      "name": "_ZN7android13GraphicBuffer14initWithHandleEPK13native_handleNS0_16HandleWrapMethodEjjijyj",
+      "value": 190509,
+      "size": 216,
+      "defined": true,
+      "type": 2
+    },
+    "file": "prior-arm32-2e82c-graphicbuffer.asm"
+  },
+  {
+    "age": "latest",
+    "symbol": {
+      "name": "_ZN7android13GraphicBuffer19fromAHardwareBufferEP15AHardwareBuffer",
+      "value": 176005,
+      "size": 2,
+      "defined": true,
+      "type": 2
+    },
+    "file": "latest-arm32-2af84-graphicbuffer.asm"
+  },
+  {
+    "age": "latest",
+    "symbol": {
+      "name": "_ZN7android13GraphicBuffer14initWithHandleEPK13native_handleNS0_16HandleWrapMethodEjjijyj",
+      "value": 177533,
+      "size": 216,
+      "defined": true,
+      "type": 2
+    },
+    "file": "latest-arm32-2b57c-graphicbuffer.asm"
+  },
+  {
+    "age": "latest",
+    "symbol": {
+      "name": "_ZN7android13GraphicBufferC2Ev",
+      "value": 176013,
+      "size": 528,
+      "defined": true,
+      "type": 2
+    },
+    "file": "latest-arm32-2af8c-graphicbuffer.asm"
+  },
+  {
+    "age": "latest",
+    "symbol": {
+      "name": "_ZN7android13GraphicBuffer19fromAHardwareBufferEPK15AHardwareBuffer",
+      "value": 176007,
+      "size": 2,
+      "defined": true,
+      "type": 2
+    },
+    "file": "latest-arm32-2af86-graphicbuffer.asm"
+  }
+]

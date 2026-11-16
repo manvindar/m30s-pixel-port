@@ -1,0 +1,65 @@
+{
+  "all_four_original_forwarding_wrappers_equal": true,
+  "wrappers": [
+    {
+      "age": "prior",
+      "context": "system",
+      "address": "0x39050",
+      "size": 8,
+      "sha256": "a6457d0468c200b9579aa038f838a92c190e6dc85d0c0e2ef40a5568592d4605"
+    },
+    {
+      "age": "prior",
+      "context": "codec",
+      "address": "0x38070",
+      "size": 8,
+      "sha256": "a6457d0468c200b9579aa038f838a92c190e6dc85d0c0e2ef40a5568592d4605"
+    },
+    {
+      "age": "latest",
+      "context": "system",
+      "address": "0x35c50",
+      "size": 8,
+      "sha256": "a6457d0468c200b9579aa038f838a92c190e6dc85d0c0e2ef40a5568592d4605"
+    },
+    {
+      "age": "latest",
+      "context": "codec",
+      "address": "0x35c70",
+      "size": 8,
+      "sha256": "a6457d0468c200b9579aa038f838a92c190e6dc85d0c0e2ef40a5568592d4605"
+    }
+  ],
+  "patched32_slot33": [
+    {
+      "class": "Gralloc2Mapper",
+      "index": 33,
+      "offset": 124,
+      "symbols": [],
+      "local_address": "0x1e4d7"
+    },
+    {
+      "class": "Gralloc3Mapper",
+      "index": 33,
+      "offset": 124,
+      "symbols": [],
+      "local_address": "0x1e4d7"
+    },
+    {
+      "class": "Gralloc4Mapper",
+      "index": 33,
+      "offset": 124,
+      "symbol": "_ZNK7android14Gralloc4Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+      "addend": 0,
+      "relocation_type": 2
+    },
+    {
+      "class": "Gralloc5Mapper",
+      "index": 33,
+      "offset": 124,
+      "symbol": "_ZNK7android14Gralloc5Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+      "addend": 0,
+      "relocation_type": 2
+    }
+  ]
+}

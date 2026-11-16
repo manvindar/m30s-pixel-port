@@ -1,0 +1,1391 @@
+{
+  "patched": {
+    "sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+    "functions": [
+      {
+        "name": "_ZN7android19GraphicBufferMapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+        "value": 400332,
+        "size": 24,
+        "defined": true,
+        "type": 2,
+        "sha256": "22feafa950a7865a8198694b2df7a49e87ecb255ed5e9b1d6db2df9989f6fc59",
+        "evidence": "libgui-patched-61bcc-mapper.asm"
+      },
+      {
+        "name": "_ZN7android19GraphicBufferMapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+        "value": 243364,
+        "size": 192,
+        "defined": true,
+        "type": 2,
+        "sha256": "cd74455fa5c95642ef4758e2c8dc1d994683a7df8c5f758627884f1eb366f0fc",
+        "evidence": "libgui-patched-3b6a4-mapper.asm"
+      },
+      {
+        "name": "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+        "value": 400144,
+        "size": 20,
+        "defined": true,
+        "type": 2,
+        "sha256": "ead0965d40eef12aeea1deb8faca042439033d15c44a2240467507a8d41b829a",
+        "evidence": "libgui-patched-61b10-mapper.asm"
+      },
+      {
+        "name": "_ZN7android19GraphicBufferMapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+        "value": 400204,
+        "size": 108,
+        "defined": true,
+        "type": 2,
+        "sha256": "91b0bf6ebd3ab1f68d980a2431cc3feea2e1790f628855767c3937e76026cc3e",
+        "evidence": "libgui-patched-61b4c-mapper.asm"
+      }
+    ],
+    "tables": {
+      "_ZTVN7android14Gralloc3MapperE": {
+        "size": 368,
+        "slots": [
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "symbols": [],
+            "local_address": "0x4ab88"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x4abbc"
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc3Mapper8isLoadedEv",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483e8"
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc3Mapper12importBufferEPK13native_handlePS3_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc3Mapper10freeBufferEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc3Mapper18validateBufferSizeEPK13native_handlejjijmj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc3Mapper16getTransportSizeEPK13native_handlePjS4_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc3Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc3Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc3Mapper6unlockEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc3Mapper11isSupportedEjjijmPb",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          }
+        ]
+      },
+      "_ZTVN7android14Gralloc4MapperE": {
+        "size": 368,
+        "slots": [
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "symbols": [],
+            "local_address": "0x5016c"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x501a0"
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper8isLoadedEv",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper10dumpBufferEPK13native_handleb",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12importBufferEPK13native_handlePS3_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper10freeBufferEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper18validateBufferSizeEPK13native_handlejjijmj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper16getTransportSizeEPK13native_handlePjS4_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper6unlockEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper11isSupportedEjjijmPb",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper11getBufferIdEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper7getNameEPK13native_handlePNSt3__112basic_stringIcNS4_11char_traitsIcEENS4_9allocatorIcEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper8getWidthEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper9getHeightEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper13getLayerCountEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper23getPixelFormatRequestedEPK13native_handlePNS_8hardware8graphics6common4V1_211PixelFormatE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper20getPixelFormatFourCCEPK13native_handlePj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper22getPixelFormatModifierEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper8getUsageEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper17getAllocationSizeEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper19getProtectedContentEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper14getCompressionEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper14getCompressionEPK13native_handlePN4aidl7android8hardware8graphics6common11CompressionE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper13getInterlacedEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper13getInterlacedEPK13native_handlePN4aidl7android8hardware8graphics6common10InterlacedE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getChromaSitingEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getChromaSitingEPK13native_handlePN4aidl7android8hardware8graphics6common12ChromaSitingE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getPlaneLayoutsEPK13native_handlePNSt3__16vectorIN4aidl7android8hardware8graphics6common11PlaneLayoutENS4_9allocatorISB_EEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12getDataspaceEPK13native_handlePNS_8hardware8graphics6common4V1_29DataspaceE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12getBlendModeEPK13native_handlePN4aidl7android8hardware8graphics6common9BlendModeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12getSmpte2086EPK13native_handlePNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper11getCta861_3EPK13native_handlePNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getSmpte2094_40EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getSmpte2094_10EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15setSmpte2094_10EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          }
+        ]
+      },
+      "_ZTVN7android14Gralloc5MapperE": {
+        "size": 368,
+        "slots": [
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "symbol": "_ZN7android13GrallocMapperD2Ev",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbols": [],
+            "local_address": "0x49a24"
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper8isLoadedEv",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper10dumpBufferEPK13native_handleb",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12importBufferEPK13native_handlePS3_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper10freeBufferEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper18validateBufferSizeEPK13native_handlejjijmj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper16getTransportSizeEPK13native_handlePjS4_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper6unlockEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper11isSupportedEjjijmPb",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper11getBufferIdEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper7getNameEPK13native_handlePNSt3__112basic_stringIcNS4_11char_traitsIcEENS4_9allocatorIcEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper8getWidthEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper9getHeightEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper13getLayerCountEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper23getPixelFormatRequestedEPK13native_handlePNS_8hardware8graphics6common4V1_211PixelFormatE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper20getPixelFormatFourCCEPK13native_handlePj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper22getPixelFormatModifierEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper8getUsageEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper17getAllocationSizeEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper19getProtectedContentEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper14getCompressionEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper14getCompressionEPK13native_handlePN4aidl7android8hardware8graphics6common11CompressionE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper13getInterlacedEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper13getInterlacedEPK13native_handlePN4aidl7android8hardware8graphics6common10InterlacedE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getChromaSitingEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getChromaSitingEPK13native_handlePN4aidl7android8hardware8graphics6common12ChromaSitingE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getPlaneLayoutsEPK13native_handlePNSt3__16vectorIN4aidl7android8hardware8graphics6common11PlaneLayoutENS4_9allocatorISB_EEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12getDataspaceEPK13native_handlePNS_8hardware8graphics6common4V1_29DataspaceE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12getBlendModeEPK13native_handlePN4aidl7android8hardware8graphics6common9BlendModeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12getSmpte2086EPK13native_handlePNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper11getCta861_3EPK13native_handlePNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getSmpte2094_40EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getSmpte2094_10EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15setSmpte2094_10EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper9getStrideEPK13native_handlePj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getSmpte2094_50EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15setSmpte2094_50EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          }
+        ]
+      },
+      "_ZTVN7android14Gralloc2MapperE": {
+        "size": 368,
+        "slots": [
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "symbols": [],
+            "local_address": "0x49460"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x494d8"
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc2Mapper8isLoadedEv",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483e8"
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc2Mapper12importBufferEPK13native_handlePS3_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc2Mapper10freeBufferEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc2Mapper18validateBufferSizeEPK13native_handlejjijmj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc2Mapper16getTransportSizeEPK13native_handlePjS4_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc2Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc2Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc2Mapper6unlockEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x483fc"
+          }
+        ]
+      }
+    }
+  },
+  "latest": {
+    "sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+    "functions": [
+      {
+        "name": "_ZN7android19GraphicBufferMapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+        "value": 385152,
+        "size": 260,
+        "defined": true,
+        "type": 2,
+        "sha256": "79e49d09f89935d93784cff4ed8175592e780f9ad364edff75b00dbc35fd14c3",
+        "evidence": "libgui-latest-5e080-mapper.asm"
+      },
+      {
+        "name": "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+        "value": 384920,
+        "size": 20,
+        "defined": true,
+        "type": 2,
+        "sha256": "ead0965d40eef12aeea1deb8faca042439033d15c44a2240467507a8d41b829a",
+        "evidence": "libgui-latest-5df98-mapper.asm"
+      },
+      {
+        "name": "_ZN7android19GraphicBufferMapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+        "value": 384980,
+        "size": 108,
+        "defined": true,
+        "type": 2,
+        "sha256": "6c4c9d639436262450cfc6040d4d98375ba21020611f7cb384a0d1be80766c22",
+        "evidence": "libgui-latest-5dfd4-mapper.asm"
+      },
+      {
+        "name": "_ZN7android19GraphicBufferMapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+        "value": 385108,
+        "size": 24,
+        "defined": true,
+        "type": 2,
+        "sha256": "22feafa950a7865a8198694b2df7a49e87ecb255ed5e9b1d6db2df9989f6fc59",
+        "evidence": "libgui-latest-5e054-mapper.asm"
+      }
+    ],
+    "tables": {
+      "_ZTVN7android14Gralloc4MapperE": {
+        "size": 368,
+        "slots": [
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "symbols": [],
+            "local_address": "0x53a14"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x53a48"
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper8isLoadedEv",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper10dumpBufferEPK13native_handleb",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12importBufferEPK13native_handlePS3_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper10freeBufferEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper18validateBufferSizeEPK13native_handlejjijmj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper16getTransportSizeEPK13native_handlePjS4_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper4lockEPK13native_handlemRKNS_4RectEiPPv",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper6unlockEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper11isSupportedEjjijmPb",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper11getBufferIdEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper7getNameEPK13native_handlePNSt3__112basic_stringIcNS4_11char_traitsIcEENS4_9allocatorIcEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper8getWidthEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper9getHeightEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper13getLayerCountEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper23getPixelFormatRequestedEPK13native_handlePNS_8hardware8graphics6common4V1_211PixelFormatE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper20getPixelFormatFourCCEPK13native_handlePj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper22getPixelFormatModifierEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper8getUsageEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper17getAllocationSizeEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper19getProtectedContentEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper14getCompressionEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper14getCompressionEPK13native_handlePN4aidl7android8hardware8graphics6common11CompressionE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper13getInterlacedEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper13getInterlacedEPK13native_handlePN4aidl7android8hardware8graphics6common10InterlacedE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getChromaSitingEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getChromaSitingEPK13native_handlePN4aidl7android8hardware8graphics6common12ChromaSitingE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getPlaneLayoutsEPK13native_handlePNSt3__16vectorIN4aidl7android8hardware8graphics6common11PlaneLayoutENS4_9allocatorISB_EEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12getDataspaceEPK13native_handlePNS_8hardware8graphics6common4V1_29DataspaceE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12getBlendModeEPK13native_handlePN4aidl7android8hardware8graphics6common9BlendModeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12getSmpte2086EPK13native_handlePNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper11getCta861_3EPK13native_handlePNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getSmpte2094_40EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15getSmpte2094_10EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc4Mapper15setSmpte2094_10EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbols": [],
+            "local_address": "0x4f780"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x4f780"
+          },
+          {
+            "symbols": [],
+            "local_address": "0x4f780"
+          }
+        ]
+      },
+      "_ZTVN7android14Gralloc5MapperE": {
+        "size": 368,
+        "slots": [
+          {
+            "value": 0
+          },
+          {
+            "value": 0
+          },
+          {
+            "symbol": "_ZN7android13GrallocMapperD2Ev",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbols": [],
+            "local_address": "0x571ec"
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper8isLoadedEv",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper10dumpBufferEPK13native_handleb",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12importBufferEPK13native_handlePS3_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper10freeBufferEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper18validateBufferSizeEPK13native_handlejjijmj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper16getTransportSizeEPK13native_handlePjS4_",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper4lockEPK13native_handlemRKNS_4RectEiPPv",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper6unlockEPK13native_handle",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper11isSupportedEjjijmPb",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper11getBufferIdEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper7getNameEPK13native_handlePNSt3__112basic_stringIcNS4_11char_traitsIcEENS4_9allocatorIcEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper8getWidthEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper9getHeightEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper13getLayerCountEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper23getPixelFormatRequestedEPK13native_handlePNS_8hardware8graphics6common4V1_211PixelFormatE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper20getPixelFormatFourCCEPK13native_handlePj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper22getPixelFormatModifierEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper8getUsageEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper17getAllocationSizeEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper19getProtectedContentEPK13native_handlePm",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper14getCompressionEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper14getCompressionEPK13native_handlePN4aidl7android8hardware8graphics6common11CompressionE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper13getInterlacedEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper13getInterlacedEPK13native_handlePN4aidl7android8hardware8graphics6common10InterlacedE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getChromaSitingEPK13native_handlePN4aidl7android8hardware8graphics6common14ExtendableTypeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getChromaSitingEPK13native_handlePN4aidl7android8hardware8graphics6common12ChromaSitingE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getPlaneLayoutsEPK13native_handlePNSt3__16vectorIN4aidl7android8hardware8graphics6common11PlaneLayoutENS4_9allocatorISB_EEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12getDataspaceEPK13native_handlePNS_8hardware8graphics6common4V1_29DataspaceE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12getBlendModeEPK13native_handlePN4aidl7android8hardware8graphics6common9BlendModeE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12getSmpte2086EPK13native_handlePNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper11getCta861_3EPK13native_handlePNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getSmpte2094_40EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getSmpte2094_10EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15setSmpte2094_10EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper9getStrideEPK13native_handlePj",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15getSmpte2094_50EPK13native_handlePNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          },
+          {
+            "symbol": "_ZNK7android14Gralloc5Mapper15setSmpte2094_50EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+            "addend": 0,
+            "relocation_type": 257
+          }
+        ]
+      }
+    }
+  }
+}

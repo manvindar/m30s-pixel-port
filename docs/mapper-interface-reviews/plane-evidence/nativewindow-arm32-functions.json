@@ -1,0 +1,895 @@
+{
+  "source_hash": "ad5d5182265cf2764157fb90c99334700b54be368617c22c9cb4f3a82bfaee86",
+  "functions": [
+    {
+      "name": "__on_dlclose",
+      "value": 15429,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x3c44",
+      "evidence": "nativewindow-arm32-function-3c44.asm"
+    },
+    {
+      "name": "__emutls_unregister_key",
+      "value": 15441,
+      "size": 2,
+      "source": "mini-debug",
+      "address": "0x3c50",
+      "evidence": "nativewindow-arm32-function-3c50.asm"
+    },
+    {
+      "name": "__on_dlclose_late",
+      "value": 15443,
+      "size": 4,
+      "source": "mini-debug",
+      "address": "0x3c52",
+      "evidence": "nativewindow-arm32-function-3c52.asm"
+    },
+    {
+      "name": "AHardwareBuffer_allocate",
+      "value": 15449,
+      "size": 516,
+      "defined": true,
+      "type": 2,
+      "address": "0x3c58",
+      "evidence": "nativewindow-arm32-function-3c58.asm"
+    },
+    {
+      "name": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "value": 15965,
+      "size": 376,
+      "source": "mini-debug",
+      "address": "0x3e5c",
+      "evidence": "nativewindow-arm32-function-3e5c.asm"
+    },
+    {
+      "name": "_ZN7android36AHardwareBuffer_convertToPixelFormatEj",
+      "value": 16341,
+      "size": 2,
+      "defined": true,
+      "type": 2,
+      "address": "0x3fd4",
+      "evidence": "nativewindow-arm32-function-3fd4.asm"
+    },
+    {
+      "name": "_ZN7android41AHardwareBuffer_convertToGrallocUsageBitsEy",
+      "value": 16343,
+      "size": 2,
+      "defined": true,
+      "type": 2,
+      "address": "0x3fd6",
+      "evidence": "nativewindow-arm32-function-3fd6.asm"
+    },
+    {
+      "name": "_ZN7android34AHardwareBuffer_from_GraphicBufferEPNS_13GraphicBufferE",
+      "value": 16345,
+      "size": 4,
+      "defined": true,
+      "type": 2,
+      "address": "0x3fd8",
+      "evidence": "nativewindow-arm32-function-3fd8.asm"
+    },
+    {
+      "name": "AHardwareBuffer_acquire",
+      "value": 16349,
+      "size": 24,
+      "defined": true,
+      "type": 2,
+      "address": "0x3fdc",
+      "evidence": "nativewindow-arm32-function-3fdc.asm"
+    },
+    {
+      "name": "_ZN7android32AHardwareBuffer_to_GraphicBufferEP15AHardwareBuffer",
+      "value": 16373,
+      "size": 4,
+      "defined": true,
+      "type": 2,
+      "address": "0x3ff4",
+      "evidence": "nativewindow-arm32-function-3ff4.asm"
+    },
+    {
+      "name": "AHardwareBuffer_release",
+      "value": 16377,
+      "size": 24,
+      "defined": true,
+      "type": 2,
+      "address": "0x3ff8",
+      "evidence": "nativewindow-arm32-function-3ff8.asm"
+    },
+    {
+      "name": "AHardwareBuffer_describe",
+      "value": 16401,
+      "size": 56,
+      "defined": true,
+      "type": 2,
+      "address": "0x4010",
+      "evidence": "nativewindow-arm32-function-4010.asm"
+    },
+    {
+      "name": "_ZN7android32AHardwareBuffer_to_GraphicBufferEPK15AHardwareBuffer",
+      "value": 16457,
+      "size": 4,
+      "defined": true,
+      "type": 2,
+      "address": "0x4048",
+      "evidence": "nativewindow-arm32-function-4048.asm"
+    },
+    {
+      "name": "_ZN7android38AHardwareBuffer_convertFromPixelFormatEj",
+      "value": 16461,
+      "size": 2,
+      "defined": true,
+      "type": 2,
+      "address": "0x404c",
+      "evidence": "nativewindow-arm32-function-404c.asm"
+    },
+    {
+      "name": "_ZN7android43AHardwareBuffer_convertFromGrallocUsageBitsEy",
+      "value": 16463,
+      "size": 2,
+      "defined": true,
+      "type": 2,
+      "address": "0x404e",
+      "evidence": "nativewindow-arm32-function-404e.asm"
+    },
+    {
+      "name": "AHardwareBuffer_lockAndGetInfo",
+      "value": 16465,
+      "size": 308,
+      "defined": true,
+      "type": 2,
+      "address": "0x4050",
+      "evidence": "nativewindow-arm32-function-4050.asm"
+    },
+    {
+      "name": "AHardwareBuffer_lock",
+      "value": 16773,
+      "size": 224,
+      "defined": true,
+      "type": 2,
+      "address": "0x4184",
+      "evidence": "nativewindow-arm32-function-4184.asm"
+    },
+    {
+      "name": "AHardwareBuffer_lockPlanes",
+      "value": 16997,
+      "size": 444,
+      "defined": true,
+      "type": 2,
+      "address": "0x4264",
+      "evidence": "nativewindow-arm32-function-4264.asm"
+    },
+    {
+      "name": "_ZN7android27AHardwareBuffer_formatIsYuvEj",
+      "value": 17441,
+      "size": 116,
+      "source": "mini-debug",
+      "address": "0x4420",
+      "evidence": "nativewindow-arm32-function-4420.asm"
+    },
+    {
+      "name": "AHardwareBuffer_unlock",
+      "value": 17557,
+      "size": 36,
+      "defined": true,
+      "type": 2,
+      "address": "0x4494",
+      "evidence": "nativewindow-arm32-function-4494.asm"
+    },
+    {
+      "name": "AHardwareBuffer_sendHandleToUnixSocket",
+      "value": 17593,
+      "size": 288,
+      "defined": true,
+      "type": 2,
+      "address": "0x44b8",
+      "evidence": "nativewindow-arm32-function-44b8.asm"
+    },
+    {
+      "name": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "value": 17881,
+      "size": 396,
+      "defined": true,
+      "type": 2,
+      "address": "0x45d8",
+      "evidence": "nativewindow-arm32-function-45d8.asm"
+    },
+    {
+      "name": "AHardwareBuffer_isSupported",
+      "value": 18277,
+      "size": 144,
+      "defined": true,
+      "type": 2,
+      "address": "0x4764",
+      "evidence": "nativewindow-arm32-function-4764.asm"
+    },
+    {
+      "name": "AHardwareBuffer_getId",
+      "value": 18421,
+      "size": 46,
+      "defined": true,
+      "type": 2,
+      "address": "0x47f4",
+      "evidence": "nativewindow-arm32-function-47f4.asm"
+    },
+    {
+      "name": "AHardwareBuffer_readFromParcel",
+      "value": 18469,
+      "size": 152,
+      "defined": true,
+      "type": 2,
+      "address": "0x4824",
+      "evidence": "nativewindow-arm32-function-4824.asm"
+    },
+    {
+      "name": "AHardwareBuffer_writeToParcel",
+      "value": 18621,
+      "size": 92,
+      "defined": true,
+      "type": 2,
+      "address": "0x48bc",
+      "evidence": "nativewindow-arm32-function-48bc.asm"
+    },
+    {
+      "name": "AHardwareBuffer_getDataSpace",
+      "value": 18713,
+      "size": 72,
+      "defined": true,
+      "type": 2,
+      "address": "0x4918",
+      "evidence": "nativewindow-arm32-function-4918.asm"
+    },
+    {
+      "name": "AHardwareBuffer_setDataSpace",
+      "value": 18785,
+      "size": 148,
+      "defined": true,
+      "type": 2,
+      "address": "0x4960",
+      "evidence": "nativewindow-arm32-function-4960.asm"
+    },
+    {
+      "name": "AHardwareBuffer_getNativeHandle",
+      "value": 18933,
+      "size": 16,
+      "defined": true,
+      "type": 2,
+      "address": "0x49f4",
+      "evidence": "nativewindow-arm32-function-49f4.asm"
+    },
+    {
+      "name": "AHardwareBuffer_createFromHandle",
+      "value": 18949,
+      "size": 220,
+      "defined": true,
+      "type": 2,
+      "address": "0x4a04",
+      "evidence": "nativewindow-arm32-function-4a04.asm"
+    },
+    {
+      "name": "AHardwareBuffer_allocateWithOptions",
+      "value": 19169,
+      "size": 708,
+      "defined": true,
+      "type": 2,
+      "address": "0x4ae0",
+      "evidence": "nativewindow-arm32-function-4ae0.asm"
+    },
+    {
+      "name": "_ZN7android28AHardwareBuffer_getDataSpaceEP15AHardwareBuffer",
+      "value": 19877,
+      "size": 72,
+      "defined": true,
+      "type": 2,
+      "address": "0x4da4",
+      "evidence": "nativewindow-arm32-function-4da4.asm"
+    },
+    {
+      "name": "_ZN7android38AHardwareBuffer_to_ANativeWindowBufferEPK15AHardwareBuffer",
+      "value": 19949,
+      "size": 14,
+      "defined": true,
+      "type": 2,
+      "address": "0x4dec",
+      "evidence": "nativewindow-arm32-function-4dec.asm"
+    },
+    {
+      "name": "_ZN7android38AHardwareBuffer_to_ANativeWindowBufferEP15AHardwareBuffer",
+      "value": 19963,
+      "size": 14,
+      "defined": true,
+      "type": 2,
+      "address": "0x4dfa",
+      "evidence": "nativewindow-arm32-function-4dfa.asm"
+    },
+    {
+      "name": "_ZSt28__throw_bad_array_new_lengthB9nqn230000v",
+      "value": 19977,
+      "size": 16,
+      "source": "mini-debug",
+      "address": "0x4e08",
+      "evidence": "nativewindow-arm32-function-4e08.asm"
+    },
+    {
+      "name": "_ZNSt3__120__throw_length_errorB9nqn230000EPKc",
+      "value": 19993,
+      "size": 16,
+      "source": "mini-debug",
+      "address": "0x4e18",
+      "evidence": "nativewindow-arm32-function-4e18.asm"
+    },
+    {
+      "name": "_ZNSt3__16vectorIN7android22GraphicBufferAllocator17AdditionalOptionsENS_9allocatorIS3_EEE20__throw_length_errorB9nqn230000Ev",
+      "value": 20009,
+      "size": 16,
+      "source": "mini-debug",
+      "address": "0x4e28",
+      "evidence": "nativewindow-arm32-function-4e28.asm"
+    },
+    {
+      "name": "_ZZNSt3__16vectorIN7android22GraphicBufferAllocator17AdditionalOptionsENS_9allocatorIS3_EEE12emplace_backIJS3_EEERS3_DpOT_ENKUlvE0_clEv",
+      "value": 20025,
+      "size": 158,
+      "source": "mini-debug",
+      "address": "0x4e38",
+      "evidence": "nativewindow-arm32-function-4e38.asm"
+    },
+    {
+      "name": "_ZNK7android6Parcel17FlattenableHelperINS_13GraphicBufferEE16getFlattenedSizeEv",
+      "value": 20183,
+      "size": 6,
+      "source": "mini-debug",
+      "address": "0x4ed6",
+      "evidence": "nativewindow-arm32-function-4ed6.asm"
+    },
+    {
+      "name": "_ZNK7android6Parcel17FlattenableHelperINS_13GraphicBufferEE10getFdCountEv",
+      "value": 20189,
+      "size": 6,
+      "source": "mini-debug",
+      "address": "0x4edc",
+      "evidence": "nativewindow-arm32-function-4edc.asm"
+    },
+    {
+      "name": "_ZNK7android6Parcel17FlattenableHelperINS_13GraphicBufferEE7flattenEPvjPij",
+      "value": 20197,
+      "size": 76,
+      "source": "mini-debug",
+      "address": "0x4ee4",
+      "evidence": "nativewindow-arm32-function-4ee4.asm"
+    },
+    {
+      "name": "_ZN7android6Parcel17FlattenableHelperINS_13GraphicBufferEE9unflattenEPKvjPKij",
+      "value": 20273,
+      "size": 76,
+      "source": "mini-debug",
+      "address": "0x4f30",
+      "evidence": "nativewindow-arm32-function-4f30.asm"
+    },
+    {
+      "name": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "value": 20349,
+      "size": 156,
+      "source": "mini-debug",
+      "address": "0x4f7c",
+      "evidence": "nativewindow-arm32-function-4f7c.asm"
+    },
+    {
+      "name": "ANativeWindow_acquire",
+      "value": 20505,
+      "size": 4,
+      "defined": true,
+      "type": 2,
+      "address": "0x5018",
+      "evidence": "nativewindow-arm32-function-5018.asm"
+    },
+    {
+      "name": "ANativeWindow_release",
+      "value": 20509,
+      "size": 4,
+      "defined": true,
+      "type": 2,
+      "address": "0x501c",
+      "evidence": "nativewindow-arm32-function-501c.asm"
+    },
+    {
+      "name": "ANativeWindow_getWidth",
+      "value": 20513,
+      "size": 64,
+      "defined": true,
+      "type": 2,
+      "address": "0x5020",
+      "evidence": "nativewindow-arm32-function-5020.asm"
+    },
+    {
+      "name": "ANativeWindow_getHeight",
+      "value": 20577,
+      "size": 68,
+      "defined": true,
+      "type": 2,
+      "address": "0x5060",
+      "evidence": "nativewindow-arm32-function-5060.asm"
+    },
+    {
+      "name": "ANativeWindow_getFormat",
+      "value": 20645,
+      "size": 68,
+      "defined": true,
+      "type": 2,
+      "address": "0x50a4",
+      "evidence": "nativewindow-arm32-function-50a4.asm"
+    },
+    {
+      "name": "ANativeWindow_setBuffersGeometry",
+      "value": 20713,
+      "size": 68,
+      "defined": true,
+      "type": 2,
+      "address": "0x50e8",
+      "evidence": "nativewindow-arm32-function-50e8.asm"
+    },
+    {
+      "name": "ANativeWindow_lock",
+      "value": 20781,
+      "size": 12,
+      "defined": true,
+      "type": 2,
+      "address": "0x512c",
+      "evidence": "nativewindow-arm32-function-512c.asm"
+    },
+    {
+      "name": "ANativeWindow_unlockAndPost",
+      "value": 20793,
+      "size": 6,
+      "defined": true,
+      "type": 2,
+      "address": "0x5138",
+      "evidence": "nativewindow-arm32-function-5138.asm"
+    },
+    {
+      "name": "ANativeWindow_setBuffersTransform",
+      "value": 20801,
+      "size": 104,
+      "defined": true,
+      "type": 2,
+      "address": "0x5140",
+      "evidence": "nativewindow-arm32-function-5140.asm"
+    },
+    {
+      "name": "ANativeWindow_setBuffersDataSpace",
+      "value": 20905,
+      "size": 88,
+      "defined": true,
+      "type": 2,
+      "address": "0x51a8",
+      "evidence": "nativewindow-arm32-function-51a8.asm"
+    },
+    {
+      "name": "ANativeWindow_getBuffersDataSpace",
+      "value": 20993,
+      "size": 96,
+      "defined": true,
+      "type": 2,
+      "address": "0x5200",
+      "evidence": "nativewindow-arm32-function-5200.asm"
+    },
+    {
+      "name": "ANativeWindow_getBuffersDefaultDataSpace",
+      "value": 21089,
+      "size": 96,
+      "defined": true,
+      "type": 2,
+      "address": "0x5260",
+      "evidence": "nativewindow-arm32-function-5260.asm"
+    },
+    {
+      "name": "ANativeWindow_setFrameRate",
+      "value": 21185,
+      "size": 104,
+      "defined": true,
+      "type": 2,
+      "address": "0x52c0",
+      "evidence": "nativewindow-arm32-function-52c0.asm"
+    },
+    {
+      "name": "ANativeWindow_setFrameRateWithChangeStrategy",
+      "value": 21289,
+      "size": 104,
+      "defined": true,
+      "type": 2,
+      "address": "0x5328",
+      "evidence": "nativewindow-arm32-function-5328.asm"
+    },
+    {
+      "name": "ANativeWindow_tryAllocateBuffers",
+      "value": 21393,
+      "size": 80,
+      "defined": true,
+      "type": 2,
+      "address": "0x5390",
+      "evidence": "nativewindow-arm32-function-5390.asm"
+    },
+    {
+      "name": "ANativeWindow_setProducerThrottlingEnabled",
+      "value": 21473,
+      "size": 88,
+      "defined": true,
+      "type": 2,
+      "address": "0x53e0",
+      "evidence": "nativewindow-arm32-function-53e0.asm"
+    },
+    {
+      "name": "ANativeWindow_isProducerThrottlingEnabled",
+      "value": 21561,
+      "size": 88,
+      "defined": true,
+      "type": 2,
+      "address": "0x5438",
+      "evidence": "nativewindow-arm32-function-5438.asm"
+    },
+    {
+      "name": "ANativeWindowBuffer_getHardwareBuffer",
+      "value": 21649,
+      "size": 10,
+      "defined": true,
+      "type": 2,
+      "address": "0x5490",
+      "evidence": "nativewindow-arm32-function-5490.asm"
+    },
+    {
+      "name": "ANativeWindow_OemStorageSet",
+      "value": 21659,
+      "size": 18,
+      "defined": true,
+      "type": 2,
+      "address": "0x549a",
+      "evidence": "nativewindow-arm32-function-549a.asm"
+    },
+    {
+      "name": "ANativeWindow_OemStorageGet",
+      "value": 21677,
+      "size": 22,
+      "defined": true,
+      "type": 2,
+      "address": "0x54ac",
+      "evidence": "nativewindow-arm32-function-54ac.asm"
+    },
+    {
+      "name": "ANativeWindow_setSwapInterval",
+      "value": 21699,
+      "size": 4,
+      "defined": true,
+      "type": 2,
+      "address": "0x54c2",
+      "evidence": "nativewindow-arm32-function-54c2.asm"
+    },
+    {
+      "name": "ANativeWindow_query",
+      "value": 21705,
+      "size": 80,
+      "defined": true,
+      "type": 2,
+      "address": "0x54c8",
+      "evidence": "nativewindow-arm32-function-54c8.asm"
+    },
+    {
+      "name": "ANativeWindow_queryf",
+      "value": 21785,
+      "size": 156,
+      "defined": true,
+      "type": 2,
+      "address": "0x5518",
+      "evidence": "nativewindow-arm32-function-5518.asm"
+    },
+    {
+      "name": "ANativeWindow_dequeueBuffer",
+      "value": 21941,
+      "size": 4,
+      "defined": true,
+      "type": 2,
+      "address": "0x55b4",
+      "evidence": "nativewindow-arm32-function-55b4.asm"
+    },
+    {
+      "name": "ANativeWindow_queueBuffer",
+      "value": 21945,
+      "size": 4,
+      "defined": true,
+      "type": 2,
+      "address": "0x55b8",
+      "evidence": "nativewindow-arm32-function-55b8.asm"
+    },
+    {
+      "name": "ANativeWindow_cancelBuffer",
+      "value": 21949,
+      "size": 4,
+      "defined": true,
+      "type": 2,
+      "address": "0x55bc",
+      "evidence": "nativewindow-arm32-function-55bc.asm"
+    },
+    {
+      "name": "ANativeWindow_setUsage",
+      "value": 21953,
+      "size": 8,
+      "defined": true,
+      "type": 2,
+      "address": "0x55c0",
+      "evidence": "nativewindow-arm32-function-55c0.asm"
+    },
+    {
+      "name": "ANativeWindow_setBufferCount",
+      "value": 21961,
+      "size": 8,
+      "defined": true,
+      "type": 2,
+      "address": "0x55c8",
+      "evidence": "nativewindow-arm32-function-55c8.asm"
+    },
+    {
+      "name": "ANativeWindow_setBuffersDimensions",
+      "value": 21969,
+      "size": 12,
+      "defined": true,
+      "type": 2,
+      "address": "0x55d0",
+      "evidence": "nativewindow-arm32-function-55d0.asm"
+    },
+    {
+      "name": "ANativeWindow_setBuffersFormat",
+      "value": 21981,
+      "size": 8,
+      "defined": true,
+      "type": 2,
+      "address": "0x55dc",
+      "evidence": "nativewindow-arm32-function-55dc.asm"
+    },
+    {
+      "name": "ANativeWindow_setBuffersTimestamp",
+      "value": 21989,
+      "size": 8,
+      "defined": true,
+      "type": 2,
+      "address": "0x55e4",
+      "evidence": "nativewindow-arm32-function-55e4.asm"
+    },
+    {
+      "name": "ANativeWindow_setSharedBufferMode",
+      "value": 21997,
+      "size": 8,
+      "defined": true,
+      "type": 2,
+      "address": "0x55ec",
+      "evidence": "nativewindow-arm32-function-55ec.asm"
+    },
+    {
+      "name": "ANativeWindow_setAutoRefresh",
+      "value": 22005,
+      "size": 8,
+      "defined": true,
+      "type": 2,
+      "address": "0x55f4",
+      "evidence": "nativewindow-arm32-function-55f4.asm"
+    },
+    {
+      "name": "ANativeWindow_setAutoPrerotation",
+      "value": 22013,
+      "size": 8,
+      "defined": true,
+      "type": 2,
+      "address": "0x55fc",
+      "evidence": "nativewindow-arm32-function-55fc.asm"
+    },
+    {
+      "name": "ANativeWindow_readFromParcel",
+      "value": 22021,
+      "size": 120,
+      "defined": true,
+      "type": 2,
+      "address": "0x5604",
+      "evidence": "nativewindow-arm32-function-5604.asm"
+    },
+    {
+      "name": "ANativeWindow_writeToParcel",
+      "value": 22141,
+      "size": 120,
+      "defined": true,
+      "type": 2,
+      "address": "0x567c",
+      "evidence": "nativewindow-arm32-function-567c.asm"
+    },
+    {
+      "name": "ANativeWindow_getLastDequeueDuration",
+      "value": 22261,
+      "size": 72,
+      "defined": true,
+      "type": 2,
+      "address": "0x56f4",
+      "evidence": "nativewindow-arm32-function-56f4.asm"
+    },
+    {
+      "name": "ANativeWindow_getLastQueueDuration",
+      "value": 22333,
+      "size": 72,
+      "defined": true,
+      "type": 2,
+      "address": "0x573c",
+      "evidence": "nativewindow-arm32-function-573c.asm"
+    },
+    {
+      "name": "ANativeWindow_getLastDequeueStartTime",
+      "value": 22405,
+      "size": 72,
+      "defined": true,
+      "type": 2,
+      "address": "0x5784",
+      "evidence": "nativewindow-arm32-function-5784.asm"
+    },
+    {
+      "name": "ANativeWindow_setDequeueTimeout",
+      "value": 22477,
+      "size": 8,
+      "defined": true,
+      "type": 2,
+      "address": "0x57cc",
+      "evidence": "nativewindow-arm32-function-57cc.asm"
+    },
+    {
+      "name": "ANativeWindow_setCancelBufferInterceptor",
+      "value": 22485,
+      "size": 12,
+      "defined": true,
+      "type": 2,
+      "address": "0x57d4",
+      "evidence": "nativewindow-arm32-function-57d4.asm"
+    },
+    {
+      "name": "ANativeWindow_setDequeueBufferInterceptor",
+      "value": 22497,
+      "size": 12,
+      "defined": true,
+      "type": 2,
+      "address": "0x57e0",
+      "evidence": "nativewindow-arm32-function-57e0.asm"
+    },
+    {
+      "name": "ANativeWindow_setPerformInterceptor",
+      "value": 22509,
+      "size": 12,
+      "defined": true,
+      "type": 2,
+      "address": "0x57ec",
+      "evidence": "nativewindow-arm32-function-57ec.asm"
+    },
+    {
+      "name": "ANativeWindow_setQueueBufferInterceptor",
+      "value": 22521,
+      "size": 12,
+      "defined": true,
+      "type": 2,
+      "address": "0x57f8",
+      "evidence": "nativewindow-arm32-function-57f8.asm"
+    },
+    {
+      "name": "__aeabi_memcpy",
+      "value": 22532,
+      "size": 4,
+      "source": "mini-debug",
+      "address": "0x5804",
+      "evidence": "nativewindow-arm32-function-5804.asm"
+    },
+    {
+      "name": "__aeabi_memset",
+      "value": 22536,
+      "size": 16,
+      "source": "mini-debug",
+      "address": "0x5808",
+      "evidence": "nativewindow-arm32-function-5808.asm"
+    },
+    {
+      "name": "__aeabi_memclr",
+      "value": 22552,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x5818",
+      "evidence": "nativewindow-arm32-function-5818.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk___cxa_finalize",
+      "value": 22565,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x5824",
+      "evidence": "nativewindow-arm32-function-5824.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZN7android13GraphicBuffer17toAHardwareBufferEv",
+      "value": 22577,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x5830",
+      "evidence": "nativewindow-arm32-function-5830.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZNK7android7RefBase9incStrongEPKv",
+      "value": 22589,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x583c",
+      "evidence": "nativewindow-arm32-function-583c.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZN7android13GraphicBuffer19fromAHardwareBufferEP15AHardwareBuffer",
+      "value": 22601,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x5848",
+      "evidence": "nativewindow-arm32-function-5848.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZNK7android7RefBase9decStrongEPKv",
+      "value": 22613,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x5854",
+      "evidence": "nativewindow-arm32-function-5854.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZN7android13GraphicBuffer19fromAHardwareBufferEPK15AHardwareBuffer",
+      "value": 22625,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x5860",
+      "evidence": "nativewindow-arm32-function-5860.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZN7android13GraphicBuffer11unlockAsyncEPi",
+      "value": 22637,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x586c",
+      "evidence": "nativewindow-arm32-function-586c.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZN7android13GraphicBuffer6unlockEv",
+      "value": 22649,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x5878",
+      "evidence": "nativewindow-arm32-function-5878.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZNK7android13GraphicBuffer15getNativeBufferEv",
+      "value": 22661,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x5884",
+      "evidence": "nativewindow-arm32-function-5884.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZNK7android13GraphicBuffer16getFlattenedSizeEv",
+      "value": 22673,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x5890",
+      "evidence": "nativewindow-arm32-function-5890.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZNK7android13GraphicBuffer10getFdCountEv",
+      "value": 22685,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x589c",
+      "evidence": "nativewindow-arm32-function-589c.asm"
+    },
+    {
+      "name": "__ThumbV7PILongThunk__ZN7android34AHardwareBuffer_from_GraphicBufferEPNS_13GraphicBufferE",
+      "value": 22697,
+      "size": 12,
+      "source": "mini-debug",
+      "address": "0x58a8",
+      "evidence": "nativewindow-arm32-function-58a8.asm"
+    }
+  ],
+  "assumption": "Functions from actual dynsym and embedded mini-debug ELF; extents may contain literal pools. Thumb entrypoints selected; ARM PLT separate."
+}

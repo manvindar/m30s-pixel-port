@@ -1,0 +1,71 @@
+{
+  "scope": "Pinned prior/latest libui getPlaneLayouts paths, both ABIs and system/codec variants; measured returned PlaneLayout/vector layout only",
+  "acceptance": false,
+  "established": [
+    {
+      "claim": "Pointer-output GraphicBufferMapper getPlaneLayouts forwarding machine code is byte-identical across all4 variants in each ABI",
+      "evidence": "byte-comparisons.json",
+      "arm64_function_sha256": "f924710c24ad458f41387f0899aa489e4e2d6306ed6dcc1c71110b0fa3f2ff8f",
+      "arm32_function_sha256": "09f583ba9788fb626e71f338deefc9c738ec159cd9cff98121d4202844bd4fce"
+    },
+    {
+      "claim": "All8 Gralloc4/5 getPlaneLayouts methods remain vtable table-index31; address-point offset232ARM64/116ARM32",
+      "evidence": "eight-variant-inventory.json"
+    },
+    {
+      "claim": "ARM64 prior/latest measured PlaneLayout vector element size88, nested components vector at0 size24, scalar region24..87; nested component stride48",
+      "prior_evidence": [
+        "prior-arm64-assign-vector.asm:0x55584-0x55594",
+        "prior-arm64-copy-element.asm:0x41690-0x416d0"
+      ],
+      "latest_evidence": [
+        "latest-system-arm64-4ac98.asm:0x4b134-0x4b148",
+        "latest-arm64-copy-element.asm:0x58180-0x581d4"
+      ]
+    },
+    {
+      "claim": "ARM32 prior/latest measured PlaneLayout vector element size80, nested vector at0 size12 followed by alignment padding; scalar region16..79; nested component stride40",
+      "prior_evidence": [
+        "prior-arm32-assign-vector.asm:0x2ca80-0x2cacc"
+      ],
+      "latest_evidence": [
+        "latest-arm32-assign-vector.asm:0x297d0-0x2981c",
+        "latest-arm32-construct-components.asm:0x294d0-0x29518"
+      ]
+    },
+    {
+      "claim": "ARM64 actual final shared system/codec gralloctypes decoder matches outer88 and component48 layout",
+      "provider_sha256": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+      "evidence": [
+        "final-provider-arm64-a7e4.asm:0xa84c-0xa86c",
+        "final-provider-arm64-a548.asm:0xa5c0-0xa5d8,0xa620-0xa700",
+        "final-provider-arm64-9ed4.asm:0x9f38,0x9f78"
+      ]
+    },
+    {
+      "claim": "ARM32 actual final codec gralloctypes decoder matches outer80 and component40 layout",
+      "provider_sha256": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4",
+      "evidence": [
+        "final-provider-arm32-7924.asm:0x796a-0x7986",
+        "final-provider-arm32-7760.asm:0x77c2,0x77e8-0x788c",
+        "final-provider-arm32-72bc.asm:0x72f2-0x7350"
+      ]
+    },
+    {
+      "claim": "ARM64 Gralloc4 passes output vector unchanged to external gralloc4::decodePlaneLayouts instead of accessing its element scalar fields",
+      "prior_evidence": "prior-arm64-gralloc4-tail-body.asm:0x4d83c-0x4d850",
+      "latest_evidence": "latest-arm64-gralloc4-tail-body.asm:0x51814-0x51828"
+    }
+  ],
+  "remaining": [
+    "SystemARM32 final libgralloctypes provider hash/binding not retained here; do not infer it equals codec provider.",
+    "These layout invariants do not establish complete caller control flow or changed lock virtual-slot10 origin coverage.",
+    "Gralloc4 callback/HIDL external provider calling/layout closure is outside this bounded returned-data proof.",
+    "Entire ARM64 system/codec .text differs despite identical forwarding wrappers; do not extrapolate whole-libui equivalence.",
+    "ARM32 forcedThumb function dumps include PC-relative literal pools after executable bodies; those apparent unknown opcodes are data, not analyzed instructions. ARMPLT calls require separate ARM decoding.",
+    "ARM32 codec local helper layout transfers not exhaustively traced; system-old/new helpers and actualcodec decoder match measured layouts, but no wholecodec function acceptance granted.",
+    "No runtime or device test, no caller exemption or ROM acceptance granted."
+  ],
+  "files": "eight-variant-inventory.json,provider-functions.json,byte-comparisons.json and *.asm",
+  "runtime_verified": false
+}

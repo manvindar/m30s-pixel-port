@@ -1,0 +1,777 @@
+{
+  "GOT_relocations": {
+    "0x6d98": "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+    "0x6d9c": "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE",
+    "0x6e4c": "_ZN7android19GraphicBufferMapperC1Ev",
+    "0x6e54": "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE"
+  },
+  "PC_relative_materializations": [
+    {
+      "function": "AHardwareBuffer_setDataSpace",
+      "literal_load": "0x496c",
+      "add_PC": "0x496e",
+      "literal": "0x49ec",
+      "constant": "0x2426",
+      "GOT": "0x6d98",
+      "symbol": "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE"
+    },
+    {
+      "function": "AHardwareBuffer_setDataSpace",
+      "literal_load": "0x4978",
+      "add_PC": "0x497a",
+      "literal": "0x49f0",
+      "constant": "0x241e",
+      "GOT": "0x6d9c",
+      "symbol": "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+    }
+  ],
+  "literal_references": [
+    {
+      "function": "__on_dlclose",
+      "load": "0x3c44",
+      "literal": "0x3c4c"
+    },
+    {
+      "function": "AHardwareBuffer_allocate",
+      "load": "0x3c60",
+      "literal": "0x3e40"
+    },
+    {
+      "function": "AHardwareBuffer_allocate",
+      "load": "0x3c78",
+      "literal": "0x3e58"
+    },
+    {
+      "function": "AHardwareBuffer_allocate",
+      "load": "0x3cc0",
+      "literal": "0x3e44"
+    },
+    {
+      "function": "AHardwareBuffer_allocate",
+      "load": "0x3d28",
+      "literal": "0x3e48"
+    },
+    {
+      "function": "AHardwareBuffer_allocate",
+      "load": "0x3dda",
+      "literal": "0x3e4c"
+    },
+    {
+      "function": "AHardwareBuffer_allocate",
+      "load": "0x3e08",
+      "literal": "0x3e50"
+    },
+    {
+      "function": "AHardwareBuffer_allocate",
+      "load": "0x3e0a",
+      "literal": "0x3e54"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3e8e",
+      "literal": "0x3fa8"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3ea6",
+      "literal": "0x3fac"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3eee",
+      "literal": "0x3fb0"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3f02",
+      "literal": "0x3fc4"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3f0c",
+      "literal": "0x3fb8"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3f3c",
+      "literal": "0x3fc0"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3f74",
+      "literal": "0x3fcc"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3f80",
+      "literal": "0x3fc8"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3f86",
+      "literal": "0x3fa4"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3f8a",
+      "literal": "0x3fd0"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3f96",
+      "literal": "0x3fbc"
+    },
+    {
+      "function": "_ZN7android34AHardwareBuffer_isValidDescriptionEPK20AHardwareBuffer_Descb",
+      "load": "0x3f9c",
+      "literal": "0x3fb4"
+    },
+    {
+      "function": "AHardwareBuffer_acquire",
+      "load": "0x3fe2",
+      "literal": "0x3ff0"
+    },
+    {
+      "function": "AHardwareBuffer_release",
+      "load": "0x3ffe",
+      "literal": "0x400c"
+    },
+    {
+      "function": "AHardwareBuffer_lockAndGetInfo",
+      "load": "0x4056",
+      "literal": "0x416c"
+    },
+    {
+      "function": "AHardwareBuffer_lockAndGetInfo",
+      "load": "0x4098",
+      "literal": "0x4170"
+    },
+    {
+      "function": "AHardwareBuffer_lockAndGetInfo",
+      "load": "0x409c",
+      "literal": "0x4174"
+    },
+    {
+      "function": "AHardwareBuffer_lockAndGetInfo",
+      "load": "0x40ac",
+      "literal": "0x4180"
+    },
+    {
+      "function": "AHardwareBuffer_lockAndGetInfo",
+      "load": "0x40d0",
+      "literal": "0x4178"
+    },
+    {
+      "function": "AHardwareBuffer_lockAndGetInfo",
+      "load": "0x40d4",
+      "literal": "0x417c"
+    },
+    {
+      "function": "AHardwareBuffer_lock",
+      "load": "0x418a",
+      "literal": "0x424c"
+    },
+    {
+      "function": "AHardwareBuffer_lock",
+      "load": "0x41ae",
+      "literal": "0x4250"
+    },
+    {
+      "function": "AHardwareBuffer_lock",
+      "load": "0x41b2",
+      "literal": "0x4254"
+    },
+    {
+      "function": "AHardwareBuffer_lock",
+      "load": "0x41c2",
+      "literal": "0x4260"
+    },
+    {
+      "function": "AHardwareBuffer_lock",
+      "load": "0x41e6",
+      "literal": "0x4258"
+    },
+    {
+      "function": "AHardwareBuffer_lock",
+      "load": "0x41ea",
+      "literal": "0x425c"
+    },
+    {
+      "function": "AHardwareBuffer_lockPlanes",
+      "load": "0x426c",
+      "literal": "0x4410"
+    },
+    {
+      "function": "AHardwareBuffer_lockPlanes",
+      "load": "0x4286",
+      "literal": "0x441c"
+    },
+    {
+      "function": "AHardwareBuffer_lockPlanes",
+      "load": "0x42b4",
+      "literal": "0x4414"
+    },
+    {
+      "function": "AHardwareBuffer_lockPlanes",
+      "load": "0x42b8",
+      "literal": "0x4418"
+    },
+    {
+      "function": "AHardwareBuffer_sendHandleToUnixSocket",
+      "load": "0x44c2",
+      "literal": "0x45c8"
+    },
+    {
+      "function": "AHardwareBuffer_sendHandleToUnixSocket",
+      "load": "0x4584",
+      "literal": "0x45cc"
+    },
+    {
+      "function": "AHardwareBuffer_sendHandleToUnixSocket",
+      "load": "0x4588",
+      "literal": "0x45d0"
+    },
+    {
+      "function": "AHardwareBuffer_sendHandleToUnixSocket",
+      "load": "0x45ac",
+      "literal": "0x45d4"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x45e2",
+      "literal": "0x4730"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x4646",
+      "literal": "0x4734"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x464a",
+      "literal": "0x4738"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x466e",
+      "literal": "0x4744"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x4670",
+      "literal": "0x4748"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x4678",
+      "literal": "0x473c"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x467a",
+      "literal": "0x4740"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x4692",
+      "literal": "0x4760"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x4700",
+      "literal": "0x475c"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x471a",
+      "literal": "0x474c"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x471c",
+      "literal": "0x4750"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x4724",
+      "literal": "0x4754"
+    },
+    {
+      "function": "AHardwareBuffer_recvHandleFromUnixSocket",
+      "load": "0x4726",
+      "literal": "0x4758"
+    },
+    {
+      "function": "AHardwareBuffer_isSupported",
+      "load": "0x476a",
+      "literal": "0x47ec"
+    },
+    {
+      "function": "AHardwareBuffer_isSupported",
+      "load": "0x47d4",
+      "literal": "0x47f0"
+    },
+    {
+      "function": "AHardwareBuffer_readFromParcel",
+      "load": "0x482a",
+      "literal": "0x48ac"
+    },
+    {
+      "function": "AHardwareBuffer_readFromParcel",
+      "load": "0x485e",
+      "literal": "0x48b0"
+    },
+    {
+      "function": "AHardwareBuffer_readFromParcel",
+      "load": "0x4880",
+      "literal": "0x48b4"
+    },
+    {
+      "function": "AHardwareBuffer_readFromParcel",
+      "load": "0x4896",
+      "literal": "0x48b8"
+    },
+    {
+      "function": "AHardwareBuffer_writeToParcel",
+      "load": "0x48c2",
+      "literal": "0x490c"
+    },
+    {
+      "function": "AHardwareBuffer_writeToParcel",
+      "load": "0x48e4",
+      "literal": "0x4910"
+    },
+    {
+      "function": "AHardwareBuffer_writeToParcel",
+      "load": "0x48f8",
+      "literal": "0x4914"
+    },
+    {
+      "function": "AHardwareBuffer_getDataSpace",
+      "load": "0x491c",
+      "literal": "0x4958"
+    },
+    {
+      "function": "AHardwareBuffer_getDataSpace",
+      "load": "0x4940",
+      "literal": "0x495c"
+    },
+    {
+      "function": "AHardwareBuffer_setDataSpace",
+      "load": "0x496c",
+      "literal": "0x49ec"
+    },
+    {
+      "function": "AHardwareBuffer_setDataSpace",
+      "load": "0x4978",
+      "literal": "0x49f0"
+    },
+    {
+      "function": "AHardwareBuffer_createFromHandle",
+      "load": "0x4a0c",
+      "literal": "0x4ad4"
+    },
+    {
+      "function": "AHardwareBuffer_createFromHandle",
+      "load": "0x4a3e",
+      "literal": "0x4adc"
+    },
+    {
+      "function": "AHardwareBuffer_createFromHandle",
+      "load": "0x4ab4",
+      "literal": "0x4ad8"
+    },
+    {
+      "function": "AHardwareBuffer_allocateWithOptions",
+      "load": "0x4ae8",
+      "literal": "0x4d88"
+    },
+    {
+      "function": "AHardwareBuffer_allocateWithOptions",
+      "load": "0x4b02",
+      "literal": "0x4da0"
+    },
+    {
+      "function": "AHardwareBuffer_allocateWithOptions",
+      "load": "0x4be6",
+      "literal": "0x4d8c"
+    },
+    {
+      "function": "AHardwareBuffer_allocateWithOptions",
+      "load": "0x4c34",
+      "literal": "0x4d90"
+    },
+    {
+      "function": "AHardwareBuffer_allocateWithOptions",
+      "load": "0x4d04",
+      "literal": "0x4d94"
+    },
+    {
+      "function": "AHardwareBuffer_allocateWithOptions",
+      "load": "0x4d26",
+      "literal": "0x4d98"
+    },
+    {
+      "function": "AHardwareBuffer_allocateWithOptions",
+      "load": "0x4d28",
+      "literal": "0x4d9c"
+    },
+    {
+      "function": "_ZN7android28AHardwareBuffer_getDataSpaceEP15AHardwareBuffer",
+      "load": "0x4da8",
+      "literal": "0x4de4"
+    },
+    {
+      "function": "_ZN7android28AHardwareBuffer_getDataSpaceEP15AHardwareBuffer",
+      "load": "0x4dcc",
+      "literal": "0x4de8"
+    },
+    {
+      "function": "_ZSt28__throw_bad_array_new_lengthB9nqn230000v",
+      "load": "0x4e0a",
+      "literal": "0x4e14"
+    },
+    {
+      "function": "_ZNSt3__120__throw_length_errorB9nqn230000EPKc",
+      "load": "0x4e1c",
+      "literal": "0x4e24"
+    },
+    {
+      "function": "_ZNSt3__16vectorIN7android22GraphicBufferAllocator17AdditionalOptionsENS_9allocatorIS3_EEE20__throw_length_errorB9nqn230000Ev",
+      "load": "0x4e2a",
+      "literal": "0x4e34"
+    },
+    {
+      "function": "_ZNK7android6Parcel17FlattenableHelperINS_13GraphicBufferEE7flattenEPvjPij",
+      "load": "0x4ee8",
+      "literal": "0x4f28"
+    },
+    {
+      "function": "_ZNK7android6Parcel17FlattenableHelperINS_13GraphicBufferEE7flattenEPvjPij",
+      "load": "0x4f12",
+      "literal": "0x4f2c"
+    },
+    {
+      "function": "_ZN7android6Parcel17FlattenableHelperINS_13GraphicBufferEE9unflattenEPKvjPKij",
+      "load": "0x4f34",
+      "literal": "0x4f74"
+    },
+    {
+      "function": "_ZN7android6Parcel17FlattenableHelperINS_13GraphicBufferEE9unflattenEPKvjPKij",
+      "load": "0x4f5e",
+      "literal": "0x4f78"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4f7e",
+      "literal": "0x4fe4"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4f82",
+      "literal": "0x4fe8"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4f92",
+      "literal": "0x4fec"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fa0",
+      "literal": "0x4ff0"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fb2",
+      "literal": "0x500c"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fb4",
+      "literal": "0x5010"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fb6",
+      "literal": "0x5014"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fc2",
+      "literal": "0x4ff4"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fc4",
+      "literal": "0x4ff8"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fc6",
+      "literal": "0x4ffc"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fd2",
+      "literal": "0x5000"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fd4",
+      "literal": "0x5004"
+    },
+    {
+      "function": "_ZZ25getSurfaceParcelFunctionsvENK3$_0clEv",
+      "load": "0x4fd6",
+      "literal": "0x5008"
+    },
+    {
+      "function": "ANativeWindow_getWidth",
+      "load": "0x5024",
+      "literal": "0x5058"
+    },
+    {
+      "function": "ANativeWindow_getWidth",
+      "load": "0x5044",
+      "literal": "0x505c"
+    },
+    {
+      "function": "ANativeWindow_getHeight",
+      "load": "0x5064",
+      "literal": "0x509c"
+    },
+    {
+      "function": "ANativeWindow_getHeight",
+      "load": "0x5086",
+      "literal": "0x50a0"
+    },
+    {
+      "function": "ANativeWindow_getFormat",
+      "load": "0x50a8",
+      "literal": "0x50e0"
+    },
+    {
+      "function": "ANativeWindow_getFormat",
+      "load": "0x50ca",
+      "literal": "0x50e4"
+    },
+    {
+      "function": "ANativeWindow_setBuffersTransform",
+      "load": "0x5146",
+      "literal": "0x51a0"
+    },
+    {
+      "function": "ANativeWindow_setBuffersTransform",
+      "load": "0x518a",
+      "literal": "0x51a4"
+    },
+    {
+      "function": "ANativeWindow_setBuffersDataSpace",
+      "load": "0x51ae",
+      "literal": "0x51f8"
+    },
+    {
+      "function": "ANativeWindow_setBuffersDataSpace",
+      "load": "0x51e2",
+      "literal": "0x51fc"
+    },
+    {
+      "function": "ANativeWindow_getBuffersDataSpace",
+      "load": "0x5204",
+      "literal": "0x5258"
+    },
+    {
+      "function": "ANativeWindow_getBuffersDataSpace",
+      "load": "0x5244",
+      "literal": "0x525c"
+    },
+    {
+      "function": "ANativeWindow_getBuffersDefaultDataSpace",
+      "load": "0x5264",
+      "literal": "0x52b8"
+    },
+    {
+      "function": "ANativeWindow_getBuffersDefaultDataSpace",
+      "load": "0x52a4",
+      "literal": "0x52bc"
+    },
+    {
+      "function": "ANativeWindow_setFrameRate",
+      "load": "0x52c6",
+      "literal": "0x5320"
+    },
+    {
+      "function": "ANativeWindow_setFrameRate",
+      "load": "0x530a",
+      "literal": "0x5324"
+    },
+    {
+      "function": "ANativeWindow_setFrameRateWithChangeStrategy",
+      "load": "0x532e",
+      "literal": "0x5388"
+    },
+    {
+      "function": "ANativeWindow_setFrameRateWithChangeStrategy",
+      "load": "0x5374",
+      "literal": "0x538c"
+    },
+    {
+      "function": "ANativeWindow_tryAllocateBuffers",
+      "load": "0x5396",
+      "literal": "0x53d8"
+    },
+    {
+      "function": "ANativeWindow_tryAllocateBuffers",
+      "load": "0x53c2",
+      "literal": "0x53dc"
+    },
+    {
+      "function": "ANativeWindow_setProducerThrottlingEnabled",
+      "load": "0x53e6",
+      "literal": "0x5430"
+    },
+    {
+      "function": "ANativeWindow_setProducerThrottlingEnabled",
+      "load": "0x541a",
+      "literal": "0x5434"
+    },
+    {
+      "function": "ANativeWindow_isProducerThrottlingEnabled",
+      "load": "0x543e",
+      "literal": "0x5488"
+    },
+    {
+      "function": "ANativeWindow_isProducerThrottlingEnabled",
+      "load": "0x5472",
+      "literal": "0x548c"
+    },
+    {
+      "function": "ANativeWindow_queryf",
+      "load": "0x551c",
+      "literal": "0x55ac"
+    },
+    {
+      "function": "ANativeWindow_queryf",
+      "load": "0x5590",
+      "literal": "0x55b0"
+    },
+    {
+      "function": "ANativeWindow_readFromParcel",
+      "load": "0x5608",
+      "literal": "0x5664"
+    },
+    {
+      "function": "ANativeWindow_readFromParcel",
+      "load": "0x5614",
+      "literal": "0x5670"
+    },
+    {
+      "function": "ANativeWindow_readFromParcel",
+      "load": "0x562a",
+      "literal": "0x5674"
+    },
+    {
+      "function": "ANativeWindow_readFromParcel",
+      "load": "0x562e",
+      "literal": "0x5678"
+    },
+    {
+      "function": "ANativeWindow_readFromParcel",
+      "load": "0x5640",
+      "literal": "0x5668"
+    },
+    {
+      "function": "ANativeWindow_readFromParcel",
+      "load": "0x5658",
+      "literal": "0x566c"
+    },
+    {
+      "function": "ANativeWindow_writeToParcel",
+      "load": "0x5680",
+      "literal": "0x56dc"
+    },
+    {
+      "function": "ANativeWindow_writeToParcel",
+      "load": "0x568c",
+      "literal": "0x56e8"
+    },
+    {
+      "function": "ANativeWindow_writeToParcel",
+      "load": "0x56a6",
+      "literal": "0x56ec"
+    },
+    {
+      "function": "ANativeWindow_writeToParcel",
+      "load": "0x56aa",
+      "literal": "0x56f0"
+    },
+    {
+      "function": "ANativeWindow_writeToParcel",
+      "load": "0x56bc",
+      "literal": "0x56e0"
+    },
+    {
+      "function": "ANativeWindow_writeToParcel",
+      "load": "0x56d0",
+      "literal": "0x56e4"
+    },
+    {
+      "function": "ANativeWindow_getLastDequeueDuration",
+      "load": "0x56f8",
+      "literal": "0x5734"
+    },
+    {
+      "function": "ANativeWindow_getLastDequeueDuration",
+      "load": "0x5720",
+      "literal": "0x5738"
+    },
+    {
+      "function": "ANativeWindow_getLastQueueDuration",
+      "load": "0x5740",
+      "literal": "0x577c"
+    },
+    {
+      "function": "ANativeWindow_getLastQueueDuration",
+      "load": "0x5768",
+      "literal": "0x5780"
+    },
+    {
+      "function": "ANativeWindow_getLastDequeueStartTime",
+      "load": "0x5788",
+      "literal": "0x57c4"
+    },
+    {
+      "function": "ANativeWindow_getLastDequeueStartTime",
+      "load": "0x57b0",
+      "literal": "0x57c8"
+    }
+  ],
+  "function_extent_gaps": [
+    {
+      "start": "0x3c56",
+      "end": "0x3c58",
+      "bytes_hex": "d4d4"
+    },
+    {
+      "start": "0x4822",
+      "end": "0x4824",
+      "bytes_hex": "d4d4"
+    },
+    {
+      "start": "0x4ee2",
+      "end": "0x4ee4",
+      "bytes_hex": "d4d4"
+    },
+    {
+      "start": "0x513e",
+      "end": "0x5140",
+      "bytes_hex": "d4d4"
+    },
+    {
+      "start": "0x54c6",
+      "end": "0x54c8",
+      "bytes_hex": "d4d4"
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import shutil
 import tempfile
 import zipfile
 from common import apex_manifest, digest, elf, extract_fs, unpack_apex
+from caller_reviews import load_reviews, match_review
 
 
 def missing_symbols(imports, providers):
@@ -178,6 +179,7 @@ def main():
     parser.add_argument('image'); parser.add_argument('stage'); parser.add_argument('receipt')
     args = parser.parse_args()
     stage = Path(args.stage)
+    reviewed_interfaces = load_reviews()
     donor = json.loads((stage / 'donor-receipt.json').read_text())
     for record in donor['files']:
         if digest(stage / record['relative_path']) != record['sha256']:
@@ -322,6 +324,7 @@ def main():
         if len(codec) != 1 or codec[0]['sha256'] != repack['output_package_sha256']:
             raise RuntimeError('Final codec APEX differs from signed/readback-verified package')
         verified_ui_hashes = {record['libui_sha256'] for record in receipt['linkage']}
+        receipt['reviewed_mapper_interfaces'] = []
         # All native files and packaged natives, not just base system + codec.
         for context, virtual, metadata in inventory.natives:
             abi = metadata['abi']
@@ -343,7 +346,35 @@ def main():
                         item['evidence_file'] = str(copy.relative_to(stage))
                     else:
                         item['evidence_limit'] = '64MiB cap; missing code evidence is not a pass'
-                    receipt['mapper_callsite_candidates'].append(item)
+                    binding = {}
+                    # Review recognition requires current final provider/namespace
+                    # and complete declared consumer import closure, never just a
+                    # consumer allowlist or matching symbol names.
+                    if any(r['sha256'] == identity for r in reviewed_interfaces):
+                        try:
+                            providers, edges = inventory.closure(context, virtual, metadata)
+                            ui_edges = [e for e in edges if e['needed'] == 'libui.so']
+                            directory = 'lib64' if abi == 'arm64' else 'lib'
+                            expected = '/system/' + directory + '/libui.so'
+                            if not ui_edges or any(e['namespace'] != 'system' or e['to'] != expected for e in ui_edges):
+                                raise RuntimeError('Reviewed caller resolves unexpected libui binding')
+                            ui = inventory.metadata[expected]
+                            decoder = inventory.own('system', 'libgralloctypes.so', abi)
+                            binding = {'namespace': 'system', 'libui_sha256': digest(ui['source_path']),
+                                'latest_libui_sha256': digest(stage / 'latest/system' / directory / 'libui.so'),
+                                'decoder_sha256': digest(decoder[2]['source_path']) if decoder else None,
+                                'missing_imports': missing_symbols(metadata['imports'], providers),
+                                'edges': edges,
+                                'limitations': ['Declared final image binding; runtime loader state not verified']}
+                        except RuntimeError as error:
+                            binding = {'error': str(error)}
+                    reviewed = match_review(reviewed_interfaces, context, virtual, abi, identity, size, mapper, binding)
+                    if reviewed:
+                        receipt['reviewed_mapper_interfaces'].append(reviewed)
+                    else:
+                        if binding:
+                            item['review_binding_rejection'] = binding
+                        receipt['mapper_callsite_candidates'].append(item)
             uncertain = unproven_flag_provider_imports(metadata.get('abi_imports', metadata['imports']))
             if uncertain:
                 receipt['flag_provider_consumers'].append({'context': context, 'file': virtual, 'imports': uncertain})

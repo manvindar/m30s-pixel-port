@@ -1,0 +1,42 @@
+{
+  "patched": [
+    {
+      "name": "_ZN7android13GraphicBuffer14initWithHandleEPK13native_handleNS0_16HandleWrapMethodEjjijmj",
+      "value": 237032,
+      "size": 304,
+      "defined": true,
+      "type": 2,
+      "sha256": "52c9ed2cd7ce68adc86b6282153b15f048759deaca2b095c3b0cb98ad4de8fec",
+      "evidence": "libgui-patched-39de8-graphicbuffer-field.asm"
+    },
+    {
+      "name": "_ZN7android13GraphicBufferC2Ev",
+      "value": 231784,
+      "size": 624,
+      "defined": true,
+      "type": 2,
+      "sha256": "7baa76976371b9d8d2c01d73b618530f1edfb7196b0179f252842044c939222d",
+      "evidence": "libgui-patched-38968-graphicbuffer-field.asm"
+    }
+  ],
+  "latest": [
+    {
+      "name": "_ZN7android13GraphicBufferC2Ev",
+      "value": 280832,
+      "size": 548,
+      "defined": true,
+      "type": 2,
+      "sha256": "c32b67fc39a2e99c1700ef2c2c264d3ab74b71f0327c29b8d7093c52614842b3",
+      "evidence": "libgui-latest-44900-graphicbuffer-field.asm"
+    },
+    {
+      "name": "_ZN7android13GraphicBuffer14initWithHandleEPK13native_handleNS0_16HandleWrapMethodEjjijmj",
+      "value": 279704,
+      "size": 300,
+      "defined": true,
+      "type": 2,
+      "sha256": "45118f9e276f8c50a9a8516871b2fe747a9816b8926610769babf9df96929adf",
+      "evidence": "libgui-latest-44498-graphicbuffer-field.asm"
+    }
+  ]
+}

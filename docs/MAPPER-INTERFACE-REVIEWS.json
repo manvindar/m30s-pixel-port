@@ -1,0 +1,489 @@
+{
+  "schema": 1,
+  "reference_run": 43779962776,
+  "scope": "Exact affected receiver interfaces; every unmatched caller remains blocked",
+  "records": [
+    {
+      "id": "nativewindow-arm64",
+      "context": "system",
+      "file": "/system/lib64/libnativewindow.so",
+      "abi": "arm64",
+      "sha256": "b196e0a8e32fd3b10208dda16d1def366efeaedf756e47eb08ecd91c3c4157d3",
+      "bytes": 68320,
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+      "latest_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+      "decoder_sha256": null,
+      "evidence": "mapper-interface-reviews/nativewindow-arm64.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
+    },
+    {
+      "id": "media-jni-arm64",
+      "context": "system",
+      "file": "/system/lib64/libmedia_jni_utils.so",
+      "abi": "arm64",
+      "sha256": "b6b501ae3b8e6f1857642b08b3a52212f28daa1011a1ef7a0d72b7870574401f",
+      "bytes": 51824,
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+      "latest_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+      "decoder_sha256": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+      "evidence": "mapper-interface-reviews/media-jni-arm64.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
+    },
+    {
+      "id": "nativewindow-arm32",
+      "context": "system",
+      "file": "/system/lib/libnativewindow.so",
+      "abi": "arm32",
+      "sha256": "ad5d5182265cf2764157fb90c99334700b54be368617c22c9cb4f3a82bfaee86",
+      "bytes": 22916,
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "e763c2271067df3894f8c884dc79a4b093812f223f8c4a643c55d5a4215623c9",
+      "latest_libui_sha256": "236132fe5b182194b25f8f9547e850f8e13ce5315862f4256d054ad770e221f2",
+      "decoder_sha256": null,
+      "evidence": "mapper-interface-reviews/nativewindow-arm32.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
+    },
+    {
+      "id": "virtual-camera-arm64",
+      "context": "system",
+      "file": "/system/bin/virtual_camera",
+      "abi": "arm64",
+      "sha256": "426691a42682cc87f107ead1df0d2b3dd6bad363be8f7a7684c662e165d51dfd",
+      "bytes": 670760,
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+      "latest_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+      "decoder_sha256": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+      "evidence": "mapper-interface-reviews/virtual-camera-arm64.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
+    },
+    {
+      "id": "preapex-arm64",
+      "context": "system",
+      "file": "/system/lib64/libandroid_preapex.so",
+      "abi": "arm64",
+      "sha256": "5970db0a77ea05f7174e2efbb245a6e497cbcd544bcc22ecd8f02cbfc48124ee",
+      "bytes": 832520,
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+      "latest_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+      "decoder_sha256": null,
+      "evidence": "mapper-interface-reviews/preapex-arm64.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
+    },
+    {
+      "id": "libgui-arm64",
+      "context": "system",
+      "file": "/system/lib64/libgui.so",
+      "abi": "arm64",
+      "sha256": "7d9313373070758af041adac3b9c34202dfd97350f1265400637c0623190e699",
+      "bytes": 2244744,
+      "interface_symbols": [
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+      ],
+      "patched_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+      "latest_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+      "decoder_sha256": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+      "evidence": "mapper-interface-reviews/libgui-arm64.json",
+      "scope": "affected_mapper_receiver_interface_only",
+      "runtime_validation": false
+    }
+  ],
+  "code_evidence": [
+    {
+      "file": "mapper-interface-reviews/codec-evidence/latest-initWithHandle.asm",
+      "sha256": "e4c8b7a59d03e3421b6ee0700a1f6abc0f8075b7ef8e78bae86796c2a6769f42",
+      "bytes": 3362
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/latest-setDataspace.asm",
+      "sha256": "d9f8de145d1a763981f7be807d9dbc173edce44a969ea737d87f77a278199eaa",
+      "bytes": 415
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/legacy2-3-setter.asm",
+      "sha256": "af6982a65b866b005cd4c585452eb2df9c6dfc7e5220ffc29ad2c10d0dfbb82f",
+      "bytes": 286
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/nativewindow-full-text.asm",
+      "sha256": "ecf3b99ec8ce86926927edc5028172b18ab56d4b4c4084f27019b311fa16986d",
+      "bytes": 108104
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/nativewindow-got-page-refs.json",
+      "sha256": "7b62045f33d1ffea388d718585c26b4820fe2fc9a98b459247ca34a0f89bda4e",
+      "bytes": 4766
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/nativewindow-provider-symbols.json",
+      "sha256": "272651f47539a33d3f1890c595dc2e172e148213a1f299b9a22b09eecd46af03",
+      "bytes": 1282
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/nativewindow-setDataspace.asm",
+      "sha256": "5f99c06732ca05e208cd49aa33eb79f7d39b84d4fecfa58e5e4e64bc2b9c5338",
+      "bytes": 3016
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/nativewindow32-setDataspace.asm",
+      "sha256": "43aaa99d971d65455283b87b31cd33e859b9988eb9d7caaf3c950b4320dcc7f9",
+      "bytes": 2620
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/patched-mapper-ctor.asm",
+      "sha256": "b2a1bceb390860eaf3dd2203efde685d1d63b2eb6309f6f057afd3b6f1ecf822",
+      "bytes": 4164
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/prior-initWithHandle.asm",
+      "sha256": "64aef1dfc13e39cf5e09fa0979720ca799d7e6abcd0f18ec182efbe7502f4e00",
+      "bytes": 3484
+    },
+    {
+      "file": "mapper-interface-reviews/codec-evidence/prior-setDataspace.asm",
+      "sha256": "8b9323ef34e4215bbe3cd85e515bf666d19897cba6584b01e45ec2ba0777212b",
+      "bytes": 414
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/arm32-dataspace-method-comparison.json",
+      "sha256": "99d52c5195c2e92d50f18fd912e92b4369f534c5fb666f441135e8c50d26355b",
+      "bytes": 1658
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/arm32-graphicbuffer-field-functions.json",
+      "sha256": "1e990a2dd49f6b72605940c670abbeb1cc9cdfd15241cda45a62cea78064feb2",
+      "bytes": 2115
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/arm32-graphicbuffer-field-patched-comparison.json",
+      "sha256": "61a66d4df338c4f509df4e61c425e623e0eeb671c7573deb3af3ff6f7ff45ccf",
+      "bytes": 3357
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/latest-arm32-2af8c-graphicbuffer.asm",
+      "sha256": "f9e3608f6598883bf8a5f78adc8324073e16e73eb89ce6f73e3de8b0a7f8c1ab",
+      "bytes": 8273
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/latest-arm32-2b57c-graphicbuffer.asm",
+      "sha256": "22c40ab5b498a373c7697d4471121d9c4c41a30e9d793a3b4c3bae09fcd3b07d",
+      "bytes": 3666
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-function-155070.asm",
+      "sha256": "c755aacce04510d2fb5f9b565961f1564e2b1aea58658dd7ebdf9e6971da4de5",
+      "bytes": 6007
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-function-1551f8.asm",
+      "sha256": "bfab9fd0a46ae8806964e791a334e589b3840afa77f3e410a379a68d228f206a",
+      "bytes": 1166
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-function-17bdc0.asm",
+      "sha256": "2b4eccf3a256696a5def211efca4dfaf1595d8a742ab4bf1f9a87e038ab96942",
+      "bytes": 93213
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-graphicbuffer-field.json",
+      "sha256": "7eabb25a11af90225ecc0d563d92ed3145f78754fd44375b24fc37d4523a3a55",
+      "bytes": 1324
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-mapper-relocations.json",
+      "sha256": "3cb144f65fe0e5ab47ea1bb0aac58c06daeccb6bb6c3d97aa18a600c1064ba5d",
+      "bytes": 1232
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-provider-methods.json",
+      "sha256": "e0c7260df325edad1591cc3e573fd1836a94f32469d46111962866dc8211e5f0",
+      "bytes": 48247
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-receiver-trace.json",
+      "sha256": "6b7a35fae8bc96c94415ecc8c8b6776054f4a5dd39989b4045cc84a084c46ede",
+      "bytes": 5459
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-reference-inventory.json",
+      "sha256": "f1fd247f9c0199aebc1786aedd91b54a1f83b866026644b047d3428dbac14604",
+      "bytes": 9292
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-hdr-encoder-aa50.asm",
+      "sha256": "8583b8d52c91f0af56e41aede64fa806d2d6d997ec57d371bf13050ea32e4793",
+      "bytes": 4848
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-hdr-encoder-add0.asm",
+      "sha256": "74bee602dfee147ba0251d9dc653c2a1cee4b93ef5d99af9b1ea0cff0c86e2a2",
+      "bytes": 1604
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-hdr-encoder-de34.asm",
+      "sha256": "acbf5ee54d927c0bc0c84017263fbfa3a19eb3ee98e369713c3cc9504b2b85ad",
+      "bytes": 8002
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-hdr-encoder-e0fc.asm",
+      "sha256": "792cacfee748f9320a22b34a5c70ab6187693f08cfb19bb1c47adccaa3c3b63b",
+      "bytes": 8873
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-hdr-encoder-e3f8.asm",
+      "sha256": "959f65fd92e9d08f52f0e8bb28938eed634146dd7df1869b7ac26fd515d4c00c",
+      "bytes": 901
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-hdr-encoder-methods.json",
+      "sha256": "93d38aa7e346c6c2f24b4309855bc4fdb86b0135da5cd7c7a550beb2125358f5",
+      "bytes": 1342
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-patched-3b764-vector-copy-helper.asm",
+      "sha256": "a393100c0113913c29d54cd500c20751f0c18f36dfba5a45fbd1b8ef1b169e93",
+      "bytes": 2167
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-vector-copy-helper.asm",
+      "sha256": "8a2ec3badb1761c95b230f47c3b3649fd687d8fa1618b20ee3e17c77ca80ec7b",
+      "bytes": 1254
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/media-jni-address-materializations.json",
+      "sha256": "25a44a32c2b1a3dbdfa7faa3c68ffa4245c87158f063334d23113197bc49d653",
+      "bytes": 1285
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/media-jni-utils-arm64-text.asm",
+      "sha256": "1d6dbea2d7df9ef6ba78ac1e8148721dbec8150e2be85e9eaf22cac62871b824",
+      "bytes": 76626
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/media-jni-utils-inventory.json",
+      "sha256": "1e01f4e5e3607763863caccf94de5c6676182dd41414db48a5caa4826b046437",
+      "bytes": 3239
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-ARM-PLT.json",
+      "sha256": "08bc893d697ce08e9eace3d3d29f98674d406a21b12e0a5083336f3321466af6",
+      "bytes": 5871
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-PC-reference-inventory.json",
+      "sha256": "cf6323481e845ce9118a291564be8e668c5cbd638ab0b4d75beea661f2c41bf5",
+      "bytes": 19132
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-bounded-tables.json",
+      "sha256": "d48f7465c652e00315afbfc2b7a62a404cde9b39010477d0714111612d538335",
+      "bytes": 1058
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-decode-inventory.json",
+      "sha256": "2748cf52861505bd4eb0b597f77c83c5814ccbe196180954ba4f7fdbbb5d1545",
+      "bytes": 45349
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-function-4960.asm",
+      "sha256": "43aaa99d971d65455283b87b31cd33e859b9988eb9d7caaf3c950b4320dcc7f9",
+      "bytes": 2620
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/nativewindow-arm32-functions.json",
+      "sha256": "8af186721988f1cf87ba9eafa1e5c8053a093b884b4875afda04c752cad669d2",
+      "bytes": 24043
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/patched-arm32-39050-mapper.asm",
+      "sha256": "e8f18d016e0050a8c95b7358b85e5992ba8e7360a429be5c948d136c6902a2ec",
+      "bytes": 390
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/patched-arm32-methods.json",
+      "sha256": "2a291d2510fc05f6c48c7ffa4af755224f4f5d908b96a113eabb5688decb2f7b",
+      "bytes": 593
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/patched-arm64-mapper-constructor.asm",
+      "sha256": "b2a1bceb390860eaf3dd2203efde685d1d63b2eb6309f6f057afd3b6f1ecf822",
+      "bytes": 4164
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/patched-donor-plane-slots.json",
+      "sha256": "692fc0c4508fdd7eff7988658d5f9ff7e493493737c878a17af67f9991f7f426",
+      "bytes": 2757
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/prior-arm32-2e23c-graphicbuffer.asm",
+      "sha256": "f39359438e13b1f501d3a544ec69aa70c15925d40daba5be0e62989b1401744f",
+      "bytes": 8275
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/prior-arm32-2e82c-graphicbuffer.asm",
+      "sha256": "f9f0c98f7d492f4c191cc60d9c7412dfc3dde31957d41dbc1299a3f710c37290",
+      "bytes": 3665
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/provider-functions.json",
+      "sha256": "155504deb1c824b129f888fc76662d01dc81b352eedfa6ae7aa4d04e94b329eb",
+      "bytes": 4996
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/review.json",
+      "sha256": "7eac3689ec2641610670c7c2ab0bfb86b1dac437c15c88f98b0957cc926d4876",
+      "bytes": 3984
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-arm64-backend-methods.json",
+      "sha256": "349c939b532eeba7629021a5efb1f89ad8ffd2ed2647609150ed72f6c558f000",
+      "bytes": 2723
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-arm64-function-5f0fc.asm",
+      "sha256": "7e2fead465583269eef61075a7e1ef1db986e8b5557368abc49b190ccaf70e7e",
+      "bytes": 25477
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-arm64-mapper-relocations.json",
+      "sha256": "301a601b942bdb65aa560083d1f0d1bcec418b505d1f9f20ad9b5b54ba527dd0",
+      "bytes": 1352
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-arm64-provider-methods.json",
+      "sha256": "4fa1df826abb7078c4ec2a3bef08ed04d97d44d23dacd9b6287d91129231e5ab",
+      "bytes": 80631
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-arm64-reference-inventory.json",
+      "sha256": "083332d2d34d405bd63c7ef2ef0ea3445dbe28621dd722ac4fb89b75134b3a4e",
+      "bytes": 5117
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-legacy-getter-unsupported.asm",
+      "sha256": "af6982a65b866b005cd4c585452eb2df9c6dfc7e5220ffc29ad2c10d0dfbb82f",
+      "bytes": 286
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-scalar-decoders.json",
+      "sha256": "b57366c62674dd3bdffe7bc22a3aee30f718e65643c55ec6d4e1b41f4547b20a",
+      "bytes": 1152
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/AHardwareBuffer-setDataSpace.asm",
+      "sha256": "0f67546d644e15cb18d42b73b21117bdfdb49e5e3ffbb6a5b7e793591d4c1acf",
+      "bytes": 2354
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/got-flow-resolved.json",
+      "sha256": "70a163149fd32fb3fa61e473db9bd9fadc9ed776f810b5770f538b6284216418",
+      "bytes": 36120
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/latest-Mapper12setDataspaceEP.asm",
+      "sha256": "d9f8de145d1a763981f7be807d9dbc173edce44a969ea737d87f77a278199eaa",
+      "bytes": 415
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/latest-MapperC1Ev.asm",
+      "sha256": "4c907f07e803cb31ac96ec15337e28325b788d39eed9748c8cc522afe716599a",
+      "bytes": 2225
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/latest-initWithHandle.asm",
+      "sha256": "e4c8b7a59d03e3421b6ee0700a1f6abc0f8075b7ef8e78bae86796c2a6769f42",
+      "bytes": 3362
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/machine-address-reference-check.json",
+      "sha256": "a11cf2a981ed4f38f7865dbf3b9b613e2acf56688fe2f5e26fd3c4ff79eea0e5",
+      "bytes": 206
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/patched-Mapper12setDataspaceEP.asm",
+      "sha256": "fa0578a371d62273194956dc80c3ff944ca02378fd946d7bc6436f5bcbd97139",
+      "bytes": 428
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/patched-MapperC1Ev.asm",
+      "sha256": "b2a1bceb390860eaf3dd2203efde685d1d63b2eb6309f6f057afd3b6f1ecf822",
+      "bytes": 4164
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/patched-initWithHandle.asm",
+      "sha256": "502243931d29ff66c08af441ca8f7632ca5aa6acf4ee46a4c4826797cc24c70b",
+      "bytes": 3498
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/patched-legacy-setter.asm",
+      "sha256": "af6982a65b866b005cd4c585452eb2df9c6dfc7e5220ffc29ad2c10d0dfbb82f",
+      "bytes": 286
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/provider-comparison.json",
+      "sha256": "6cd4be26f9592f6fdaf41bd514265f83409d3c6fa4461005b79bcaca18838780",
+      "bytes": 4650
+    }
+  ],
+  "retained_large_evidence": [
+    {
+      "file": "mapper-interface-reviews/plane-evidence/virtual-camera-arm64-functions.json",
+      "bytes": 277089,
+      "sha256": "238fb171e195af88bba71550fbeb44a3c72fe4e769808f2e5cf83e0b29855f9d",
+      "location": "Retained full local review evidence; exact source ELF in referenced CI artifacts"
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/full-text.asm",
+      "bytes": 3994578,
+      "sha256": "0c8022261669801ead748c72bcad94ec8a8d67e9ede56bb4373260476483e2d9",
+      "location": "Retained full local review evidence; exact source ELF in referenced CI artifacts"
+    },
+    {
+      "file": "mapper-interface-reviews/preapex-evidence/address-materializations.json",
+      "bytes": 223524,
+      "sha256": "41570e45fd6b0f589ad6bdb4fe6a3b1f8a8c810e2e3a34684c7cae2e1d5420e6",
+      "location": "Retained full local review evidence; exact source ELF in referenced CI artifacts"
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-functions.json",
+      "bytes": 827213,
+      "sha256": "6a12221b258a76bd6045c03eefd54f023fd8292af52d934c66ca09dc60a2b250",
+      "location": "Retained full local review evidence; exact source ELF in referenced CI artifacts"
+    },
+    {
+      "file": "mapper-interface-reviews/plane-evidence/libgui-arm64-function-16ac7c.asm",
+      "bytes": 158627,
+      "sha256": "be6a84b9ff27c81772ac24e1ce5c47c1260373682271f3a153fed723c17c2f48",
+      "location": "Retained full local review evidence; exact source ELF in referenced CI artifacts"
+    }
+  ],
+  "source_artifact_runs": [
+    43776923589,
+    43778923819,
+    43779962776
+  ]
+}

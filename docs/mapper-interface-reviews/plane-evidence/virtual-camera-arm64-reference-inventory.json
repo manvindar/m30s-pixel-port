@@ -1,0 +1,248 @@
+{
+  "text_start": "0x28000",
+  "text_bytes": 439064,
+  "mini_debug_function_count": 1443,
+  "unknown_instructions": [],
+  "got_page_materializations": 426,
+  "mapper_GOT_resolved_loads": [
+    {
+      "page_instruction": "0x5f1e4",
+      "load_instruction": "0x5f1e8",
+      "got": "0x9a1f8",
+      "destination": "x0"
+    },
+    {
+      "page_instruction": "0x5f1f0",
+      "load_instruction": "0x5f1f4",
+      "got": "0x9a200",
+      "destination": "x24"
+    },
+    {
+      "page_instruction": "0x5f214",
+      "load_instruction": "0x5f218",
+      "got": "0x9a1f8",
+      "destination": "x0"
+    }
+  ],
+  "all_same_offset_loads_for_manual_review": [
+    {
+      "address": "0x45acc",
+      "instruction": "str\tq0, [x19, #0x200]"
+    },
+    {
+      "address": "0x49d38",
+      "instruction": "ldr\tx0, [x23, #0x1f8]"
+    },
+    {
+      "address": "0x49d54",
+      "instruction": "str\tx0, [x23, #0x200]"
+    },
+    {
+      "address": "0x49da4",
+      "instruction": "stp\tx0, x0, [x23, #0x1f8]"
+    },
+    {
+      "address": "0x49db8",
+      "instruction": "ldr\tx8, [x23, #0x200]"
+    },
+    {
+      "address": "0x49dd4",
+      "instruction": "ldr\tx20, [x23, #0x200]"
+    },
+    {
+      "address": "0x49e10",
+      "instruction": "str\tx8, [x23, #0x200]"
+    },
+    {
+      "address": "0x49e14",
+      "instruction": "ldp\tx0, x8, [x23, #0x1f8]"
+    },
+    {
+      "address": "0x4bf24",
+      "instruction": "ldr\tx0, [x19, #0x1f8]"
+    },
+    {
+      "address": "0x4bf30",
+      "instruction": "str\tx0, [x19, #0x200]"
+    },
+    {
+      "address": "0x5f1e8",
+      "instruction": "ldr\tx0, [x0, #0x1f8]"
+    },
+    {
+      "address": "0x5f1f4",
+      "instruction": "ldr\tx24, [x24, #0x200]"
+    },
+    {
+      "address": "0x5f218",
+      "instruction": "ldr\tx0, [x0, #0x1f8]"
+    }
+  ],
+  "all_mapper_PLT_calls": [
+    {
+      "address": "0x5f20c",
+      "instruction": "bl\t0x94198 <_ZN7android19GraphicBufferMapperC1Ev@plt>"
+    },
+    {
+      "address": "0x5f230",
+      "instruction": "bl\t0x94120 <_ZN7android19GraphicBufferMapper22importBufferNoValidateEPK13native_handlePS3_@plt>"
+    },
+    {
+      "address": "0x5f284",
+      "instruction": "bl\t0x941e0 <_ZN7android19GraphicBufferMapper8getWidthEPK13native_handlePm@plt>"
+    },
+    {
+      "address": "0x5f298",
+      "instruction": "bl\t0x941f8 <_ZN7android19GraphicBufferMapper9getHeightEPK13native_handlePm@plt>"
+    },
+    {
+      "address": "0x5f2ac",
+      "instruction": "bl\t0x94210 <_ZN7android19GraphicBufferMapper8getUsageEPK13native_handlePm@plt>"
+    },
+    {
+      "address": "0x5f2c0",
+      "instruction": "bl\t0x94228 <_ZN7android19GraphicBufferMapper13getLayerCountEPK13native_handlePm@plt>"
+    },
+    {
+      "address": "0x5f2d4",
+      "instruction": "bl\t0x94240 <_ZN7android19GraphicBufferMapper23getPixelFormatRequestedEPK13native_handlePNS_8hardware8graphics6common4V1_211PixelFormatE@plt>"
+    }
+  ],
+  "function_extent_gaps": [
+    [
+      "0x280bc",
+      "0x29000"
+    ],
+    [
+      "0x2c3f4",
+      "0x2c3f8"
+    ],
+    [
+      "0x2d30c",
+      "0x2d310"
+    ],
+    [
+      "0x37958",
+      "0x37960"
+    ],
+    [
+      "0x4580c",
+      "0x45810"
+    ],
+    [
+      "0x4fe3c",
+      "0x4fe40"
+    ],
+    [
+      "0x4fe74",
+      "0x4fe80"
+    ],
+    [
+      "0x4fee4",
+      "0x4fef0"
+    ],
+    [
+      "0x4ff24",
+      "0x4ff30"
+    ],
+    [
+      "0x5398c",
+      "0x53990"
+    ],
+    [
+      "0x60508",
+      "0x60510"
+    ]
+  ],
+  "scope": "Linear disassembly with exact symbol/mini-debug extents; actual mapper-load PC-relative origins manually verified. No receiver derived from unrelated equal numeric offsets.",
+  "function_extent_gap_words": [
+    {
+      "start": "0x280bc",
+      "end": "0x29000",
+      "bytes": 3908,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x2c3f4",
+      "end": "0x2c3f8",
+      "bytes": 4,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x2d30c",
+      "end": "0x2d310",
+      "bytes": 4,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x37958",
+      "end": "0x37960",
+      "bytes": 8,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x4580c",
+      "end": "0x45810",
+      "bytes": 4,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x4fe3c",
+      "end": "0x4fe40",
+      "bytes": 4,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x4fe74",
+      "end": "0x4fe80",
+      "bytes": 12,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x4fee4",
+      "end": "0x4fef0",
+      "bytes": 12,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x4ff24",
+      "end": "0x4ff30",
+      "bytes": 12,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x5398c",
+      "end": "0x53990",
+      "bytes": 4,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x60508",
+      "end": "0x60510",
+      "bytes": 8,
+      "unique_words": [
+        "00000000"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "status": "proposed-exact-hash-bound-mapper-interface-review",
+  "full_rom_acceptance": false,
+  "runtime_verified": false,
+  "abi": "arm32",
+  "patched_system_libui_sha256": "e763c2271067df3894f8c884dc79a4b093812f223f8c4a643c55d5a4215623c9",
+  "mapper_object": {
+    "allocation_bytes": 8,
+    "pointer_field": {
+      "offset": 0,
+      "bytes": 4
+    },
+    "HAL_version": {
+      "offset": 4,
+      "bytes": 4
+    },
+    "constructor_address": "0x38348",
+    "constructor_returns_original_this": "0x383ee write version+4;0x383f0 r0=r4;0x383f2 return",
+    "singleton_sizes": {
+      "sLock": 4,
+      "sInstance": 4
+    }
+  },
+  "decoding": {
+    "source": "Actual dynsym and bounded decompression of embedded .gnu_debugdata mini-ELF",
+    "Thumb": "Thumbv8a,cortex-a53 per exact odd-entry function symbols",
+    "PLT": "Separately interpreted ARM ADD-PC/ADD/LOAD-PC entries against actual ELF JUMP_SLOT relocations",
+    "literal_pools": "Exact PC-relative loads; all lexical unknowns match referenced four-byte literal ranges",
+    "padding": "Only uncovered functionextent gaps are D4D4 two-byte linker padding",
+    "jump_tables": "Bounded comparisons and rawtable bytes enumerated; no target enters tabledata"
+  },
+  "interface_symbols": [
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+  ],
+  "limitations": [
+    "Only affected mapper receiver slice for exact filehash; no wholecaller/ROM acceptance",
+    "No runtime/device evidence",
+    "Fresh final consumer/providerhash and namespace/dependencyclosure must still pass",
+    "SystemARM32 gralloctypes providerbinding is independently unverified; no inferred codec==system identity",
+    "Other GraphicBuffer/ANativeWindow layout or nativecallers remain independent requirements"
+  ],
+  "consumer": {
+    "context": "system",
+    "file": "/system/lib/libnativewindow.so",
+    "sha256": "ad5d5182265cf2764157fb90c99334700b54be368617c22c9cb4f3a82bfaee86",
+    "bytes": 22916
+  },
+  "affected_receiver_paths": [
+    {
+      "function": "AHardwareBuffer_setDataSpace",
+      "entry": "0x4960",
+      "bytes": 148,
+      "sLock_PC_load": [
+        "0x496c",
+        "0x496e",
+        "0x49ec->0x6d98"
+      ],
+      "sInstance_PC_load": [
+        "0x4978",
+        "0x497a",
+        "0x49f0->0x6d9c"
+      ],
+      "instance_load": "0x497e r7=[r4]",
+      "existing_instance_branch": "0x4980->0x4990",
+      "allocation8": "0x4982/0x4984->0x5900",
+      "constructor": "0x498a->0x5b60",
+      "owned_global_store": "0x498e [r4]=r0(this)",
+      "direct_setDataspace": "0x4998 r0=r7;0x4996 r1=nativehandle;0x499a r2=dataspace32;0x499c->0x5b80",
+      "receiver_lifetime_end": "After directcall receiver r7 notused; callee-savedr7 restored by returns",
+      "status_table": "0x49a8 TBB39entries,targets49d4/49dc/49e4, no mapperreceiverin table"
+    }
+  ],
+  "no_mapper_receiver_escape": true,
+  "changed_lock_virtual_call": false,
+  "setDataspace_signature": {
+    "this": "r0",
+    "handle_pointer": "r1",
+    "32bit_dataspace_enum": "r2",
+    "return": "32bit r0",
+    "forwarding_wrapper": "all4prior/latest/system-codec8byteSHAa6457d0468c200b9579aa038f838a92c190e6dc85d0c0e2ef40a5568592d4605",
+    "patched_vtable_index": 33,
+    "address_point_offset": 124,
+    "Gralloc2_3": "Same localThumb1e4d7 unsupportedreturn-38; statusconversion callerretained",
+    "Gralloc4_5": "Same matching signature selected atindex33; no outputstructlayout crosses thisinterface"
+  },
+  "evidence": [
+    "nativewindow-arm32-functions.json",
+    "nativewindow-arm32-PC-reference-inventory.json",
+    "nativewindow-arm32-ARM-PLT.json",
+    "nativewindow-arm32-decode-inventory.json",
+    "nativewindow-arm32-bounded-tables.json",
+    "nativewindow-arm32-function-4960.asm",
+    "arm32-dataspace-method-comparison.json",
+    "patched-arm32-methods.json",
+    "arm32-graphicbuffer-field-patched-comparison.json",
+    "prior-arm32-2e23c-graphicbuffer.asm",
+    "latest-arm32-2af8c-graphicbuffer.asm",
+    "prior-arm32-2e82c-graphicbuffer.asm",
+    "latest-arm32-2b57c-graphicbuffer.asm",
+    "patched-donor-plane-slots.json",
+    "patched-arm32-39050-mapper.asm"
+  ],
+  "native_handle_field_proof": {
+    "scope": "Only touched native-handle field at original GraphicBuffer this+0x44; not general object layout acceptance",
+    "consumer_load": "0x4996 ldr r1,[r5,#0x44]; r5 is identity fromAHardwareBuffer result",
+    "fromAHardwareBuffer": {
+      "prior": [
+        "0x2e234",
+        "0x2e236"
+      ],
+      "latest": [
+        "0x2af84",
+        "0x2af86"
+      ],
+      "instruction": "bx lr; r0 unchanged; exact 2-byte function"
+    },
+    "default_constructor": {
+      "prior": "0x2e242 r9=r0;0x2e398 r0=0;0x2e3a6 strd r0,r0,[r9,#68]",
+      "latest": "0x2af92 r9=r0;0x2b0e8 r0=0;0x2b0f6 strd r0,r0,[r9,#68]"
+    },
+    "initWithHandle": {
+      "prior": "0x2e832 r4=r0;0x2e838 r5=r1;0x2e8e2 str r5,[r4,#0x44]",
+      "latest": "0x2b582 r4=r0;0x2b588 r5=r1;0x2b632 str r5,[r4,#0x44]",
+      "import_behavior": "r5 is input or imported native handle; offset unchanged",
+      "failure_clearing": "prior0x2e8aa/latest0x2b5fa strd r11,r11,[r4,#68]"
+    },
+    "actual_patched_donor": "All four touched methods byte-identical to pinned prior-system ARM32; checked actual patched donor file, not assumed patch scope",
+    "hash_evidence": "arm32-graphicbuffer-field-patched-comparison.json"
+  }
+}

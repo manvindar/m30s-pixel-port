@@ -1,0 +1,219 @@
+{
+  "schema": 1,
+  "status": "proposed-exact-hash-bound-mapper-interface-review",
+  "full_rom_acceptance": false,
+  "runtime_verified": false,
+  "abi": "arm64",
+  "consumer": {
+    "context": "system",
+    "file": "/system/lib64/libgui.so",
+    "sha256": "7d9313373070758af041adac3b9c34202dfd97350f1265400637c0623190e699",
+    "bytes": 2244744
+  },
+  "patched_system_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+  "latest_system_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+  "interface_symbols": [
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+  ],
+  "decoding": {
+    "text_bytes": 1217796,
+    "exact_functions": 4321,
+    "mini_debug_bytes": 318040,
+    "unknown_instructions": 0,
+    "extent_gaps": "7 exact gaps, every raw word00000000",
+    "mapper_GOT_loads": 9,
+    "constructor_calls": 3,
+    "setter_calls": 12,
+    "helper": "Actual mini-debug getInstance1551f8,size96, one direct caller1550b8, no direct ADR address materialization/relocation pointer"
+  },
+  "affected_receiver_paths": [
+    {
+      "name": "local Singleton getInstance -> Surface::applyGrallocMetadataLocked",
+      "helper_entry": "0x1551f8",
+      "caller_entry": "0x155070",
+      "load": "0x15521c x19=[sInstance]",
+      "allocation16": "0x155224 w0=16;155228 new;15522c x19=x0",
+      "ctor": "0x155230",
+      "owned_singleton_store": "0x155234 [x20]=x19",
+      "helper_return": "0x155244 x0=x19;155254 ret",
+      "closed_local_return_use": "Only actual local caller1550b8;1550c4 x20=x0; receiver only used as x0 in four setters; remains dead until restore155150",
+      "setter_calls": {
+        "Dataspace": "0x1550cc",
+        "Smpte2086": "0x1550fc",
+        "Cta861_3": "0x15512c",
+        "Smpte2094_40": "0x1551a0"
+      }
+    },
+    {
+      "name": "Surface::queueBufferImpl inlinedSingleton",
+      "entry": "0x16ac7c",
+      "load": "0x16cc34 x23=[sInstance]",
+      "allocation16": "0x16cf74 w0=16;16cf78 new;16cf7c x23=x0",
+      "ctor": "0x16cf80",
+      "owned_singleton_store": "0x16cf84 [x19]=x23",
+      "setter_calls": {
+        "Dataspace": "0x16cc58",
+        "Smpte2086": "0x16cfcc",
+        "Cta861_3": "0x16cf18",
+        "Smpte2094_40": "0x16ceb0"
+      },
+      "receiver_end": "Metadata flags lead16cc70 then16b17c; conservative conditional CFG traces204states until x23 overwritten/restored without fieldload/store/indirect/helper argument"
+    },
+    {
+      "name": "Surface::hook_queueBuffer inlinedSingleton",
+      "entry": "0x17bdc0",
+      "load": "0x17c464 x20=[sInstance]",
+      "allocation16": "0x17ce48 w0=16;17ce4c new;17ce50 x20=x0",
+      "ctor": "0x17ce54",
+      "owned_singleton_store": "0x17ce58 [x21]=x20",
+      "setter_calls": {
+        "Dataspace": "0x17c488",
+        "Smpte2086": "0x17cf50",
+        "Cta861_3": "0x17ce9c",
+        "Smpte2094_40": "0x17c4cc"
+      },
+      "receiver_end": "All metadata exits17c4d8; conservative conditional CFG193states until x20 overwritten/restored, no fieldload/store/indirect/helper argument"
+    }
+  ],
+  "mapper_object": {
+    "allocation_bytes": 16,
+    "pointer_offset": 0,
+    "HAL_version_offset": 8,
+    "HAL_version_bytes": 4,
+    "actual_patched_constructor": "357b8 originalthis=x19;357bc/357ec pointer0;3580c version32+8. Constructor writes fit16; detailed retained virtual-camera-patched-357a4-mapper.asm",
+    "consumer_inline_getMapperVersion": false,
+    "consumer_inline_getMapper": false,
+    "consumer_receiver_field_accesses": []
+  },
+  "changed_Gralloc_slot10_called": false,
+  "vtable_setters": {
+    "Dataspace": {
+      "table_index": 33,
+      "address_point_offset": 248
+    },
+    "Smpte2086": {
+      "table_index": 36,
+      "address_point_offset": 272
+    },
+    "Cta861_3": {
+      "table_index": 38,
+      "address_point_offset": 288
+    },
+    "Smpte2094_40": {
+      "table_index": 40,
+      "address_point_offset": 304
+    },
+    "actual_Gralloc4_5": "Both actualpatched/latest relocation-backed slots carry same matching named protocols",
+    "actual_Gralloc2_3": "All four setter slots resolve483fc returns-38; status ignored by original caller. HDR/dataspace metadata unsupported remains a functional limitation, not hidden acceptance."
+  },
+  "wrapper_comparison": [
+    {
+      "name": "_ZN7android19GraphicBufferMapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+      "patched_address": "0x61bcc",
+      "latest_address": "0x5e054",
+      "patched_sha256": "22feafa950a7865a8198694b2df7a49e87ecb255ed5e9b1d6db2df9989f6fc59",
+      "latest_sha256": "22feafa950a7865a8198694b2df7a49e87ecb255ed5e9b1d6db2df9989f6fc59",
+      "whole_function_bytes_equal": true,
+      "note": "HDR structure/calling-convention proof uses concrete reads below; address-relative branch/copy changes are not asserted equal"
+    },
+    {
+      "name": "_ZN7android19GraphicBufferMapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+      "patched_address": "0x3b6a4",
+      "latest_address": "0x5e080",
+      "patched_sha256": "cd74455fa5c95642ef4758e2c8dc1d994683a7df8c5f758627884f1eb366f0fc",
+      "latest_sha256": "79e49d09f89935d93784cff4ed8175592e780f9ad364edff75b00dbc35fd14c3",
+      "whole_function_bytes_equal": false,
+      "note": "HDR structure/calling-convention proof uses concrete reads below; address-relative branch/copy changes are not asserted equal"
+    },
+    {
+      "name": "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+      "patched_address": "0x61b10",
+      "latest_address": "0x5df98",
+      "patched_sha256": "ead0965d40eef12aeea1deb8faca042439033d15c44a2240467507a8d41b829a",
+      "latest_sha256": "ead0965d40eef12aeea1deb8faca042439033d15c44a2240467507a8d41b829a",
+      "whole_function_bytes_equal": true,
+      "note": "HDR structure/calling-convention proof uses concrete reads below; address-relative branch/copy changes are not asserted equal"
+    },
+    {
+      "name": "_ZN7android19GraphicBufferMapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+      "patched_address": "0x61b4c",
+      "latest_address": "0x5dfd4",
+      "patched_sha256": "91b0bf6ebd3ab1f68d980a2431cc3feea2e1790f628855767c3937e76026cc3e",
+      "latest_sha256": "6c4c9d639436262450cfc6040d4d98375ba21020611f7cb384a0d1be80766c22",
+      "whole_function_bytes_equal": false,
+      "note": "HDR structure/calling-convention proof uses concrete reads below; address-relative branch/copy changes are not asserted equal"
+    }
+  ],
+  "touched_native_handle_field": {
+    "offset": 112,
+    "consumer_reads": "All12setter arguments load nativehandle at GraphicBuffer+0x70",
+    "patched_init": "39e1c x20=inputhandle;39e20 x19=originalthis;39eb8 str x20,[x19,#0x70];39ed0 clears",
+    "latest_init": "444cc x20=inputhandle;444d0 x19=originalthis;44578 str x20,[x19,#0x70];445b8 clears",
+    "patched_default_ctor": "389a0 x19=originalthis;38b64 stp xzr,xzr,[x19,#0x70]",
+    "latest_default_ctor": "44934 x19=originalthis;44ab0 stp xzr,xzr,[x19,#0x70]",
+    "scope": "Only touched nativehandle field, not general GraphicBuffer object layout"
+  },
+  "by_value_HDR_protocol": {
+    "Smpte2086": {
+      "payload_bytes": 40,
+      "optional_flag_offset": 40,
+      "total_object_bytes": 44,
+      "argument": "x2 points caller by-value stackcopy; wrapper copies0..43",
+      "consumer_copy": "all3paths: twoq-registers32bytes+d-register8bytes;flag+40;falsepathwritesflag0",
+      "patched_wrapper": "61b6c ldpq0/q1[x2];61b70 ldurq2[x2,#28]; copiesexact0..43;dispatch+0x110",
+      "latest_wrapper": "5dff4/5dff8 identical reads and dispatch+0x110",
+      "actual_Gralloc5": "patched42f20/latest4a2cc reads flag+40;payload scalar reads0,4,...36",
+      "bound_Gralloc4_encoder": "e317b6 encodeSmpte2086de34 readsflag+40;encodeHelperaa50 accesses ten4bytefloating fields at0..36"
+    },
+    "Cta861_3": {
+      "payload_bytes": 8,
+      "optional_flag_offset": 8,
+      "memory_object_bytes": 12,
+      "argument": "x2 payloadtwofloatbits,w3flag; both wrappers movw3,w3;dispatch+0x120",
+      "consumer": "all3paths load8bytes #0xd4;deriveflag from bit1;selectzero payloadwhenempty",
+      "actual_Gralloc4": "patched4e194/4e19c storesx2atstack+8/w3at+16; latest5216c/52174 same",
+      "bound_encoder": "e317b6 encodeCta861_3e0fc readsflag+8, two4bytepayloadfloatreads0/4"
+    },
+    "Smpte2094_40": {
+      "vector_bytes": 24,
+      "begin_offset": 0,
+      "end_offset": 8,
+      "capacity_end_offset": 16,
+      "optional_flag_offset": 24,
+      "aligned_object_bytes": 32,
+      "argument": "x2 pointer byvalue stackcopy; bytes vector dataopaque",
+      "consumer_copy": "miniDebugvectorcopy12f1cc,size112 initializes3pointers0/8/16,copies end-begin bytes; all3caller optionalflags+24",
+      "patched_wrapper": "3b6c8 readsflag24;helper3b764 readsbegin/end0/8; initializes3ptr0/8/16; copies exact bytecount; stackflag+24;dispatch+0x130",
+      "latest_wrapper": "5e0a4 readsflag24;5e128 readsbegin/end0/8;allocates/copiesexact count;stack3ptr0/8/16;flag24;dispatch+0x130",
+      "actual_Gralloc5": "patched3c944/latest3f228 readsflag24; vector begin/end0/8",
+      "bound_Gralloc4_encoder": "e317b6 encodeSmpte2094_40e3f8 readsflag24 and uses vector protocol"
+    }
+  },
+  "structured_return_values": "None in affectedmapperinterface. Four methods return int32w0, ignored consistently by retainedcaller. No returned vector/PlaneLayout accepted.",
+  "closed_mapper_receiver_paths": true,
+  "limitations": [
+    "Hash-bound affected mapper slice only; no whole libgui/GraphicBuffer/Surface/ANativeWindow ABI approval",
+    "Fresh final dependency/linker binding must independently retain exact checked providers/encoders",
+    "No runtime performance/HDR/virtual-camera/device evidence",
+    "Gralloc2/3 metadata setters unsupported(-38), original callers ignorestatus; do not claim preserved HDR functionality",
+    "Register CFG trace is supporting evidence; exact local singleton returns and byvalue datahelpers separately reviewed"
+  ],
+  "evidence": [
+    "libgui-arm64-functions.json",
+    "libgui-arm64-mini-debug.elf",
+    "libgui-arm64-reference-inventory.json",
+    "libgui-arm64-mapper-relocations.json",
+    "libgui-arm64-receiver-trace.json",
+    "libgui_receiver_trace.py",
+    "libgui-arm64-function-155070.asm",
+    "libgui-arm64-function-1551f8.asm",
+    "libgui-arm64-function-16ac7c.asm",
+    "libgui-arm64-function-17bdc0.asm",
+    "libgui-arm64-provider-methods.json",
+    "libgui-arm64-graphicbuffer-field.json",
+    "libgui-vector-copy-helper.asm",
+    "libgui-patched-3b764-vector-copy-helper.asm",
+    "libgui-hdr-encoder-methods.json"
+  ]
+}
