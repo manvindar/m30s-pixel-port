@@ -1,0 +1,18 @@
+{
+  "_ZN7android19GraphicBufferMapperC1Ev": {
+    "name": "_ZN7android19GraphicBufferMapperC1Ev",
+    "value": 230217,
+    "size": 196,
+    "defined": true,
+    "type": 2,
+    "evidence": "patched-arm32-38348-mapper.asm"
+  },
+  "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE": {
+    "name": "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+    "value": 233553,
+    "size": 8,
+    "defined": true,
+    "type": 2,
+    "evidence": "patched-arm32-39050-mapper.asm"
+  }
+}

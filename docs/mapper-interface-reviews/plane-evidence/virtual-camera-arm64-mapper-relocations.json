@@ -1,0 +1,47 @@
+{
+  "0x9a1f8": {
+    "symbol": "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+    "addend": 0,
+    "relocation_type": 1025
+  },
+  "0x9a200": {
+    "symbol": "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE",
+    "addend": 0,
+    "relocation_type": 1025
+  },
+  "0x9a8d0": {
+    "symbol": "_ZN7android19GraphicBufferMapper22importBufferNoValidateEPK13native_handlePS3_",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x9a8f8": {
+    "symbol": "_ZN7android19GraphicBufferMapperC1Ev",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x9a910": {
+    "symbol": "_ZN7android19GraphicBufferMapper8getWidthEPK13native_handlePm",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x9a918": {
+    "symbol": "_ZN7android19GraphicBufferMapper9getHeightEPK13native_handlePm",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x9a920": {
+    "symbol": "_ZN7android19GraphicBufferMapper8getUsageEPK13native_handlePm",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x9a928": {
+    "symbol": "_ZN7android19GraphicBufferMapper13getLayerCountEPK13native_handlePm",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x9a930": {
+    "symbol": "_ZN7android19GraphicBufferMapper23getPixelFormatRequestedEPK13native_handlePNS_8hardware8graphics6common4V1_211PixelFormatE",
+    "addend": 0,
+    "relocation_type": 1026
+  }
+}

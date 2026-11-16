@@ -1,0 +1,6 @@
+{
+  "direct_adr_and_literal_targets": [],
+  "adrp_mapper_page_count": 370,
+  "text_bytes_checked": 334364,
+  "method": "Decoded every4-byte ARM64 text word for ADR/ADRP/LDR-literal PCrelative addressing"
+}

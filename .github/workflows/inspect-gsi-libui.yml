@@ -36,7 +36,9 @@ jobs:
               Path(target + '-extract.txt').write_text(result.stdout + result.stderr)
           PYEXTRACT
           sha256sum libui-evidence/*.so > libui-evidence/SHA256SUMS
-          for f in libui-evidence/*.so; do readelf -Ws "$f" > "$f-symbols.txt"; done
+          for f in libui-evidence/*.so; do readelf -Ws "$f" > "$f-symbols.txt"; readelf -d "$f" > "$f-dynamic.txt"; done
+      - name: Compare prior compatible libui and legacy mapper dependencies
+        run: python3 tools/pixel/inspect_legacy_libui.py
       - uses: actions/upload-artifact@v6
         if: always()
         with:

@@ -7,7 +7,7 @@ import sys
 import tempfile
 import zipfile
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'graphics'))
-from common import digest, dump, elf, run, unpack_apex
+from common import apex_manifest, digest, dump, elf, run, unpack_apex
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'downloads'))
 from verified_input import obtain
 
@@ -17,7 +17,7 @@ def main():
     archive = Path('download-cache/graphics/gsi.zip')
     obtain(pins['url'], pins['sha256'], archive)
     out = Path('sync-version-evidence'); out.mkdir(exist_ok=False)
-    records = []
+    records = []; absent = []
     with tempfile.TemporaryDirectory() as scratch:
         tmp = Path(scratch); image = tmp / 'system.img'
         with zipfile.ZipFile(archive) as z:
@@ -26,10 +26,19 @@ def main():
             with z.open(names[0]) as src, image.open('wb') as dst: shutil.copyfileobj(src, dst)
         if image.open('rb').read(4) == bytes.fromhex('3aff26ed'): raise RuntimeError('Unexpected sparse donor')
         package = dump(image, '/system/apex/com.android.media.swcodec.capex', tmp / 'codec.capex')
-        _, payload, _ = unpack_apex(package, tmp / 'codec')
+        _, payload, manifest_file = unpack_apex(package, tmp / 'codec')
+        manifest = apex_manifest(manifest_file)
         for context, fs, prefix in [('system', image, '/system'), ('codec', payload, '')]:
             for directory in ('lib64', 'lib'):
-                target = dump(fs, prefix + '/' + directory + '/libsync.so', out / context / directory / 'libsync.so')
+                remote = prefix + '/' + directory + '/libsync.so'
+                stat = run('debugfs', '-R', 'stat ' + remote, fs)
+                if 'Inode:' not in stat:
+                    if context != 'codec' or 'libsync.so' not in manifest['require']:
+                        raise RuntimeError('Unexpected provider absence: ' + remote)
+                    absent.append({'context': context, 'path': remote, 'observation': stat,
+                                   'meaning': 'No local codec provider; manifest explicitly requires external libsync.so'})
+                    continue
+                target = dump(fs, remote, out / context / directory / 'libsync.so')
                 metadata = elf(target)
                 if metadata is None: raise RuntimeError('Invalid donor libsync ELF')
                 (target.parent / 'symbols.txt').write_text(metadata['symbol_table_text'])
@@ -37,7 +46,7 @@ def main():
                 records.append({'context': context, 'abi': metadata['abi'], 'file': str(target.relative_to(out)),
                                 'sha256': digest(target), 'bytes': target.stat().st_size,
                                 'exports': sorted(metadata['exports']), 'imports': sorted(metadata['imports']), 'needed': metadata['needed']})
-    (out / 'receipt.json').write_text(json.dumps({'input': pins, 'libraries': records,
+    (out / 'receipt.json').write_text(json.dumps({'input': pins, 'libraries': records, 'absent_local_providers': absent, 'codec_manifest': manifest,
         'purpose': 'Measure exact prior provider versions; no replacement or namespace/version exemption accepted'}, indent=2) + '\n')
 
 

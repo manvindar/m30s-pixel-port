@@ -32,11 +32,14 @@ def main():
     for abi, target, directory in [('arm64', 'aarch64-linux-android26', 'lib64'),
                                    ('arm32', 'armv7a-linux-androideabi26', 'lib')]:
         output = out / directory / 'libsync.so'; output.parent.mkdir()
-        command = [str(tool / (target + '-clang')), '-shared', '-fPIC', '-O2', '-Wall', '-Werror',
+        command = [str(tool / (target + '-clang')), '-shared', '-fPIC', '-O2', '-Werror',
                    '-I' + str(src), str(src / 'sync.c'), '-Wl,--version-script=' + str(src / 'libsync.map.txt'),
-                   '-Wl,-soname,libsync.so', '-Wl,--no-undefined', '-Wl,--build-id=sha1', '-o', str(output)]
+                   '-Wl,-soname,libsync.so', '-Wl,--as-needed', '-Wl,--no-undefined', '-Wl,--build-id=sha1', '-o', str(output)]
         run(*command)
         # common.elf uses readelf from PATH; workflow installs the matching LLVM tools.
+        pin = pins.get('outputs', {}).get(abi)
+        if pin and (output.stat().st_size != pin['bytes'] or hashlib.sha256(output.read_bytes()).hexdigest() != pin['sha256']):
+            raise RuntimeError('Measured provider output pin mismatch: ' + abi)
         metadata = elf(output)
         expected = {name + '@LIBSYNC' for name in REQUIRED}
         if metadata['abi'] != abi or not expected.issubset(metadata['exports']):

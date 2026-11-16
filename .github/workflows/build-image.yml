@@ -6,11 +6,15 @@ on:
     inputs:
       tag:
         description: Release tag when publishing
-        default: v0.6-pixel-perf
+        default: v0.7-a17-qpr3-beta4
       publish:
         description: Publish public flashable images as a prerelease
         type: boolean
         default: true
+      experimental_dirty_flash:
+        description: Defer only unknown graphics caller review for an unpublished system-only device experiment
+        type: boolean
+        default: false
       kernel_tag:
         description: Reviewed dated performance kernel; older baseline kernels remain available
         default: kernel-4.14.113-perf-20261110-profile1
@@ -24,16 +28,20 @@ permissions:
 
 env:
   INPUT_REPO: manvindar/m30s-pixel-port
-  GSI_URL: https://dl.google.com/developers/android/cinnamonbun/images/gsi/aosp_arm64-exp-DP11.261016.003-16708287-d735a3b1.zip
-  GSI_ZIP_SHA256: d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436
+  ANDROID_BUILD: DP11.261030.003
+  ANDROID_CHANNEL: Android 17 QPR3 Beta 4
+  ANDROID_RELEASE_DATE: '2026-11-12'
+  GSI_URL: https://dl.google.com/developers/android/cinnamonbun/images/gsi/aosp_arm64-exp-DP11.261030.003-16847878-1cb1c525.zip
+  GSI_ZIP_SHA256: 1cb1c5254299581246ba626faccd41566df25382cd0415d8b82bf2e2d80cbf6c
   DONOR_URL: https://sourceforge.net/projects/misterztr-gsi/files/LineageOS/Android%2016/LineageOS-23.2-20260524-GAPPS-EXT4-GSI.7z/download
   DONOR_7Z_SHA256: 22b3c069445cc3d54819361a1636f7b27ff455dc547f300b868cecddb1b2e22d
   DONOR_IMG: LineageOS-23.2-20260524-GAPPS-EXT4-GSI.img
   CRDROID_URL: https://github.com/naz664/crDroid_gsi/releases/download/v2025.03.08/crDroid-10.13-arm64_bgN-slim-Unofficial.img.xz
   CRDROID_SHA256: 0a403c4de120adbb15e7219f7c2acc59337e6d7fc995eaf4ace7e9267e25a0dc
-  FACTORY_URL: https://dl.google.com/developers/android/cinnamonbun/images/factory/tegu_beta-dp11.261016.003-factory-50ec463b.zip
-  FACTORY_SHA256: 50ec463b0fd404cbd98b9f201b3694246d4aa5f86d7e93719da6e0288de6c703
+  FACTORY_URL: https://dl.google.com/developers/android/cinnamonbun/images/factory/tegu_beta-dp11.261030.003-factory-639e8f85.zip
+  FACTORY_SHA256: 639e8f85c463121e59292f4832e26837d42f1c97d0370944f4c680651e8ae452
   GAPPS_TAG: MindTheGapps-16.0.0-arm64-20261023_034858
+  GAPPS_ZIP_SHA256: 6929593937cd85541228e4e5db9cbb5455338bf33c75eabf610de632ac155810
   TABLET_REF: 44cde4e25a160d95900ad12e3415b5527792be06   # tb-x606v-android17 branch exp/pixel-tablet (last pushed commit): patch library (tools/) and the public AOSP platform test keys
   VENDOR_MP2_SHA256: 285a28cc6785a25eb208d98ed9d387b2f345597c46e92403f42cbdf25dc113f9
   BOOT_SHA256: d788f41397481fd7990ece136460edc1b62bac35c73bc4eda1593bdb50704c65
@@ -49,6 +57,10 @@ jobs:
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v7
+
+      - name: Reject publishing experimental dirty-flash candidates
+        if: ${{ inputs.experimental_dirty_flash && inputs.publish }}
+        run: echo "Experimental dirty-flash candidates must use publish=false" >&2; exit 1
 
       - name: Patch library (tb-x606v-android17)
         uses: actions/checkout@v7
@@ -74,6 +86,16 @@ jobs:
 
       - uses: android-actions/setup-android@v4
 
+      - name: Restore pinned Android SDK packages
+        id: cache_sdk
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/build-tools/35.0.0
+            ${{ env.ANDROID_HOME }}/platforms/android-34
+            ${{ env.ANDROID_HOME }}/ndk/${{ env.NDK_VERSION }}
+          key: a17-sdk-v1-${{ runner.os }}-bt35.0.0-api34-ndk${{ env.NDK_VERSION }}
+
       - name: Install tools
         run: |
           sudo apt-get update
@@ -83,6 +105,32 @@ jobs:
           debugfs -V; fsck.erofs --help 2>&1 | head -1
           echo "BT=$ANDROID_HOME/build-tools/35.0.0" >> "$GITHUB_ENV"
           echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Save pinned Android SDK packages
+        if: steps.cache_sdk.outputs.cache-hit != 'true'
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/build-tools/35.0.0
+            ${{ env.ANDROID_HOME }}/platforms/android-34
+            ${{ env.ANDROID_HOME }}/ndk/${{ env.NDK_VERSION }}
+          key: a17-sdk-v1-${{ runner.os }}-bt35.0.0-api34-ndk${{ env.NDK_VERSION }}
+
+      - name: M30s ROM Tuner regressions
+        run: python3 -m unittest discover -s tools/tuner/tests -v
+
+      - name: Samsung battery percentage regressions
+        run: |
+          python3 -m unittest discover -s tools/health -v
+          health_test_root=$(mktemp -d)
+          python3 tools/health/stage_m30s.py tablet/tools/health "$health_test_root/fixed"
+          javac -d "$health_test_root/upstream-classes" tablet/tools/health/src/HealthCore.java tools/health/M30sCoreTest.java
+          java -cp "$health_test_root/upstream-classes" shim.M30sCoreTest upstream
+          javac -d "$health_test_root/fixed-classes" "$health_test_root/fixed/src/HealthCore.java" tools/health/M30sCoreTest.java
+          java -cp "$health_test_root/fixed-classes" shim.M30sCoreTest
+
+      - name: Host system-write recovery regressions
+        run: python3 -m unittest discover -s tools/flash -v
 
       - name: Public AOSP SafetyCenter test identity and host regressions
         run: |
@@ -101,40 +149,99 @@ jobs:
           echo "SAFETY_KEYS=$PWD/safety-keys" >> "$GITHUB_ENV"
           export PLATFORM_KEYS="$PWD/tablet/tools/pixel" SAFETY_KEYS="$PWD/safety-keys" PLATFORM_JAR="$ANDROID_HOME/platforms/android-34/android.jar"
           export STARTUP_TEST_TABLET_REPO="$PWD/tablet"
+          python3 -m unittest discover -s tools/downloads -p test_verified_input.py -v
           python3 tools/img/test_startup_scripts.py
           python3 tools/pixel/test_compat_overlays.py
           python3 tools/img/test_readback_manifest.py
+
+      - name: Restore audited device input cache
+        id: cache_device
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            vendor-mp2.img
+            boot.img
+            vbmeta-disabled.img
+          key: a17-input-v1-device-${{ env.VENDOR_MP2_SHA256 }}-${{ env.BOOT_SHA256 }}-${{ env.VBMETA_SHA256 }}
 
       - name: Audited generic build inputs
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download build-inputs-a17 -R "$INPUT_REPO" -p vendor-mp2.img -p boot.img -p vbmeta-disabled.img
+          gh release download build-inputs-a17 --skip-existing -R "$INPUT_REPO" -p vendor-mp2.img -p boot.img -p vbmeta-disabled.img
           echo "$VENDOR_MP2_SHA256  vendor-mp2.img" | sha256sum -c -
           echo "$BOOT_SHA256  boot.img" | sha256sum -c -
           echo "$VBMETA_SHA256  vbmeta-disabled.img" | sha256sum -c -
 
+      - name: Save audited device input cache
+        if: steps.cache_device.outputs.cache-hit != 'true'
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            vendor-mp2.img
+            boot.img
+            vbmeta-disabled.img
+          key: a17-input-v1-device-${{ env.VENDOR_MP2_SHA256 }}-${{ env.BOOT_SHA256 }}-${{ env.VBMETA_SHA256 }}
+
+      - name: Restore verified gsi archive cache
+        id: cache_gsi
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/gsi/gsi.zip
+          key: a17-input-v1-gsi-${{ env.GSI_ZIP_SHA256 }}
+
       - name: Google's Android 17 GSI
         run: |
-          curl -L --fail --retry 5 --retry-delay 10 -o gsi.zip "$GSI_URL"
-          echo "$GSI_ZIP_SHA256  gsi.zip" | sha256sum -c -
-          unzip -o -q gsi.zip system.img && rm gsi.zip
+          python3 tools/downloads/verified_input.py "$GSI_URL" "$GSI_ZIP_SHA256" download-cache/gsi/gsi.zip
+          unzip -o -q download-cache/gsi/gsi.zip system.img
           ls -la system.img
+
+      - name: Save verified gsi archive cache
+        if: steps.cache_gsi.outputs.cache-hit != 'true'
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/gsi/gsi.zip
+          key: a17-input-v1-gsi-${{ env.GSI_ZIP_SHA256 }}
+
+      - name: Release temporary runner gsi archive after cache save
+        run: rm -- download-cache/gsi/gsi.zip
+
+      - name: Restore verified audio archive cache
+        id: cache_audio
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/audio/donor.7z
+          key: a17-input-v1-audio-${{ env.DONOR_7Z_SHA256 }}
 
       - name: LineageOS 23.2 GSI (audio donor)
         run: |
-          curl -L --fail --retry 5 --retry-delay 10 -o donor.7z "$DONOR_URL"
-          echo "$DONOR_7Z_SHA256  donor.7z" | sha256sum -c -
-          7z x -y donor.7z "$DONOR_IMG" && rm donor.7z
+          python3 tools/downloads/verified_input.py "$DONOR_URL" "$DONOR_7Z_SHA256" download-cache/audio/donor.7z
+          7z x -y download-cache/audio/donor.7z "$DONOR_IMG"
           ls -la "$DONOR_IMG"
+
+      - name: Save verified audio archive cache
+        if: steps.cache_audio.outputs.cache-hit != 'true'
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/audio/donor.7z
+          key: a17-input-v1-audio-${{ env.DONOR_7Z_SHA256 }}
+
+      - name: Release temporary runner audio archive after cache save
+        run: rm -- download-cache/audio/donor.7z
+
+      - name: Restore verified a14 archive cache
+        id: cache_a14
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/a14/crdroid.img.xz
+          key: a17-input-v1-a14-${{ env.CRDROID_SHA256 }}
 
       - name: Android 14 first stage bundle and VNDK v30 (crDroid 10.13 GSI)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          curl -L --fail --retry 5 --retry-delay 10 -o crdroid.img.xz "$CRDROID_URL"
-          echo "$CRDROID_SHA256  crdroid.img.xz" | sha256sum -c -
-          xz -dc crdroid.img.xz > crdroid.img && rm crdroid.img.xz
+          python3 tools/downloads/verified_input.py "$CRDROID_URL" "$CRDROID_SHA256" download-cache/a14/crdroid.img.xz
+          xz -dc download-cache/a14/crdroid.img.xz > crdroid.img
           mkdir vndk30
           debugfs -R 'dump /system/system_ext/apex/com.android.vndk.v30.apex vndk30/com.android.vndk.v30.apex' crdroid.img
           debugfs -R 'dump /system/etc/selinux/mapping/30.0.cil vndk30/30.0.cil' crdroid.img
@@ -143,23 +250,106 @@ jobs:
           python3 tools/img/make_a14fs.py crdroid.img a14fs tablet/tools
           rm crdroid.img; df -h /
 
+      - name: Save verified a14 archive cache
+        if: steps.cache_a14.outputs.cache-hit != 'true'
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/a14/crdroid.img.xz
+          key: a17-input-v1-a14-${{ env.CRDROID_SHA256 }}
+
+      - name: Release temporary runner a14 archive after cache save
+        run: rm -- download-cache/a14/crdroid.img.xz
+
+      - name: Browser packaging regression checks
+        run: python3 -m unittest discover -s tools/pixel -p test_browser_packages.py -v
+
+      - name: Restore verified pixel archive cache
+        id: cache_pixel
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/pixel/factory.zip
+          key: a17-input-v1-pixel-${{ env.FACTORY_SHA256 }}
+
       - name: Pixel 9a pieces from Google's factory image
         run: |
-          curl -L --fail --retry 5 --retry-delay 10 -o factory.zip "$FACTORY_URL"
-          echo "$FACTORY_SHA256  factory.zip" | sha256sum -c -
-          python3 tools/pixel/stage_pixel_phone.py factory.zip pixel_stage --keys tablet/tools/pixel --build-tools "$BT"
-          rm factory.zip; du -sh pixel_stage; df -h /
+          python3 tools/downloads/verified_input.py "$FACTORY_URL" "$FACTORY_SHA256" download-cache/pixel/factory.zip
+          python3 tools/pixel/stage_pixel_phone.py download-cache/pixel/factory.zip pixel_stage --keys tablet/tools/pixel --build-tools "$BT"
+          du -sh pixel_stage; df -h /
+
+      - name: Save verified pixel archive cache
+        if: steps.cache_pixel.outputs.cache-hit != 'true'
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/pixel/factory.zip
+          key: a17-input-v1-pixel-${{ env.FACTORY_SHA256 }}
+
+      - name: Release temporary runner pixel archive after cache save
+        run: rm -- download-cache/pixel/factory.zip
+
+      - name: Restore verified GApps download cache
+        id: cache_gapps
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: gapps/
+          key: a17-input-v2-gapps-${{ env.GAPPS_ZIP_SHA256 }}
 
       - name: MindTheGapps
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir gapps && cd gapps
-          gh release download "$GAPPS_TAG" -R MindTheGapps/16.0.0-arm64 -p '*.zip' -p '*.sha256sum'
+          mkdir -p gapps && cd gapps
+          gh release download "$GAPPS_TAG" --skip-existing -R MindTheGapps/16.0.0-arm64 -p '*.zip' -p '*.sha256sum'
           sha256sum -c *.sha256sum
+          echo "$GAPPS_ZIP_SHA256  ${GAPPS_TAG}.zip" | sha256sum -c -
+
+      - name: Save verified GApps download cache
+        if: steps.cache_gapps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: gapps/
+          key: a17-input-v2-gapps-${{ env.GAPPS_ZIP_SHA256 }}
 
       - name: Vendor image
         run: python3 tools/img/build_vendor_a17.py vendor-mp2.img vendor-a17.img tablet/tools/health/vintf_health_aidl.xml
+
+      - name: JNI-anchored budget watcher regressions
+        run: python3 -m unittest discover -s tools/libc -p test_budget_watchers.py -v
+
+      - name: Measured tethering and Bluetooth patch regressions
+        run: python3 -m unittest discover -s tools/bpf -p 'test_*.py' -v
+
+      - name: Legacy graphics fail-closed verification regressions
+        run: python3 -m unittest discover -s tools/graphics -p 'test_*.py' -v
+
+      - name: Restore pinned legacy graphics archive cache
+        id: cache_graphics
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/graphics/gsi.zip
+          key: a17-input-v1-graphics-d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436
+
+      - name: Pinned narrow Android 17 graphics compatibility donor
+        run: python3 tools/graphics/stage_legacy.py docs/A17-UPSTREAM.json legacy_graphics --archive-cache download-cache/graphics/gsi.zip
+
+      - name: Build pinned codec-local genuine LIBSYNC implementation
+        run: |
+          export PATH="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
+          python3 tools/graphics/build_sync_provider.py "$ANDROID_NDK_ROOT" legacy_graphics/sync-provider
+
+      - name: Save verified legacy graphics archive cache
+        if: steps.cache_graphics.outputs.cache-hit != 'true'
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: download-cache/graphics/gsi.zip
+          key: a17-input-v1-graphics-d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436
+
+      - name: Release temporary runner graphics archive after cache save
+        run: rm -- download-cache/graphics/gsi.zip
+
+      - name: Runner free-space gate before system and APEX generation
+        run: |
+          python3 tools/downloads/check_runner_space.py 24 runner-space-before-system.json
+          df -h /
 
       - name: System image
         env:
@@ -168,7 +358,7 @@ jobs:
           export A17_TOOLS="$PWD/tablet/tools"
           DEV=""; [ "$DEV_TOOLS" = true ] && DEV="--dev-tools"
           python3 tools/img/build_a17.py --gsi system.img --donor "$DONOR_IMG" --vndk-dir vndk30 --a14fs a14fs \
-            --pixel-phone pixel_stage --gapps gapps/*.zip $DEV --build-tools "$BT" --out system-a17-pixel.img
+            --pixel-phone pixel_stage --legacy-graphics legacy_graphics --gapps gapps/*.zip $DEV --build-tools "$BT" --out system-a17-pixel.img
           rm -rf system.img "$DONOR_IMG" pixel_stage; ls -la *.img; df -h /
 
       - name: Pinned reviewed kernel
@@ -225,6 +415,19 @@ jobs:
           [ "$(debugfs -R 'cat /system/etc/selinux/plat_sepolicy.cil' system-a17-pixel.img | grep -c m30s_allall)" = 0 ]
           python3 tools/img/verify_pixel_fixes.py system-a17-pixel.img "$BT" image-fixes-verification.json
 
+      - name: Runner free-space gate before final image inventory
+        run: python3 tools/downloads/check_runner_space.py 12 runner-space-before-inventory.json
+
+      - name: Final graphics native consumers and namespace closure
+        env:
+          EXPERIMENTAL_DIRTY_FLASH: ${{ inputs.experimental_dirty_flash }}
+        run: |
+          graphics_options=()
+          if [ "$EXPERIMENTAL_DIRTY_FLASH" = true ]; then
+            graphics_options+=(--experimental-dirty-flash)
+          fi
+          python3 tools/graphics/verify_final.py system-a17-pixel.img legacy_graphics graphics-compatibility-verification.json "${graphics_options[@]}"
+
       - name: Compress, split, checksums
         env:
           RELEASE_TAG: ${{ inputs.tag }}
@@ -237,7 +440,10 @@ jobs:
           sha256sum system-a17-pixel.img vendor-a17.img boot-a17.img vbmeta-disabled.img > out/IMAGE-SHA256SUMS
           sed -e "s|@COMMIT@|$GITHUB_SHA|g" -e "s|@KERNEL_TAG@|$KERNEL_TAG|g" docs/FLASH.md > out/FLASH.md
           cp docs/RELEASE-NOTES.md out/RELEASE-NOTES.md
-          cp image-fixes-verification.json out/
+          cp docs/A17-UPSTREAM.json out/A17-UPSTREAM.json
+          cp image-fixes-verification.json graphics-compatibility-verification.json out/
+          cp legacy_graphics/donor-receipt.json out/legacy-graphics-donor-receipt.json
+          cp legacy_graphics/codec-repack-receipt.json legacy_graphics/runtime-budget-receipt.json out/
           if [ -f kernel/kernel-label-receipt.json ]; then
             cp kernel/kernel-label-receipt.json kernel/kernel-release.txt kernel/kernel.config out/
           fi
@@ -245,19 +451,40 @@ jobs:
           import json, os
           from pathlib import Path
           Path('out/build-receipt.json').write_text(json.dumps({
+              'experimental_dirty_flash': json.loads(Path('graphics-compatibility-verification.json').read_text())['experimental_dirty_flash'],
+              'graphics_acceptance': False,
+              'unreviewed_graphics_callers': json.loads(Path('graphics-compatibility-verification.json').read_text())['mapper_callsite_candidates'],
               'source_commit': os.environ['GITHUB_SHA'],
+              'android_build': os.environ['ANDROID_BUILD'],
+              'android_channel': os.environ['ANDROID_CHANNEL'],
+              'android_release_date': os.environ['ANDROID_RELEASE_DATE'],
+              'gsi_url': os.environ['GSI_URL'],
+              'gsi_zip_sha256': os.environ['GSI_ZIP_SHA256'],
+              'pixel_factory_url': os.environ['FACTORY_URL'],
+              'pixel_factory_sha256': os.environ['FACTORY_SHA256'],
+              'legacy_graphics': json.loads(Path('docs/A17-UPSTREAM.json').read_text())['legacy_graphics'],
               'actions_run': os.environ['GITHUB_SERVER_URL']+'/'+os.environ['GITHUB_REPOSITORY']+'/actions/runs/'+os.environ['GITHUB_RUN_ID'],
               'kernel': os.environ['KERNEL_TAG'],
               'kernel_image_sha256': os.environ['KERNEL_IMAGE_SHA256'],
               'kernel_source_commit': os.environ.get('KERNEL_SOURCE_COMMIT'),
               'kernel_actions_run': os.environ.get('KERNEL_ACTIONS_RUN'),
               'system_bytes': 5033164800, 'vendor_bytes': 629145600,
-              'validation': ['e2fsck -fn system and vendor', 'image sizes', 'pinned input SHA256', 'startup host regressions', 'compiled overlay signing and resource scope', 'final image overlay target signers and startup bytes'],
+              'validation': ['e2fsck -fn system and vendor', 'image sizes', 'pinned input SHA256', 'startup host regressions', 'compiled overlay signing and resource scope', 'final image overlay target signers and startup bytes', 'final native graphics consumer and both-ABI namespace/dependency closure'],
               'device_validation': 'This exact CI build has not been flashed or boot-tested.'
           }, indent=2)+'\n')
           PYRECEIPT
           ( cd out && sha256sum * > SHA256SUMS )
           ls -la out
+
+      - name: Retain unpublished candidate ROM and verification receipts
+        if: ${{ !inputs.publish }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: m30s-a17-pixel-candidate-${{ github.run_id }}
+          path: out/
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
 
       - name: Publish public experimental release
         if: ${{ inputs.publish }}
@@ -266,3 +493,26 @@ jobs:
           TAG: ${{ inputs.tag }}
         run: |
           gh release create "$TAG" -R "$GITHUB_REPOSITORY" out/* --target "$GITHUB_SHA" --prerelease --title "Galaxy M30s Android 17 Pixel experimental ($TAG)" --notes-file out/RELEASE-NOTES.md
+
+      - name: Retain graphics verification evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: graphics-verification-evidence
+          path: |
+            legacy_graphics/donor-receipt.json
+            legacy_graphics/tethering-*-receipt.json
+            legacy_graphics/bluetooth-receipt.json
+            legacy_graphics/abi-consumers/
+            legacy_graphics/binding-configuration/
+            legacy_graphics/latest/**/libui.so
+            legacy_graphics/system/**/libui.so
+            legacy_graphics/codec/**/libui.so
+            legacy_graphics/patched/**/libui.so
+            legacy_graphics/sync-provider/
+            legacy_graphics/codec-repack-receipt.json
+            legacy_graphics/runtime-budget-receipt.json
+            legacy_graphics/patched/**/*.guards.txt
+            graphics-compatibility-verification.json
+            runner-space-*.json
+          if-no-files-found: warn

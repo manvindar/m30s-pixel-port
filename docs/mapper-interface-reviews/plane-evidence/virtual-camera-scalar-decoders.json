@@ -1,0 +1,42 @@
+[
+  {
+    "name": "_ZN7android8gralloc411decodeWidthERKNS_8hardware8hidl_vecIhEEPm",
+    "value": 47244,
+    "size": 176,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-scalar-decoder-b88c.asm"
+  },
+  {
+    "name": "_ZN7android8gralloc416decodeLayerCountERKNS_8hardware8hidl_vecIhEEPm",
+    "value": 48524,
+    "size": 176,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-scalar-decoder-bd8c.asm"
+  },
+  {
+    "name": "_ZN7android8gralloc426decodePixelFormatRequestedERKNS_8hardware8hidl_vecIhEEPNS1_8graphics6common4V1_211PixelFormatE",
+    "value": 49168,
+    "size": 176,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-scalar-decoder-c010.asm"
+  },
+  {
+    "name": "_ZN7android8gralloc412decodeHeightERKNS_8hardware8hidl_vecIhEEPm",
+    "value": 47884,
+    "size": 176,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-scalar-decoder-bb0c.asm"
+  },
+  {
+    "name": "_ZN7android8gralloc411decodeUsageERKNS_8hardware8hidl_vecIhEEPm",
+    "value": 51088,
+    "size": 176,
+    "defined": true,
+    "type": 2,
+    "evidence": "virtual-camera-scalar-decoder-c790.asm"
+  }
+]

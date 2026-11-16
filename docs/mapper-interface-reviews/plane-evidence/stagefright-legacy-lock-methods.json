@@ -1,0 +1,34 @@
+[
+  {
+    "name": "_ZNK7android14Gralloc3Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+    "value": 303804,
+    "size": 448,
+    "defined": true,
+    "type": 2,
+    "evidence": "stagefright-legacy-4a2bc-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc2Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+    "value": 298652,
+    "size": 432,
+    "defined": true,
+    "type": 2,
+    "evidence": "stagefright-legacy-48e9c-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc2Mapper4lockEPK13native_handlemRKNS_4RectEiPPvPiS9_",
+    "value": 298204,
+    "size": 448,
+    "defined": true,
+    "type": 2,
+    "evidence": "stagefright-legacy-48cdc-backend.asm"
+  },
+  {
+    "name": "_ZNK7android14Gralloc3Mapper4lockEPK13native_handlemRKNS_4RectEiP13android_ycbcr",
+    "value": 304252,
+    "size": 432,
+    "defined": true,
+    "type": 2,
+    "evidence": "stagefright-legacy-4a47c-backend.asm"
+  }
+]

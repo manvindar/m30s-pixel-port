@@ -115,5 +115,95 @@ if priv_apks:
 # step 8: no lights / vibrator shims in the first image
 i = s.index("run('sh', os.path.join(TOOLS, 'lights', 'build.sh')"); j = s.index("# health: same pattern")
 s = s[:i] + "# lights and vibrator shims: not in the first M30s image (see docs/phase3prep/A17-BUILD.md); health shim below is kept\n" + s[j:]
+# Preserve established local fingerprint, optional compass and face-feature fixes.
+sub('[--port-repo DIR] [--with-bootdiag] [--no-tuner]', '[--port-repo DIR] [--with-bootdiag] [--experimental] [--no-tuner]')
+sub("ap.add_argument('--no-tuner', action='store_true', default=True);", "ap.add_argument('--experimental', action='store_true', help='EXPERIMENTAL features, off in release builds: virtual compass service (tools/compass; its vendor half is installed by tools/compass/install.sh, never by the image)')\nap.add_argument('--no-tuner', action='store_true', default=True);")
+sub('# init.rc starts', "# fingerprint: Android 17's FingerprintService only speaks the AIDL IFingerprint HAL, the Samsung vendor only HIDL IBiometricsFingerprint@2.1. tools/fphal/shim (Java, app_process, like the health shim)\n# registers IFingerprint/default and forwards to the HIDL HAL. The vintf fragment is a framework one (no vendor reflash); the feature file switches FingerprintService on.\nfp = os.path.join(HERE, '..', 'fphal'); fpjar = wp('m30s-fphal.jar')\nrun(sys.executable, os.path.join(fp, 'make_fphal_jar.py'), fpjar, BT)\nput(fpjar, '/system/etc/m30s-fphal.jar', '644'); put(os.path.join(fp, 'fphal.sh'), '/system/bin/m30s-fphal.sh', '755'); put(os.path.join(fp, 'fphal.rc'), '/system/etc/init/05_fphal.rc', '644')\nput(os.path.join(fp, 'android.hardware.biometrics.fingerprint-m30s.xml'), '/system/etc/vintf/manifest/android.hardware.biometrics.fingerprint-m30s.xml', '644')\nput(os.path.join(fp, 'android.hardware.fingerprint.xml'), '/system/etc/permissions/android.hardware.fingerprint.xml', '644')\n# init.rc starts")
+sub('# 9 ROM Tuner', "# 8d experimental (--experimental only; a release build leaves this out)\nif a.experimental:\n    print('8d EXPERIMENTAL: virtual compass service (compassd)')\n    jar = os.path.join(TOOLS, 'compass', 'out', 'compassd.jar'); assert os.path.exists(jar), 'run tools/compass/build.sh first (--experimental needs out/compassd.jar)'\n    put(jar, '/system/etc/compassd.jar', '644')\n    put(tmpf('compassd.rc', open(os.path.join(TOOLS, 'compass', 'compassd.rc')).read().replace('u:r:su:s0', 'u:r:init:s0')), '/system/etc/init/compassd.rc', '644')\n\n# 9 ROM Tuner")
+sub("    allow_xmls += [os.path.join(px, f) + ':product' for f in staged if f.startswith('etc/permissions/') and f.endswith('.xml')]", "    if 'etc/permissions/android.hardware.biometrics.face.xml' in staged: cmds.append('rm /system/product/etc/permissions/android.hardware.biometrics.face.xml')    # the Pixel layer brings the face feature back after the rm above (v0.3e-img still had it)\n    allow_xmls += [os.path.join(px, f) + ':product' for f in staged if f.startswith('etc/permissions/') and f.endswith('.xml')]")
+
+# New Google GSI drops legacy gralloc code. A pinned donor is optional and always verified.
+sub("def py(script, *args, env=None): return run(sys.executable, '-I', os.path.join(TOOLS, script), *map(str, args), env=env)", "def py(script, *args, env=None):\n    if script == 'bpf/patch_binaries.py':\n        result = run(sys.executable, '-I', os.path.join(HERE, '..', 'bpf', 'patch_tethering.py'), *map(str, args), env=env)\n        if a.legacy_graphics:\n            shutil.copyfile(str(args[2]) + '.tethering-receipt.json', os.path.join(a.legacy_graphics, 'tethering-' + str(args[0]) + '-receipt.json'))\n        return result\n    if script == 'bpf/patch_bluetooth.py':\n        result = run(sys.executable, '-I', os.path.join(HERE, '..', 'bpf', 'patch_bluetooth.py'), *map(str, args), env=env)\n        if a.legacy_graphics:\n            shutil.copyfile(str(args[1]) + '.bluetooth-receipt.json', os.path.join(a.legacy_graphics, 'bluetooth-receipt.json'))\n        return result\n    return run(sys.executable, '-I', os.path.join(TOOLS, script), *map(str, args), env=env)")
+sub("ap.add_argument('--gsi', required=True,", "ap.add_argument('--legacy-graphics', help='checksum-pinned legacy graphics stage; final image verification required')\nap.add_argument('--gsi', required=True,")
+sub("    src = tmpf(name + '.orig', cat(S, path)); out = wp(name + '.p'); py(tool, src, out); return out", """    src = tmpf(name + '.orig', cat(S, path)); out = wp(name + '.p')
+    if tool == 'libc/patch_libui.py' and a.legacy_graphics:
+        directory = os.path.basename(os.path.dirname(path))
+        src = graphics_source('system', directory, src)
+    if tool == 'libc/patch_libandroid_runtime.py':
+        result = run(sys.executable, os.path.join(HERE, '..', 'libc', 'patch_budget_watchers.py'), src, out)
+        if a.legacy_graphics:
+            shutil.copyfile(out + '.budget-receipt.json', os.path.join(a.legacy_graphics, 'runtime-budget-receipt.json'))
+    else:
+        result = py(tool, src, out)
+    if tool == 'libc/patch_libui.py' and a.legacy_graphics:
+        graphics_patched('system', directory, out, result)
+    return out""")
+sub("# services.jar: HintManager", """def graphics_source(context, directory, latest):
+    root = os.path.abspath(a.legacy_graphics)
+    target = os.path.join(root, context, directory, 'libui.so')
+    receipt = json.load(open(os.path.join(root, 'donor-receipt.json')))
+    relative = context + '/' + directory + '/libui.so'
+    expected = [r['sha256'] for r in receipt['files'] if r['relative_path'] == relative]
+    assert len(expected) == 1 and hashlib.sha256(open(target, 'rb').read()).hexdigest() == expected[0], 'graphics donor payload hash'
+    saved = os.path.join(root, 'latest', context, directory, 'libui.so')
+    os.makedirs(os.path.dirname(saved), exist_ok=True); shutil.copyfile(latest, saved)
+    return target
+
+def graphics_patched(context, directory, patched_file, guard_output):
+    root = os.path.abspath(a.legacy_graphics)
+    saved = os.path.join(root, 'patched', context, directory, 'libui.so')
+    os.makedirs(os.path.dirname(saved), exist_ok=True); shutil.copyfile(patched_file, saved)
+    open(saved + '.guards.txt', 'w').write(guard_output)
+    print(guard_output)
+
+# services.jar: HintManager""")
+sub("if a.platform_keys:\n    print('3b", """if a.legacy_graphics:
+    for directory in ('lib64', 'lib'):
+        for name in sorted(os.listdir(os.path.join(a.legacy_graphics, 'interfaces', directory))):
+            path = '/system/' + directory + '/' + name
+            if not exists(S, path):
+                put(os.path.join(a.legacy_graphics, 'interfaces', directory, name), path, '644', ctx=LIB)
+if a.platform_keys:
+    print('3b""")
+old = "bpf_file('libui_swcodec64.so', 'com.android.media.swcodec.capex', '/lib64/libui.so', lambda i, o: py('libc/patch_libui.py', i, o), '644', SYS)\nbpf_file('libui_swcodec32.so', 'com.android.media.swcodec.capex', '/lib/libui.so', lambda i, o: py('libc/patch_libui.py', i, o), '644', SYS)"
+new = """def codec_ui(original, output, directory):
+    source = graphics_source('codec', directory, original) if a.legacy_graphics else original
+    result = py('libc/patch_libui.py', source, output)
+    if a.legacy_graphics: graphics_patched('codec', directory, output, result)
+bpf_file('libui_swcodec64.so', 'com.android.media.swcodec.capex', '/lib64/libui.so', lambda i, o: codec_ui(i, o, 'lib64'), '644', SYS)
+bpf_file('libui_swcodec32.so', 'com.android.media.swcodec.capex', '/lib/libui.so', lambda i, o: codec_ui(i, o, 'lib'), '644', SYS)
+if a.legacy_graphics:
+    original = tmpf('codec.original.capex', cat(S, A + 'com.android.media.swcodec.capex'))
+    rebuilt = wp('codec.legacy.apex')
+    run(sys.executable, os.path.join(HERE, '..', 'graphics', 'repack_codec.py'), original, rebuilt,
+        os.path.abspath(a.legacy_graphics), KEY, os.path.join(TOOLS, 'apex', 'avbtool.py'),
+        wp('libui_swcodec64.so.p'), wp('libui_swcodec32.so.p'), env=APEX_ENV)
+    mode, uid, gid, context = attrs(S, A + 'com.android.media.swcodec.capex')
+    cmds.append('rm ' + A + 'com.android.media.swcodec.capex')
+    put(rebuilt, A + 'com.android.media.swcodec.apex', mode, uid, gid, context)"""
+sub(old, new)
+
+# Samsung charge_full is nominal; the tablet counter-ratio correction is inapplicable.
+sub("run('sh', os.path.join(TOOLS, 'health', 'build.sh'), env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))\nput(os.path.join(TOOLS, 'health', 'out', 'healthshim.jar'), '/system/etc/healthshim.jar', '644')", "health = wp('m30s-health')\nrun(sys.executable, os.path.join(HERE, '..', 'health', 'stage_m30s.py'), os.path.join(TOOLS, 'health'), health)\nrun('sh', os.path.join(health, 'build.sh'), env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))\nput(os.path.join(health, 'out', 'healthshim.jar'), '/system/etc/healthshim.jar', '644')")
+
+# M30s-specific tuner replaces the excluded MediaTek backend.
+sub("ap.add_argument('--no-tuner', action='store_true', default=True);", "ap.add_argument('--no-m30s-tuner', action='store_true', help='omit the M30s ROM Tuner app and root backend');\nap.add_argument('--no-tuner', action='store_true', default=True);")
+sub("if a.dev_tools:\n    for f, mode", """if not a.no_m30s_tuner:
+    tuner = os.path.join(HERE, '..', 'tuner')
+    tuner_out = wp('m30s-tuner')
+    run('sh', os.path.join(tuner, 'build.sh'), tuner_out, os.path.join(TOOLS, 'pixel'),
+        env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))
+    mkdir('/system/app/M30sRomTuner')
+    put(os.path.join(tuner_out, 'RomTuner-M30s.apk'), '/system/app/M30sRomTuner/M30sRomTuner.apk', '644')
+    run('sh', os.path.join(tuner, 'build.sh'), tuner_out + '-tablet', os.path.join(TOOLS, 'pixel'),
+        env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT, M30S_TUNER_FLAVOR='tablet'))
+    mkdir('/system/app/TabletRomTuner')
+    put(os.path.join(tuner_out + '-tablet', 'RomTuner-Tablet-M30s.apk'), '/system/app/TabletRomTuner/TabletRomTuner.apk', '644')
+    put(os.path.join(tuner, 'device', 'm30s_tunerd.sh'), '/system/bin/m30s_tunerd.sh', '755')
+    put(tmpf('m30s_tunerd.rc', rc_fix(os.path.join(tuner, 'device', 'm30s_tunerd.rc'))), '/system/etc/init/m30s_tunerd.rc', '644')
+if a.dev_tools:
+    for f, mode""")
+s = s.replace('no ROM Tuner (MediaTek only)', 'M30s ROM Tuner (MediaTek backend excluded)')
+
 open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build_a17.py'), 'w').write(s)
 print(f'build_a17.py written, {n} substitutions', file=sys.stderr)

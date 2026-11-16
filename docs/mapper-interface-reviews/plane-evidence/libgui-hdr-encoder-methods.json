@@ -1,0 +1,42 @@
+[
+  {
+    "name": "_ZN7android8gralloc420encodeCta861_3HelperERKN4aidl7android8hardware8graphics6common8Cta861_3EPNS0_13OutputHidlVecE",
+    "value": 44496,
+    "size": 96,
+    "defined": true,
+    "type": 2,
+    "evidence": "libgui-hdr-encoder-add0.asm"
+  },
+  {
+    "name": "_ZN7android8gralloc415encodeSmpte2086ERKNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEEPNS_8hardware8hidl_vecIhEE",
+    "value": 56884,
+    "size": 476,
+    "defined": true,
+    "type": 2,
+    "evidence": "libgui-hdr-encoder-de34.asm"
+  },
+  {
+    "name": "_ZN7android8gralloc414encodeCta861_3ERKNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEEPNS_8hardware8hidl_vecIhEE",
+    "value": 57596,
+    "size": 524,
+    "defined": true,
+    "type": 2,
+    "evidence": "libgui-hdr-encoder-e0fc.asm"
+  },
+  {
+    "name": "_ZN7android8gralloc418encodeSmpte2094_40ERKNSt3__18optionalINS1_6vectorIhNS1_9allocatorIhEEEEEEPNS_8hardware8hidl_vecIhEE",
+    "value": 58360,
+    "size": 44,
+    "defined": true,
+    "type": 2,
+    "evidence": "libgui-hdr-encoder-e3f8.asm"
+  },
+  {
+    "name": "_ZN7android8gralloc421encodeSmpte2086HelperERKN4aidl7android8hardware8graphics6common9Smpte2086EPNS0_13OutputHidlVecE",
+    "value": 43600,
+    "size": 256,
+    "defined": true,
+    "type": 2,
+    "evidence": "libgui-hdr-encoder-aa50.asm"
+  }
+]

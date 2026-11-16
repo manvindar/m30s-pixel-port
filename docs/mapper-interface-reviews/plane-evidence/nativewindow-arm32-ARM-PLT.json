@@ -1,0 +1,272 @@
+[
+  {
+    "address": "0x58e0",
+    "got": "0x6dac",
+    "symbol": "__cxa_finalize"
+  },
+  {
+    "address": "0x58f0",
+    "got": "0x6db0",
+    "symbol": "__stack_chk_fail"
+  },
+  {
+    "address": "0x5900",
+    "got": "0x6db4",
+    "symbol": "_Znwj"
+  },
+  {
+    "address": "0x5910",
+    "got": "0x6db8",
+    "symbol": "getpid"
+  },
+  {
+    "address": "0x5920",
+    "got": "0x6dbc",
+    "symbol": "_ZNSt3__19to_stringEi"
+  },
+  {
+    "address": "0x5930",
+    "got": "0x6dc0",
+    "symbol": "_ZNSt3__112basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEE6appendEPKcj"
+  },
+  {
+    "address": "0x5940",
+    "got": "0x6dc4",
+    "symbol": "_ZN7android13GraphicBufferC1EjjijyNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE"
+  },
+  {
+    "address": "0x5950",
+    "got": "0x6dc8",
+    "symbol": "_ZNK7android7RefBase9incStrongEPKv"
+  },
+  {
+    "address": "0x5960",
+    "got": "0x6dcc",
+    "symbol": "_ZdlPvj"
+  },
+  {
+    "address": "0x5970",
+    "got": "0x6dd0",
+    "symbol": "_ZNK7android13GraphicBuffer9initCheckEv"
+  },
+  {
+    "address": "0x5980",
+    "got": "0x6dd4",
+    "symbol": "_ZN7android13GraphicBuffer17toAHardwareBufferEv"
+  },
+  {
+    "address": "0x5990",
+    "got": "0x6dd8",
+    "symbol": "_ZN7android13GraphicBuffer19fromAHardwareBufferEP15AHardwareBuffer"
+  },
+  {
+    "address": "0x59a0",
+    "got": "0x6ddc",
+    "symbol": "_ZN7android13GraphicBuffer26dumpAllocationsToSystemLogEv"
+  },
+  {
+    "address": "0x59b0",
+    "got": "0x6de0",
+    "symbol": "strerror"
+  },
+  {
+    "address": "0x59c0",
+    "got": "0x6de4",
+    "symbol": "__android_log_print"
+  },
+  {
+    "address": "0x59d0",
+    "got": "0x6de8",
+    "symbol": "_ZNK7android7RefBase9decStrongEPKv"
+  },
+  {
+    "address": "0x59e0",
+    "got": "0x6dec",
+    "symbol": "_ZN7android34AHardwareBuffer_from_GraphicBufferEPNS_13GraphicBufferE"
+  },
+  {
+    "address": "0x59f0",
+    "got": "0x6df0",
+    "symbol": "_ZN7android13GraphicBuffer19fromAHardwareBufferEPK15AHardwareBuffer"
+  },
+  {
+    "address": "0x5a00",
+    "got": "0x6df4",
+    "symbol": "_ZN7android13GraphicBuffer9lockAsyncEyyRKNS_4RectEPPviPiS6_"
+  },
+  {
+    "address": "0x5a10",
+    "got": "0x6df8",
+    "symbol": "_ZN7android13GraphicBuffer6unlockEv"
+  },
+  {
+    "address": "0x5a20",
+    "got": "0x6dfc",
+    "symbol": "_ZN7android13GraphicBuffer14lockAsyncYCbCrEjRKNS_4RectEP13android_ycbcri"
+  },
+  {
+    "address": "0x5a30",
+    "got": "0x6e00",
+    "symbol": "_ZN7android13GraphicBuffer11unlockAsyncEPi"
+  },
+  {
+    "address": "0x5a40",
+    "got": "0x6e04",
+    "symbol": "_ZNK7android13GraphicBuffer16getFlattenedSizeEv"
+  },
+  {
+    "address": "0x5a50",
+    "got": "0x6e08",
+    "symbol": "_ZNK7android13GraphicBuffer10getFdCountEv"
+  },
+  {
+    "address": "0x5a60",
+    "got": "0x6e0c",
+    "symbol": "_Znaj"
+  },
+  {
+    "address": "0x5a70",
+    "got": "0x6e10",
+    "symbol": "_ZNK7android13GraphicBuffer7flattenERPvRjRPiS3_"
+  },
+  {
+    "address": "0x5a80",
+    "got": "0x6e14",
+    "symbol": "__memcpy_chk"
+  },
+  {
+    "address": "0x5a90",
+    "got": "0x6e18",
+    "symbol": "sendmsg"
+  },
+  {
+    "address": "0x5aa0",
+    "got": "0x6e1c",
+    "symbol": "__errno"
+  },
+  {
+    "address": "0x5ab0",
+    "got": "0x6e20",
+    "symbol": "_ZdaPv"
+  },
+  {
+    "address": "0x5ac0",
+    "got": "0x6e24",
+    "symbol": "recvmsg"
+  },
+  {
+    "address": "0x5ad0",
+    "got": "0x6e28",
+    "symbol": "_ZN7android13GraphicBufferC1Ev"
+  },
+  {
+    "address": "0x5ae0",
+    "got": "0x6e2c",
+    "symbol": "_ZN7android13GraphicBuffer9unflattenERPKvRjRPKiS4_"
+  },
+  {
+    "address": "0x5af0",
+    "got": "0x6e30",
+    "symbol": "_ZNK7android13GraphicBuffer11isSupportedEjjijyPb"
+  },
+  {
+    "address": "0x5b00",
+    "got": "0x6e34",
+    "symbol": "_Z26AParcel_viewPlatformParcelPK7AParcel"
+  },
+  {
+    "address": "0x5b10",
+    "got": "0x6e38",
+    "symbol": "_ZNK7android6Parcel4readERNS0_26FlattenableHelperInterfaceE"
+  },
+  {
+    "address": "0x5b20",
+    "got": "0x6e3c",
+    "symbol": "_Z26AParcel_viewPlatformParcelP7AParcel"
+  },
+  {
+    "address": "0x5b30",
+    "got": "0x6e40",
+    "symbol": "_ZN7android6Parcel5writeERKNS0_26FlattenableHelperInterfaceE"
+  },
+  {
+    "address": "0x5b40",
+    "got": "0x6e44",
+    "symbol": "_ZNK7android13GraphicBuffer12getDataspaceEPNS_8hardware8graphics6common4V1_29DataspaceE"
+  },
+  {
+    "address": "0x5b50",
+    "got": "0x6e48",
+    "symbol": "pthread_mutex_lock"
+  },
+  {
+    "address": "0x5b60",
+    "got": "0x6e4c",
+    "symbol": "_ZN7android19GraphicBufferMapperC1Ev"
+  },
+  {
+    "address": "0x5b70",
+    "got": "0x6e50",
+    "symbol": "pthread_mutex_unlock"
+  },
+  {
+    "address": "0x5b80",
+    "got": "0x6e54",
+    "symbol": "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE"
+  },
+  {
+    "address": "0x5b90",
+    "got": "0x6e58",
+    "symbol": "_ZN7android13GraphicBufferC1EPK13native_handleNS0_16HandleWrapMethodEjjijyj"
+  },
+  {
+    "address": "0x5ba0",
+    "got": "0x6e5c",
+    "symbol": "_ZN7android13GraphicBufferC1ERKNS_22GraphicBufferAllocator17AllocationRequestE"
+  },
+  {
+    "address": "0x5bb0",
+    "got": "0x6e60",
+    "symbol": "_ZNK7android13GraphicBuffer15getNativeBufferEv"
+  },
+  {
+    "address": "0x5bc0",
+    "got": "0x6e64",
+    "symbol": "_ZNSt3__122__libcpp_verbose_abortEPKcz"
+  },
+  {
+    "address": "0x5bd0",
+    "got": "0x6e68",
+    "symbol": "__cxa_guard_acquire"
+  },
+  {
+    "address": "0x5be0",
+    "got": "0x6e6c",
+    "symbol": "__cxa_guard_release"
+  },
+  {
+    "address": "0x5bf0",
+    "got": "0x6e70",
+    "symbol": "dlopen"
+  },
+  {
+    "address": "0x5c00",
+    "got": "0x6e74",
+    "symbol": "dlsym"
+  },
+  {
+    "address": "0x5c10",
+    "got": "0x6e78",
+    "symbol": "__android_log_assert"
+  },
+  {
+    "address": "0x5c20",
+    "got": "0x6e7c",
+    "symbol": "memcpy"
+  },
+  {
+    "address": "0x5c30",
+    "got": "0x6e80",
+    "symbol": "memset"
+  }
+]

@@ -16,13 +16,17 @@ PATCH_SHA256 = {
     'patch_server_codes.py': '080536e63b0526ba02218318b3f2af6c40303ef23dbfc099a1c1ad4228e018c7',
     'patch_audiopermission.py': 'ee9012c1f3026d1a8f640e89f8c55cc9a1adfd0ce539ea74090264dc35dd85bf'}
 KEEP = {'libui.so', 'libgralloctypes.so', 'libgui.so', 'libnativewindow.so',
-        'libaudiopermission.so', 'audiopolicy-aidl-cpp.so'}
+        'libaudiopermission.so', 'audiopolicy-aidl-cpp.so',
+        'libvndksupport.so', 'libaudiohal.so', 'libhidlbase.so', 'libEGL.so',
+        'libapexsupport.so', 'libhardware.so', 'libcutils.so', 'libbinder_ndk.so'}
 
 
-def stat(image, path):
+def stat(image, path, *, external_link=False):
     value = run('debugfs', '-R', 'stat ' + path, image)
     if 'Inode:' not in value:
         return None
+    if external_link and re.search(r'Type:\s+symlink', value):
+        return value
     if not re.search(r'Type:\s+regular', value):
         raise RuntimeError('Nonregular audio input: ' + path)
     return value
@@ -49,7 +53,36 @@ def main():
         if digest(p) != PATCH_SHA256[name]:
             raise RuntimeError('Pinned patch source drift: ' + name)
         receipt['patch_sources'][name] = digest(p)
+    receipt['base_interpreter_paths'] = []
+    for remote in ('/system/bin/linker64', '/system/bin/bootstrap/linker64'):
+        inode = stat(args.base, remote, external_link=True)
+        receipt['base_interpreter_paths'].append({'file': remote, 'inode': inode,
+            'limitation': 'Base path evidence only; final loader patches and symlink target must be verified'})
     total = 0
+    receipt['base_native_inputs'] = []
+    for directory, expected_abi in (('lib', 'arm32'), ('lib64', 'arm64')):
+        for name in ('libhidlbase.so', 'libcutils.so', 'libc++.so'):
+            remote = '/system/' + directory + '/' + name
+            if stat(args.base, remote) is None:
+                raise RuntimeError('Required base ownership provider absent: ' + remote)
+            target = dump(args.base, remote, out / 'base' / remote.lstrip('/'))
+            if not 0 < target.stat().st_size <= 4 * 1024 ** 2:
+                raise RuntimeError('Oversized base ownership provider: ' + remote)
+            info = elf(target)
+            if not info or info['abi'] != expected_abi:
+                raise RuntimeError('Wrong base ownership provider ABI: ' + remote)
+            total += target.stat().st_size
+            if total > 16 * 1024 ** 2:
+                raise RuntimeError('Retained binary evidence exceeds16MiB')
+            receipt['base_native_inputs'].append({'file': remote, 'sha256': digest(target),
+                'bytes': target.stat().st_size, 'abi': info['abi'], 'needed': info['needed'],
+                'exports': sorted(info['exports']), 'imports': sorted(info['imports']),
+                'abi_imports': sorted(info['abi_imports']),
+                'dynamic_text': run('readelf', '-d', '--wide', target),
+                'evidence_file': str(target.relative_to(out)),
+                'final_provider_acceptance': False,
+                'limitation': 'Pinned base provider; actual final hash and system/codec namespace edge must match'})
+            target.with_suffix('.readelf.txt').write_text(run('readelf', '-h', '-l', '-d', '-V', '-Ws', '--wide', target))
     with tempfile.TemporaryDirectory(prefix='audio-staging-') as tmp:
         tmp = Path(tmp)
         entry = dump(args.donor, '/system/bin/audioserver', out / 'system/bin/audioserver')
@@ -65,7 +98,11 @@ def main():
         entry.with_suffix('.readelf.txt').write_text(run('readelf', '-h', '-l', '-d', '-V', '-Ws', '--wide', entry))
         receipt['files'].append({'file': '/system/bin/audioserver', 'sha256': digest(entry),
                                  'bytes': entry.stat().st_size, 'needed': meta['needed'],
-                                 'abi': meta['abi'], 'attributes': 'audioserver-base.stat.txt'})
+                                 'abi': meta['abi'], 'attributes': 'audioserver-base.stat.txt',
+                                 'evidence_file': str(entry.relative_to(out)),
+                                 'exports': sorted(meta['exports']), 'imports': sorted(meta['imports']),
+                                 'abi_imports': sorted(meta['abi_imports']),
+                                 'dynamic_text': run('readelf', '-d', '--wide', entry)})
         total += entry.stat().st_size
         rc = dump(args.base, '/system/etc/init/audioserver.rc', tmp / 'audioserver.rc').read_text()
         first, rest = rc.split('\n', 1)
@@ -89,10 +126,11 @@ def main():
             if len(seen) > 256:
                 raise RuntimeError('Audio dependency count exceeds bound')
             remote = '/system/lib64/' + name
-            attrs = stat(args.donor, remote)
-            if attrs is None:
+            attrs = stat(args.donor, remote, external_link=True)
+            if attrs is None or re.search(r'Type:\s+symlink', attrs):
                 receipt['external_requirements'].append({'name': name, 'source_path': remote,
-                    'reason': 'Absent from donor system/lib64; actual final APEX/vendor provider unresolved'})
+                    'source_inode': attrs, 'reason': ('Donor system symlink: target/provider not copied or accepted' if attrs else
+                    'Absent from donor system/lib64; actual final APEX/vendor provider unresolved')})
                 continue
             source = dump(args.donor, remote, tmp / name)
             if source.stat().st_size > 16 * 1024 ** 2:
@@ -113,7 +151,9 @@ def main():
             item = {'file': virtual, 'source_sha256': source_hash, 'sha256': digest(target),
                     'bytes': target.stat().st_size, 'abi': info['abi'], 'needed': info['needed'],
                     'staged_mode': '0644', 'staged_uid': 0, 'staged_gid': 0,
-                    'patch': script, 'exports': sorted(info['exports']), 'imports': sorted(info['imports'])}
+                    'patch': script, 'exports': sorted(info['exports']), 'imports': sorted(info['imports']),
+                    'abi_imports': sorted(info['abi_imports']),
+                    'dynamic_text': run('readelf', '-d', '--wide', target)}
             if name in KEEP:
                 final = dump(args.donor, remote, out / virtual.lstrip('/'))
                 if script:

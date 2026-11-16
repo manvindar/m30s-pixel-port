@@ -1,0 +1,13 @@
+{
+  "android_build": "DP11.261030.003",
+  "apk_sha256": "db114305aaf987941fe2614b34f981377b84e6b0819647254fd2c1a8b05b3f89",
+  "signer_sha256": "366f75e331af7cd858d44815dfc1e4f403b68093b7592ed71fd682b9f3af4cf7",
+  "compile_sdk": 37,
+  "target_sdk": 37,
+  "package": "com.android.safetycenter.resources",
+  "api37_config_sha256": "38f98b1501968d02fbce166ecec701b5354becc45a217c4ae138cdb15708e1ab",
+  "service_permission_jar_sha256": "09c537a4428d713acb868d494864ead8622c8e75dbfa579860e0880e94db7dae",
+  "evidence_run": "https://github.com/manvindar/m30s-pixel-port/actions/runs/43775542607",
+  "evidence_artifact": 14186595841,
+  "compatibility": "Reader/parser/resources-loader whole classes equal retained implementations; latest API37 raw config preserved except two established AdvancedProtection insertions; runtime not verified"
+}

@@ -64,8 +64,16 @@ def audit(image, bt, output):
         resources = list(app.rglob('SafetyCenterResources.apk'))
         assert len(resources) == 1, 'AOSP SafetyCenter target absent/ambiguous'
         assert signer(resources[0], bt) == SAFETY_CERT, 'SafetyCenter target signer mismatch'
-        # Pin the actual API37 target whose parser/resource route was reviewed.
-        assert hashlib.sha256(resources[0].read_bytes()).hexdigest() == '29e77b57cbc0214ab293dea69ca029edcbd87e4974ca56895d5d79a6be21b58e'
+        # Exact latest target plus API37 configuration and parser module readback.
+        safety_pin = json.loads((ROOT / 'docs/A17-SAFETYCENTER-TARGET.json').read_text())
+        assert hashlib.sha256(resources[0].read_bytes()).hexdigest() == safety_pin['apk_sha256'], 'SafetyCenter target hash drift'
+        with zipfile.ZipFile(resources[0]) as z:
+            config = z.read('res/raw-v37/safety_center_config.xml')
+        assert hashlib.sha256(config).hexdigest() == safety_pin['api37_config_sha256'], 'SafetyCenter API37 config drift'
+        assert config == (ROOT / 'tools/pixel/testdata/aosp-safety-config-v37.xml').read_bytes()
+        dump(tmp / 'payload.img', '/javalib/service-permission.jar', tmp / 'service-permission.jar')
+        assert hashlib.sha256((tmp / 'service-permission.jar').read_bytes()).hexdigest() == safety_pin['service_permission_jar_sha256'], 'SafetyCenter parser module drift'
+        receipt['safety_target'] = safety_pin
         scripts = {}
         for local, remote in [('scripts/nosensorhog.sh', '/system/bin/nosensorhog.sh'),
                               ('scripts/dexopt_all.sh', '/system/bin/dexopt_all.sh'),

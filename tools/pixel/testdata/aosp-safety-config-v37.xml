@@ -27,6 +27,7 @@
                 title="@com.android.safetycenter.resources:string/lock_screen_title"
                 summary="@com.android.safetycenter.resources:string/lock_screen_summary_disabled"
                 searchTerms="@com.android.safetycenter.resources:string/lock_screen_search_terms"
+                refreshOnPageOpenAllowed="true"
                 initialDisplayState="disabled"
                 notificationsAllowed="true"/>
             <!-- Optional -->

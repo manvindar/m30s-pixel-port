@@ -1,0 +1,235 @@
+{
+  "affected_functions": [
+    {
+      "name": "_ZN7android7Surface26applyGrallocMetadataLockedERKNS_2spINS_13GraphicBufferEEERKNS_22IGraphicBufferProducer16QueueBufferInputE",
+      "value": 1396848,
+      "size": 392,
+      "defined": true,
+      "type": 2
+    },
+    {
+      "name": "_ZN7android9SingletonINS_19GraphicBufferMapperEE11getInstanceEv",
+      "value": 1397240,
+      "size": 96,
+      "source": "mini-debug"
+    },
+    {
+      "name": "_ZN7android7Surface15queueBufferImplERKNS_2spINS_13GraphicBufferEEERKNS1_INS_5FenceEEEPKNS_23SurfaceQueueBufferInputEPNS_24SurfaceQueueBufferOutputE",
+      "value": 1485948,
+      "size": 9632,
+      "defined": true,
+      "type": 2
+    },
+    {
+      "name": "_ZN7android7Surface16hook_queueBufferEP13ANativeWindowP19ANativeWindowBufferi",
+      "value": 1555904,
+      "size": 6908,
+      "defined": true,
+      "type": 2
+    }
+  ],
+  "mapper_GOT_loads": [
+    {
+      "page": "0x155208",
+      "load": "0x15520c",
+      "got": "0x212b88",
+      "function": "_ZN7android9SingletonINS_19GraphicBufferMapperEE11getInstanceEv"
+    },
+    {
+      "page": "0x155214",
+      "load": "0x155218",
+      "got": "0x212b90",
+      "function": "_ZN7android9SingletonINS_19GraphicBufferMapperEE11getInstanceEv"
+    },
+    {
+      "page": "0x155238",
+      "load": "0x15523c",
+      "got": "0x212b88",
+      "function": "_ZN7android9SingletonINS_19GraphicBufferMapperEE11getInstanceEv"
+    },
+    {
+      "page": "0x16cc20",
+      "load": "0x16cc24",
+      "got": "0x212b88",
+      "function": "_ZN7android7Surface15queueBufferImplERKNS_2spINS_13GraphicBufferEEERKNS1_INS_5FenceEEEPKNS_23SurfaceQueueBufferInputEPNS_24SurfaceQueueBufferOutputE"
+    },
+    {
+      "page": "0x16cc2c",
+      "load": "0x16cc30",
+      "got": "0x212b90",
+      "function": "_ZN7android7Surface15queueBufferImplERKNS_2spINS_13GraphicBufferEEERKNS1_INS_5FenceEEEPKNS_23SurfaceQueueBufferInputEPNS_24SurfaceQueueBufferOutputE"
+    },
+    {
+      "page": "0x16cc3c",
+      "load": "0x16cc40",
+      "got": "0x212b88",
+      "function": "_ZN7android7Surface15queueBufferImplERKNS_2spINS_13GraphicBufferEEERKNS1_INS_5FenceEEEPKNS_23SurfaceQueueBufferInputEPNS_24SurfaceQueueBufferOutputE"
+    },
+    {
+      "page": "0x17c450",
+      "load": "0x17c454",
+      "got": "0x212b88",
+      "function": "_ZN7android7Surface16hook_queueBufferEP13ANativeWindowP19ANativeWindowBufferi"
+    },
+    {
+      "page": "0x17c45c",
+      "load": "0x17c460",
+      "got": "0x212b90",
+      "function": "_ZN7android7Surface16hook_queueBufferEP13ANativeWindowP19ANativeWindowBufferi"
+    },
+    {
+      "page": "0x17c46c",
+      "load": "0x17c470",
+      "got": "0x212b88",
+      "function": "_ZN7android7Surface16hook_queueBufferEP13ANativeWindowP19ANativeWindowBufferi"
+    }
+  ],
+  "mapper_calls_and_helper_xrefs": [
+    {
+      "address": "0x1550b8",
+      "instruction": "bl\t0x1551f8 <_ZN7android7Surface26applyGrallocMetadataLockedERKNS_2spINS_13GraphicBufferEEERKNS_22IGraphicBufferProducer16QueueBufferInputE+0x188>",
+      "function": "_ZN7android7Surface26applyGrallocMetadataLockedERKNS_2spINS_13GraphicBufferEEERKNS_22IGraphicBufferProducer16QueueBufferInputE"
+    },
+    {
+      "address": "0x1550cc",
+      "instruction": "bl\t0x1e7258 <_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE@plt>",
+      "function": "_ZN7android7Surface26applyGrallocMetadataLockedERKNS_2spINS_13GraphicBufferEEERKNS_22IGraphicBufferProducer16QueueBufferInputE"
+    },
+    {
+      "address": "0x1550fc",
+      "instruction": "bl\t0x1e7270 <_ZN7android19GraphicBufferMapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE@plt>",
+      "function": "_ZN7android7Surface26applyGrallocMetadataLockedERKNS_2spINS_13GraphicBufferEEERKNS_22IGraphicBufferProducer16QueueBufferInputE"
+    },
+    {
+      "address": "0x15512c",
+      "instruction": "bl\t0x1e7288 <_ZN7android19GraphicBufferMapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE@plt>",
+      "function": "_ZN7android7Surface26applyGrallocMetadataLockedERKNS_2spINS_13GraphicBufferEEERKNS_22IGraphicBufferProducer16QueueBufferInputE"
+    },
+    {
+      "address": "0x1551a0",
+      "instruction": "bl\t0x1e72a0 <_ZN7android19GraphicBufferMapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE@plt>",
+      "function": "_ZN7android7Surface26applyGrallocMetadataLockedERKNS_2spINS_13GraphicBufferEEERKNS_22IGraphicBufferProducer16QueueBufferInputE"
+    },
+    {
+      "address": "0x155230",
+      "instruction": "bl\t0x1e74c8 <_ZN7android19GraphicBufferMapperC1Ev@plt>",
+      "function": "_ZN7android9SingletonINS_19GraphicBufferMapperEE11getInstanceEv"
+    },
+    {
+      "address": "0x16cc58",
+      "instruction": "bl\t0x1e7258 <_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE@plt>",
+      "function": "_ZN7android7Surface15queueBufferImplERKNS_2spINS_13GraphicBufferEEERKNS1_INS_5FenceEEEPKNS_23SurfaceQueueBufferInputEPNS_24SurfaceQueueBufferOutputE"
+    },
+    {
+      "address": "0x16ceb0",
+      "instruction": "bl\t0x1e72a0 <_ZN7android19GraphicBufferMapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE@plt>",
+      "function": "_ZN7android7Surface15queueBufferImplERKNS_2spINS_13GraphicBufferEEERKNS1_INS_5FenceEEEPKNS_23SurfaceQueueBufferInputEPNS_24SurfaceQueueBufferOutputE"
+    },
+    {
+      "address": "0x16cf18",
+      "instruction": "bl\t0x1e7288 <_ZN7android19GraphicBufferMapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE@plt>",
+      "function": "_ZN7android7Surface15queueBufferImplERKNS_2spINS_13GraphicBufferEEERKNS1_INS_5FenceEEEPKNS_23SurfaceQueueBufferInputEPNS_24SurfaceQueueBufferOutputE"
+    },
+    {
+      "address": "0x16cf80",
+      "instruction": "bl\t0x1e74c8 <_ZN7android19GraphicBufferMapperC1Ev@plt>",
+      "function": "_ZN7android7Surface15queueBufferImplERKNS_2spINS_13GraphicBufferEEERKNS1_INS_5FenceEEEPKNS_23SurfaceQueueBufferInputEPNS_24SurfaceQueueBufferOutputE"
+    },
+    {
+      "address": "0x16cfcc",
+      "instruction": "bl\t0x1e7270 <_ZN7android19GraphicBufferMapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE@plt>",
+      "function": "_ZN7android7Surface15queueBufferImplERKNS_2spINS_13GraphicBufferEEERKNS1_INS_5FenceEEEPKNS_23SurfaceQueueBufferInputEPNS_24SurfaceQueueBufferOutputE"
+    },
+    {
+      "address": "0x17c488",
+      "instruction": "bl\t0x1e7258 <_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE@plt>",
+      "function": "_ZN7android7Surface16hook_queueBufferEP13ANativeWindowP19ANativeWindowBufferi"
+    },
+    {
+      "address": "0x17c4cc",
+      "instruction": "bl\t0x1e72a0 <_ZN7android19GraphicBufferMapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE@plt>",
+      "function": "_ZN7android7Surface16hook_queueBufferEP13ANativeWindowP19ANativeWindowBufferi"
+    },
+    {
+      "address": "0x17ce54",
+      "instruction": "bl\t0x1e74c8 <_ZN7android19GraphicBufferMapperC1Ev@plt>",
+      "function": "_ZN7android7Surface16hook_queueBufferEP13ANativeWindowP19ANativeWindowBufferi"
+    },
+    {
+      "address": "0x17ce9c",
+      "instruction": "bl\t0x1e7288 <_ZN7android19GraphicBufferMapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE@plt>",
+      "function": "_ZN7android7Surface16hook_queueBufferEP13ANativeWindowP19ANativeWindowBufferi"
+    },
+    {
+      "address": "0x17cf50",
+      "instruction": "bl\t0x1e7270 <_ZN7android19GraphicBufferMapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE@plt>",
+      "function": "_ZN7android7Surface16hook_queueBufferEP13ANativeWindowP19ANativeWindowBufferi"
+    }
+  ],
+  "text_start": "0xbc000",
+  "text_end": "0x1e5504",
+  "text_bytes": 1217796,
+  "mini_debug_bytes": 318040,
+  "exact_function_count": 4321,
+  "unknown_instructions": [],
+  "function_extent_gaps": [
+    {
+      "start": "0x17307c",
+      "end": "0x173080",
+      "bytes": 4,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x17341c",
+      "end": "0x173420",
+      "bytes": 4,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x173db4",
+      "end": "0x173dc0",
+      "bytes": 12,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x176c0c",
+      "end": "0x176c10",
+      "bytes": 4,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x188bb8",
+      "end": "0x188bc0",
+      "bytes": 8,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x188bf4",
+      "end": "0x188c00",
+      "bytes": 12,
+      "unique_words": [
+        "00000000"
+      ]
+    },
+    {
+      "start": "0x1b90e8",
+      "end": "0x1b90f0",
+      "bytes": 8,
+      "unique_words": [
+        "00000000"
+      ]
+    }
+  ],
+  "Singleton_helper_address_materializations": [],
+  "Singleton_helper_relocations": {}
+}

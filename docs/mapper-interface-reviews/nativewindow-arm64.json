@@ -1,0 +1,143 @@
+{
+  "sha256": "b196e0a8e32fd3b10208dda16d1def366efeaedf756e47eb08ecd91c3c4157d3",
+  "bytes": 68320,
+  "abi": "arm64",
+  "context": "system",
+  "file": "/system/lib64/libnativewindow.so",
+  "affected_receiver_review_complete": true,
+  "proposed_review_scope": "Only mapper singleton/constructor/setDataspace receiver interface; exact pinned caller hash, not full graphics acceptance",
+  "acceptance": false,
+  "code_range": {
+    "start": "0x8000",
+    "bytes": 10464
+  },
+  "got": {
+    "0xc2b8": "sLock",
+    "0xc2c0": "sInstance",
+    "0xc3b0": "setDataspace",
+    "0xc408": "constructor"
+  },
+  "all_text_adrp_to_got_page": [
+    "0x81b8",
+    "0x84c0",
+    "0x84ec",
+    "0x8ea0",
+    "0x9078",
+    "0x90a8",
+    "0x9134",
+    "0x9200",
+    "0x920c",
+    "0x9230",
+    "0x93b4",
+    "0x9670"
+  ],
+  "direct_adr_to_mapper_got": [],
+  "literal_load_to_mapper_got": [],
+  "direct_mapper_calls": {
+    "constructor": [
+      "9228:      \tbl\t0xac78 <_ZN7android19GraphicBufferMapperC1Ev@plt>"
+    ],
+    "setDataspace": [
+      "9248:      \tbl\t0xab70 <_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE@plt>"
+    ]
+  },
+  "flow": {
+    "singleton_global_use": "Only sLock at9204/9234 and sInstance at9210 within AHardwareBuffer_setDataSpace91e0\u2013929c; all12 GOT-page materializations retained and decoded.",
+    "existing_instance": "9214 loads x21 from sInstance; nonzero branch to9230 retains x21.",
+    "new_instance": "Allocate16 at921c\u20139220; x21=x0 at9224; direct ctor at9228; publish to sInstance at922c.",
+    "use": "No mapper object field/virtual table read in caller. x21 copied to x0 at9240; sole direct setDataspace call9248; mapper pointer is not returned or passed elsewhere in this function.",
+    "handle": "GraphicBuffer returned unchanged by fromAHardwareBuffer; caller reads native_handle pointer atthis+0x70. Old/latest initWithHandle and zero-init establish identical handle offset.",
+    "provider_setter": "Old/latest20-byte wrappers are byte-identical instruction sequences: BTI; loadmGrallocMapper+0; loadvptr; loadslot+0xf8; tailbranch. Both matching vtable slot signature is setDataspace(native_handle*,Dataspace).",
+    "globals": "Old/latest sLock40 and sInstance8; mapper object allocation16 and pointer+0/HALversion+8 constructor fields previously verified."
+  },
+  "excluded_claims": [
+    "No runtime verification",
+    "No whole GraphicBuffer field-layout acceptance",
+    "No ARM32 acceptance",
+    "Other callers/private namespaces remain unresolved"
+  ],
+  "evidence": [
+    "nativewindow-full-text.asm",
+    "nativewindow-got-page-refs.json",
+    "nativewindow-setDataspace.asm",
+    "prior-initWithHandle.asm",
+    "latest-initWithHandle.asm",
+    "prior-setDataspace.asm",
+    "latest-setDataspace.asm",
+    "nativewindow-provider-symbols.json",
+    "patched-mapper-ctor.asm",
+    "legacy2-3-setter.asm"
+  ],
+  "provider_virtual_setter_slots": {
+    "prior": {
+      "Gralloc4Mapper": {
+        "symbol": "_ZNK7android14Gralloc4Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+        "addend": 0,
+        "relocation_type": 257
+      },
+      "Gralloc5Mapper": {
+        "symbol": "_ZNK7android14Gralloc5Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+        "addend": 0,
+        "relocation_type": 257
+      }
+    },
+    "latest": {
+      "Gralloc4Mapper": {
+        "symbol": "_ZNK7android14Gralloc4Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+        "addend": 0,
+        "relocation_type": 257
+      },
+      "Gralloc5Mapper": {
+        "symbol": "_ZNK7android14Gralloc5Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+        "addend": 0,
+        "relocation_type": 257
+      }
+    }
+  },
+  "actual_patched_provider": {
+    "sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+    "bytes": 477736,
+    "possible_constructor_versions": [
+      5,
+      4,
+      3,
+      2
+    ],
+    "mapper_fields": {
+      "pointer_offset": 0,
+      "hal_version_offset": 8,
+      "hal_version_write": "0x3580c;4/3/2 fallback branches join same write",
+      "legacy_patch": "API>=35 branchNOP0x35890; Gralloc3/2 fallback remains reachable"
+    },
+    "receiver_setter_slots": {
+      "Gralloc2Mapper": {
+        "symbols": [],
+        "local_address": "0x483fc"
+      },
+      "Gralloc3Mapper": {
+        "symbols": [],
+        "local_address": "0x483fc"
+      },
+      "Gralloc4Mapper": {
+        "symbol": "_ZNK7android14Gralloc4Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+        "addend": 0,
+        "relocation_type": 257
+      },
+      "Gralloc5Mapper": {
+        "symbol": "_ZNK7android14Gralloc5Mapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+        "addend": 0,
+        "relocation_type": 257
+      }
+    },
+    "legacy_local_setter": {
+      "address": "0x483fc",
+      "instructions": [
+        "bti c",
+        "mov w0,#-0x26",
+        "ret"
+      ],
+      "meaning": "Gralloc2/3 setDataspace returns-ENOSYS without reading argument/receiver memory. Hidden method name not available; actual code establishes calling convention/argument independence.",
+      "scope": "slot33(+0xf8) only; no claim about changed lock slot10"
+    }
+  }
+}

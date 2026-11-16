@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "status": "proposed-exact-hash-bound-mapper-interface-review",
+  "full_rom_acceptance": false,
+  "runtime_verified": false,
+  "abi": "arm32",
+  "patched_system_libui_sha256": "e763c2271067df3894f8c884dc79a4b093812f223f8c4a643c55d5a4215623c9",
+  "mapper_object": {
+    "allocation_bytes": 8,
+    "pointer_field": {
+      "offset": 0,
+      "bytes": 4
+    },
+    "HAL_version": {
+      "offset": 4,
+      "bytes": 4
+    },
+    "constructor_address": "0x38348",
+    "constructor_returns_original_this": "0x383ee write version+4;0x383f0 r0=r4;0x383f2 return",
+    "singleton_sizes": {
+      "sLock": 4,
+      "sInstance": 4
+    }
+  },
+  "decoding": {
+    "source": "Actual dynsym and bounded decompression of embedded .gnu_debugdata mini-ELF",
+    "Thumb": "Thumbv8a,cortex-a53 per exact odd-entry function symbols",
+    "PLT": "Separately interpreted ARM ADD-PC/ADD/LOAD-PC entries against actual ELF JUMP_SLOT relocations",
+    "literal_pools": "Exact PC-relative loads; all lexical unknowns match referenced four-byte literal ranges",
+    "padding": "Only uncovered functionextent gaps are D4D4 two-byte linker padding",
+    "jump_tables": "Bounded comparisons and rawtable bytes enumerated; no target enters tabledata"
+  },
+  "interface_symbols": [
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+  ],
+  "limitations": [
+    "Only affected mapper receiver slice for exact filehash; no wholecaller/ROM acceptance",
+    "No runtime/device evidence",
+    "Fresh final consumer/providerhash and namespace/dependencyclosure must still pass",
+    "Other GraphicBuffer/ANativeWindow layout or nativecallers remain independent requirements",
+    "Source diagnostic establishes bytes only; final declared binding is independently gated and runtime namespace remains unproven."
+  ],
+  "consumer": {
+    "context": "system",
+    "file": "/system/lib/libmedia_jni_utils.so",
+    "sha256": "83587929f18e3aaa432fcb82b7c7ceff1dad5f94470cf494d092abb20360b920",
+    "bytes": 12216,
+    "abi": "arm32"
+  },
+  "affected_receiver_paths": [
+    {
+      "function": "extractP010Gralloc4PlaneLayout",
+      "entry": "0x2e90",
+      "mini_debug_function_size": 444,
+      "sLock_PC_load": [
+        "0x2e98",
+        "0x2e9e",
+        "0x303c->0x4758"
+      ],
+      "sInstance_PC_load": [
+        "0x2eb2",
+        "0x2eb4",
+        "0x3044->0x475c"
+      ],
+      "instance_load": "0x2eb8 r7=[r6]",
+      "existing_instance_branch": "0x2eba->0x2eca",
+      "allocation8": "0x2ebc/0x2ebe->0x35b0",
+      "constructor": "0x2ec4->0x35c0",
+      "owned_global_store": "0x2ec8 [r6]=r0(this)",
+      "direct_getPlaneLayouts": "0x2ee4 r0=r7;0x2ee6->0x35e0",
+      "receiver_lifetime_end": "0x2eea r7=r0(status)",
+      "status_check": "0x2eee nonzero->0x3016(vector cleanup)"
+    },
+    {
+      "function": "extractP210Gralloc4PlaneLayout",
+      "entry": "0x304c",
+      "mini_debug_function_size": 444,
+      "sLock_PC_load": [
+        "0x3054",
+        "0x305a",
+        "0x31f8->0x4758"
+      ],
+      "sInstance_PC_load": [
+        "0x306e",
+        "0x3070",
+        "0x3200->0x475c"
+      ],
+      "instance_load": "0x3074 r7=[r6]",
+      "existing_instance_branch": "0x3076->0x3086",
+      "allocation8": "0x3078/0x307a->0x35b0",
+      "constructor": "0x3080->0x35c0",
+      "owned_global_store": "0x3084 [r6]=r0(this)",
+      "direct_getPlaneLayouts": "0x30a0 r0=r7;0x30a2->0x35e0",
+      "receiver_lifetime_end": "0x30a6 r7=r0(status)",
+      "status_check": "0x30aa nonzero->0x31d2(vector cleanup)"
+    }
+  ],
+  "no_mapper_receiver_escape": true,
+  "changed_lock_virtual_call": false,
+  "pointer_output_wrapper": "8-byte forwarding code equals all4prior/latest/system-codec variants, tableindex31/offset116",
+  "patched_Gralloc2_3": "Slot31 atThumb0x1e4d7 returns-38; initializedvector cleanup retained in bothcaller paths",
+  "returned_layout": {
+    "PlaneLayout": 80,
+    "component": 40,
+    "vector_offsets": [
+      0,
+      4,
+      8
+    ],
+    "outer_scalar_region": [
+      16,
+      79
+    ],
+    "component_64bit_fields": [
+      16,
+      24,
+      32
+    ],
+    "matching_codec_decoder_sha256": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4",
+    "SYSTEM_decoder_condition": "Pinned source diagnostic43782172493 independently verifies SystemARM32 decoder bytes equal measured codec decoder; fresh final exact provider/hash/import closure still required.",
+    "system_source_decoder_sha256": "1bec054223a83bf3014d758894e0ae1dbeb795fa7baa2e0132ad0cea94f33bc4"
+  },
+  "unrelated_indirect_control_flow": [
+    "0x341c Fence destructor slot12; objectloadedfromFenceSP notmapper",
+    "0x34ca/0x34d6 ThumbV7PILongThunks named in mini-ELF (__cxa_finalize/sized-delete)",
+    "Four fully bounded pixel-format TBB/TBH tables at2386/23fa/2520/2d06"
+  ],
+  "evidence": [
+    "media-jni-arm32-functions.json",
+    "media-jni-arm32-PC-reference-inventory.json",
+    "media-jni-arm32-ARM-PLT.json",
+    "media-jni-arm32-decode-inventory.json",
+    "media-jni-arm32-bounded-tables.json",
+    "media-jni-arm32-function-2e90.asm",
+    "media-jni-arm32-function-304c.asm",
+    "patched-arm32-methods.json",
+    "patched-donor-plane-slots.json",
+    "review.json"
+  ]
+}

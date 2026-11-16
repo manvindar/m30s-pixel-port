@@ -21,5 +21,20 @@
   },
   "ndk": "26.1.10909125",
   "api": 26,
-  "purpose": "Experimental codec-local genuine LIBSYNC provider; no graphics acceptance"
+  "purpose": "Experimental codec-local genuine LIBSYNC provider; no graphics acceptance",
+  "verified_build": {
+    "run": 43779726191,
+    "artifact": 14187214902,
+    "commit": "a595006e0491002c6dd0cea8342d7caea3681652"
+  },
+  "outputs": {
+    "arm64": {
+      "sha256": "ec3d2964b71945735f66afe0222d538210b44408b0658a94b7ac3708dcf902df",
+      "bytes": 9256
+    },
+    "arm32": {
+      "sha256": "36f7a13bc396707eed99ea079712b248936b64700edeb0d6da6a45e62e9b453e",
+      "bytes": 7248
+    }
+  }
 }

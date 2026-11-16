@@ -1,0 +1,12 @@
+{
+  "patched": {
+    "address": "0x167a7",
+    "bytes": "616e64726f69642e68617264776172652e67726170686963732e636f6d6d6f6e2e5374616e646172644d6574616461746154797065",
+    "text": "android.hardware.graphics.common.StandardMetadataType"
+  },
+  "latest": {
+    "address": "0x1511d",
+    "bytes": "616e64726f69642e68617264776172652e67726170686963732e636f6d6d6f6e2e5374616e646172644d6574616461746154797065",
+    "text": "android.hardware.graphics.common.StandardMetadataType"
+  }
+}

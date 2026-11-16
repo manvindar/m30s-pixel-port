@@ -1,0 +1,134 @@
+[
+  {
+    "instruction": "81b8:      \tadrp\tx1, 0xc000",
+    "following": [
+      "    81b8:      \tadrp\tx1, 0xc000",
+      "    81bc:      \tldr\tx1, [x1, #0x2a8]",
+      "    81c0:      \tbl\t0xacc0 <_ZNK7android7RefBase9incStrongEPKv@plt>",
+      "    81c4:      \tmov\tw0, wzr",
+      "    81c8:      \tb\t0x8270 <AHardwareBuffer_allocate+0x250>",
+      "    81cc:      \tmov\tw0, #-0x16"
+    ]
+  },
+  {
+    "instruction": "84c0:      \tadrp\tx1, 0xc000",
+    "following": [
+      "    84c0:      \tadrp\tx1, 0xc000",
+      "    84c4:      \tldr\tx1, [x1, #0x2a8]",
+      "    84c8:      \tldp\tx29, x30, [sp], #0x10",
+      "    84cc:      \tautiasp",
+      "    84d0:      \tb\t0xacc0 <_ZNK7android7RefBase9incStrongEPKv@plt>",
+      ""
+    ]
+  },
+  {
+    "instruction": "84ec:      \tadrp\tx1, 0xc000",
+    "following": [
+      "    84ec:      \tadrp\tx1, 0xc000",
+      "    84f0:      \tldr\tx1, [x1, #0x2a8]",
+      "    84f4:      \tldp\tx29, x30, [sp], #0x10",
+      "    84f8:      \tautiasp",
+      "    84fc:      \tb\t0xacd8 <_ZNK7android7RefBase9decStrongEPKv@plt>",
+      ""
+    ]
+  },
+  {
+    "instruction": "8ea0:      \tadrp\tx1, 0xc000",
+    "following": [
+      "    8ea0:      \tadrp\tx1, 0xc000",
+      "    8ea4:      \tldr\tx1, [x1, #0x2a8]",
+      "    8ea8:      \tbl\t0xacc0 <_ZNK7android7RefBase9incStrongEPKv@plt>",
+      "    8eac:      \tldr\tx0, [sp, #0x8]",
+      "    8eb0:      \tcbz\tx0, 0x8de0 <AHardwareBuffer_recvHandleFromUnixSocket+0x12c>",
+      "    8eb4:      \tadd\tx1, sp, #0x8"
+    ]
+  },
+  {
+    "instruction": "9078:      \tadrp\tx8, 0xc000",
+    "following": [
+      "    9078:      \tadrp\tx8, 0xc000",
+      "    907c:      \tadd\tx1, sp, #0x8",
+      "    9080:      \tldr\tx8, [x8, #0x2b0]",
+      "    9084:      \tadd\tx8, x8, #0x10",
+      "    9088:      \tstp\tx8, x19, [sp, #0x8]",
+      "    908c:      \tbl\t0xacf0 <_ZNK7android6Parcel4readERNS0_26FlattenableHelperInterfaceE@plt>"
+    ]
+  },
+  {
+    "instruction": "90a8:      \tadrp\tx1, 0xc000",
+    "following": [
+      "    90a8:      \tadrp\tx1, 0xc000",
+      "    90ac:      \tldr\tx1, [x1, #0x2a8]",
+      "    90b0:      \tbl\t0xacc0 <_ZNK7android7RefBase9incStrongEPKv@plt>",
+      "    90b4:      \tmov\tx1, sp",
+      "    90b8:      \tmov\tx0, x19",
+      "    90bc:      \tbl\t0xacd8 <_ZNK7android7RefBase9decStrongEPKv@plt>"
+    ]
+  },
+  {
+    "instruction": "9134:      \tadrp\tx8, 0xc000",
+    "following": [
+      "    9134:      \tadrp\tx8, 0xc000",
+      "    9138:      \tadd\tx1, sp, #0x8",
+      "    913c:      \tldr\tx8, [x8, #0x2b0]",
+      "    9140:      \tadd\tx8, x8, #0x10",
+      "    9144:      \tstp\tx8, x20, [sp, #0x8]",
+      "    9148:      \tbl\t0xad08 <_ZN7android6Parcel5writeERKNS0_26FlattenableHelperInterfaceE@plt>"
+    ]
+  },
+  {
+    "instruction": "9200:      \tadrp\tx0, 0xc000",
+    "following": [
+      "    9200:      \tadrp\tx0, 0xc000",
+      "    9204:      \tldr\tx0, [x0, #0x2b8]",
+      "    9208:      \tbl\t0xac90 <pthread_mutex_lock@plt>",
+      "    920c:      \tadrp\tx22, 0xc000",
+      "    9210:      \tldr\tx22, [x22, #0x2c0]",
+      "    9214:      \tldr\tx21, [x22]"
+    ]
+  },
+  {
+    "instruction": "920c:      \tadrp\tx22, 0xc000",
+    "following": [
+      "    920c:      \tadrp\tx22, 0xc000",
+      "    9210:      \tldr\tx22, [x22, #0x2c0]",
+      "    9214:      \tldr\tx21, [x22]",
+      "    9218:      \tcbnz\tx21, 0x9230 <AHardwareBuffer_setDataSpace+0x50>",
+      "    921c:      \tmov\tw0, #0x10",
+      "    9220:      \tbl\t0xa918 <_Znwm@plt>"
+    ]
+  },
+  {
+    "instruction": "9230:      \tadrp\tx0, 0xc000",
+    "following": [
+      "    9230:      \tadrp\tx0, 0xc000",
+      "    9234:      \tldr\tx0, [x0, #0x2b8]",
+      "    9238:      \tbl\t0xaca8 <pthread_mutex_unlock@plt>",
+      "    923c:      \tldr\tx1, [x20, #0x70]",
+      "    9240:      \tmov\tx0, x21",
+      "    9244:      \tmov\tw2, w19"
+    ]
+  },
+  {
+    "instruction": "93b4:      \tadrp\tx1, 0xc000",
+    "following": [
+      "    93b4:      \tadrp\tx1, 0xc000",
+      "    93b8:      \tldr\tx1, [x1, #0x2a8]",
+      "    93bc:      \tbl\t0xacc0 <_ZNK7android7RefBase9incStrongEPKv@plt>",
+      "    93c0:      \tmov\tw0, w19",
+      "    93c4:      \tldr\tx8, [sp, #0x10]",
+      "    93c8:      \tcbz\tx8, 0x93e0 <AHardwareBuffer_createFromHandle+0x11c>"
+    ]
+  },
+  {
+    "instruction": "9670:      \tadrp\tx1, 0xc000",
+    "following": [
+      "    9670:      \tadrp\tx1, 0xc000",
+      "    9674:      \tldr\tx1, [x1, #0x2a8]",
+      "    9678:      \tbl\t0xacc0 <_ZNK7android7RefBase9incStrongEPKv@plt>",
+      "    967c:      \tmov\tw22, wzr",
+      "    9680:      \tb\t0x974c <AHardwareBuffer_allocateWithOptions+0x338>",
+      "    9684:      \tldr\tx8, [sp, #0x78]"
+    ]
+  }
+]

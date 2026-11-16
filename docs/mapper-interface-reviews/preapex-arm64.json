@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "status": "proposed-exact-hash-bound-mapper-receiver-review",
+  "acceptance": false,
+  "full_rom_acceptance": false,
+  "runtime_verified": false,
+  "consumer": {
+    "context": "system",
+    "file": "/system/lib64/libandroid_preapex.so",
+    "abi": "arm64",
+    "sha256": "5970db0a77ea05f7174e2efbb245a6e497cbcd544bcc22ecd8f02cbfc48124ee",
+    "bytes": 832520,
+    "text_start": "0x64000",
+    "text_bytes": 334364,
+    "unknown_instructions": 0,
+    "interface_symbols": [
+      "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+      "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+    ]
+  },
+  "complete_affected_receiver_review": {
+    "mapper_symbol_relocations": {
+      "0xc4438": "sLock",
+      "0xc4440": "sInstance",
+      "0xc56f8": "setDataspace",
+      "0xc5720": "constructor"
+    },
+    "all_text_GOT_page_materializations": 370,
+    "constant_flow_target_memory_accesses": [
+      "0xa61c0",
+      "0xa61cc",
+      "0xa61f0"
+    ],
+    "address_provenance": "Direct CFG/register constant flow from every GOT-page ADRP; all8 opaque calls are realR_AARCH64_TLSDESC1031 descriptor dispatches for distinct TLS slots, notmapper references",
+    "machine_word_direct_ADR_LDR_literal_mapper_targets": [],
+    "raw_pointer_aliases": "No raw data pointer to mapperglobal GOT slots; methodslot address occurrences only relocationoffset entries",
+    "other_method_GOT_page_materializations": 0,
+    "affected_function": "AHardwareBuffer_setDataSpace0xa619c\u20130xa6258",
+    "allocation": {
+      "bytes": 16,
+      "range": "0xa61d8\u20130xa61e4",
+      "constructor_call": "0xa61e4\u21920xb7b60",
+      "receiver": "x21",
+      "owned_singleton_store": "0xa61e8"
+    },
+    "existing_instance": "0xa61d0 loadsx21;0xa61d4 branches directly to0xa61ec",
+    "only_receiver_use": "0xa61fc movx0,x21;0xa6204 directsetDataspace\u21920xb7b10",
+    "receiver_field_reads": [],
+    "receiver_virtual_calls": [],
+    "receiver_escape": "Only publication to itsownedSingleton. No return/othercall/storingelsewhere beforeepilogue restore",
+    "error_behavior": "Existing statusmapping preserves-38 fromlegacyGralloc2/3 setter (branches0xa6230\u20130xa623c)",
+    "raw_slot10_receiver_call": false
+  },
+  "touched_provider_layout": {
+    "actual_patched_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+    "latest_reference_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+    "mapper_constructor": "Patcheddonor408bytes writes thispointer+0 and32-bitHALversion+8;latest216bytector samecallerfields;bothfit16byteallocation",
+    "singleton_globals": "sLock40/sInstance8 inbothactualproviders",
+    "GraphicBuffer_handle": "fromAHardwareBuffer8byteidentitywrapper; actualpatchedinitWithHandle storeshandle+0x70 at0x39eb8,latestat0x44578;bothclearfieldonfailure",
+    "setDataspace": "20-bytewrappermachinebytes equal; loads mapperpointer+0 thenvtableoffset0xf8(index33) andtailbranches",
+    "setter_provider_machine_bytes": [
+      {
+        "sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+        "setter_machine_hex": "5f2403d5000040f9080040f9107d40f900021fd6"
+      },
+      {
+        "sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+        "setter_machine_hex": "5f2403d5000040f9080040f9107d40f900021fd6"
+      }
+    ],
+    "actual_constructor_variants": [
+      "Gralloc5",
+      "Gralloc4",
+      "Gralloc3",
+      "Gralloc2"
+    ],
+    "legacy_Gralloc2_3_slot33": "Local0x483fc BTI;MOVw0,-38;RET,argument-independentnoobject/outputtouch",
+    "Gralloc4_5_slot33": "ExactsetDataspace(native_handle*,Dataspace)signatureinbothprior/latesttables"
+  },
+  "remaining_acceptance_conditions": [
+    "Actualfinalconsumer/providerSHA/ABI/context/pathmatching",
+    "Finalnamespace/import/dependencyclosure remainsrequired",
+    "Noexemption forothercaller/object/ABI/wholeROMruntime behavior"
+  ],
+  "evidence": [
+    "full-text.asm",
+    "debugdata.elf",
+    "address-materializations.json",
+    "machine-address-reference-check.json",
+    "got-flow-resolved.json",
+    "trace_got.py",
+    "AHardwareBuffer-setDataSpace.asm",
+    "provider-comparison.json",
+    "patched-MapperC1Ev.asm",
+    "latest-MapperC1Ev.asm",
+    "patched-initWithHandle.asm",
+    "latest-initWithHandle.asm",
+    "patched-legacy-setter.asm"
+  ]
+}

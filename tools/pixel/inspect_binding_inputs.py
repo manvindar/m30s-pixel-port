@@ -7,7 +7,7 @@ import sys
 import tempfile
 import zipfile
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'graphics'))
-from common import digest, dump, elf, extract_fs, run
+from common import digest, dump, elf, extract_fs, run, unpack_apex
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'downloads'))
 from verified_input import obtain
 
@@ -20,11 +20,15 @@ def main():
     receipt = {'input': pins, 'files': [], 'absences': [], 'acceptance': False,
                'limitations': ['Pinned base inputs, not final staged image readback',
                                'Source audioserver.rc is modified by port staging',
-                               'Runtime-generated linkerconfig and actual bindings remain unproven']}
+                               'Runtime-generated linkerconfig and actual bindings remain unproven',
+                               'Missing standalone linkerconfig is recorded, not replaced by an assumed init generator'],
+               'binding_review_complete': False, 'generator_identified': False, 'directory_inventories': []}
     targets = [('/system/lib/libgralloctypes.so', True),
                ('/system/lib64/libgralloctypes.so', True),
-               ('/system/bin/linkerconfig', True),
+               ('/system/bin/linkerconfig', False),
+               ('/system/bin/init', True),
                ('/system/etc/linker.config.json', False),
+               ('/system/etc/linker.config.pb', True),
                ('/system/etc/init/audioserver.rc', True),
                ('/system/build.prop', True),
                ('/system/etc/ld.config.txt', False),
@@ -43,6 +47,23 @@ def main():
                 raise RuntimeError('Unexpected sparse pinned image')
             stream.seek(1080); ext4 = stream.read(2) == b'\x53\xef'
         decoded = None if ext4 else extract_fs(image, tmp / 'decoded')
+        for directory in ('/system/bin', '/system/bin/bootstrap', '/system/apex'):
+            if ext4:
+                if 'Inode:' not in run('debugfs', '-R', 'stat ' + directory, image):
+                    receipt['directory_inventories'].append({'path': directory, 'absent': True})
+                    continue
+                listing = run('debugfs', '-R', 'ls -p ' + directory, image)
+            else:
+                directory_path = decoded / directory.lstrip('/')
+                if not directory_path.is_dir() or directory_path.is_symlink():
+                    receipt['directory_inventories'].append({'path': directory, 'absent': True})
+                    continue
+                listing = '\n'.join(sorted(p.name for p in directory_path.iterdir()))
+            if len(listing.encode()) > 512 * 1024:
+                raise RuntimeError('Oversized bounded generator directory inventory')
+            filename = directory.lstrip('/').replace('/', '-') + '.inventory.txt'
+            (out / filename).write_text(listing)
+            receipt['directory_inventories'].append({'path': directory, 'evidence_file': filename})
         for remote, required in targets:
             target = out / remote.lstrip('/')
             if ext4:
@@ -70,7 +91,7 @@ def main():
             metadata = elf(target)
             expected_abi = {'/system/lib/libgralloctypes.so': 'arm32',
                             '/system/lib64/libgralloctypes.so': 'arm64',
-                            '/system/bin/linkerconfig': 'arm64'}.get(remote)
+                            '/system/bin/linkerconfig': 'arm64', '/system/bin/init': 'arm64'}.get(remote)
             if expected_abi and (metadata is None or metadata['abi'] != expected_abi):
                 raise RuntimeError('Invalid binding input ELF ABI: ' + remote)
             if metadata is not None:
@@ -79,9 +100,72 @@ def main():
                 target.with_suffix(target.suffix + '.readelf.txt').write_text(
                     run('readelf', '--dyn-syms', '--version-info', '--dynamic', '--wide', target))
             receipt['files'].append(record)
+        # Measured pinned init contains /apex/com.android.runtime/bin/linkerconfig.
+        # Inspect that exact package, not an assumed standalone /system binary.
+        runtime_remote = '/system/apex/com.android.runtime.apex'
+        runtime = tmp / 'runtime.apex'
+        if ext4:
+            if 'Inode:' not in run('debugfs', '-R', 'stat ' + runtime_remote, image):
+                raise RuntimeError('Required measured runtime APEX absent')
+            dump(image, runtime_remote, runtime)
+        else:
+            source = decoded / runtime_remote.lstrip('/')
+            if not source.is_file() or source.is_symlink():
+                raise RuntimeError('Required measured runtime APEX absent')
+            shutil.copyfile(source, runtime)
+        if not 0 < runtime.stat().st_size <= 32 * 1024 ** 2:
+            raise RuntimeError('Runtime APEX exceeds bounded package size')
+        _, payload, manifest = unpack_apex(runtime, tmp / 'runtime-unpacked')
+        runtime_root = extract_fs(payload, tmp / 'runtime-decoded')
+        generator = runtime_root / 'bin/linkerconfig'
+        if not generator.is_file() or generator.is_symlink():
+            raise RuntimeError('Measured runtime linkerconfig generator absent')
+        if not 0 < generator.stat().st_size <= 4 * 1024 ** 2:
+            raise RuntimeError('Runtime generator exceeds bounded size')
+        metadata = elf(generator)
+        if metadata is None or metadata['abi'] != 'arm64':
+            raise RuntimeError('Runtime generator wrong ELF ABI')
+        total += generator.stat().st_size
+        if total > 16 * 1024 ** 2:
+            raise RuntimeError('Binding input evidence exceeds16MiB')
+        target = out / 'runtime/bin/linkerconfig'
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(generator, target)
+        receipt['generator_input'] = {
+            'source_apex': runtime_remote, 'apex_sha256': digest(runtime),
+            'apex_bytes': runtime.stat().st_size, 'manifest_sha256': digest(manifest),
+            'file': '/apex/com.android.runtime/bin/linkerconfig',
+            'evidence_file': str(target.relative_to(out)), 'sha256': digest(target),
+            'bytes': target.stat().st_size, 'abi': metadata['abi'],
+            'needed': metadata['needed'], 'runtime_execution': False}
+        target.with_suffix('.readelf.txt').write_text(
+            run('readelf', '--dyn-syms', '--version-info', '--dynamic', '--wide', target))
+        # Inspect the shipping loader which consumes generated namespace rules.
+        loader = runtime_root / 'bin/linker64'
+        if not loader.is_file() or loader.is_symlink():
+            raise RuntimeError('Required runtime ARM64 loader absent')
+        if not 0 < loader.stat().st_size <= 4 * 1024 ** 2:
+            raise RuntimeError('Runtime loader exceeds bounded size')
+        loader_meta = elf(loader)
+        if loader_meta is None or loader_meta['abi'] != 'arm64':
+            raise RuntimeError('Runtime loader wrong ELF ABI')
+        total += loader.stat().st_size
+        if total > 16 * 1024 ** 2:
+            raise RuntimeError('Binding input evidence exceeds16MiB')
+        loader_target = out / 'runtime/bin/linker64'
+        shutil.copyfile(loader, loader_target)
+        receipt['loader_input'] = {
+            'source_apex_sha256': digest(runtime),
+            'file': '/apex/com.android.runtime/bin/linker64',
+            'evidence_file': str(loader_target.relative_to(out)),
+            'sha256': digest(loader_target), 'bytes': loader_target.stat().st_size,
+            'abi': loader_meta['abi'], 'runtime_execution': False}
+        loader_target.with_suffix('.readelf.txt').write_text(
+            run('readelf', '--dyn-syms', '--version-info', '--dynamic', '--wide', loader_target))
     if len(receipt['files']) != sum(1 for _, required in targets if required) + sum(
             1 for remote, required in targets if not required and remote not in {r['file'] for r in receipt['absences']}):
         raise RuntimeError('Incomplete binding evidence receipt')
+    receipt['status'] = 'pinned inputs extracted; namespace generator/bindings unresolved'
     (out / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
 
 if __name__ == '__main__':

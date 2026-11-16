@@ -1,0 +1,61 @@
+[
+  {
+    "function": "1ca9a0",
+    "seed": "0x1cb0f8",
+    "seed_registers": [
+      "x21"
+    ],
+    "states": 661,
+    "events": [
+      [
+        "0x1cb14c",
+        "receiver-alias",
+        "x0, x21"
+      ],
+      [
+        "0x1cb158",
+        "bl-receiver-argument",
+        "x0 0x20a688 <_ZN7android19GraphicBufferMapper4lockEPK13native_handlejRKNS_4RectEPPv@plt>"
+      ],
+      [
+        "0x1cb22c",
+        "receiver-alias",
+        "x0, x21"
+      ],
+      [
+        "0x1cb238",
+        "bl-receiver-argument",
+        "x0 0x20a670 <_ZN7android19GraphicBufferMapper9lockYCbCrEPK13native_handlejRKNS_4RectEP13android_ycbcr@plt>"
+      ],
+      [
+        "0x1cb244",
+        "receiver-store-or-store-base",
+        "x21, [sp, #0x60]"
+      ],
+      [
+        "0x1cbf9c",
+        "outside-function",
+        "x21"
+      ]
+    ],
+    "unknown_tainted_operations": [],
+    "limitations": "Conservative register-only taint with conditional successors; all recorded stores/fields and local call origins need explicit manual review. External AAPCS64 calls clobber x0..18; no inferred whole-program acceptance."
+  },
+  {
+    "function": "1ca9a0",
+    "seed": "0x1cb2ac",
+    "seed_registers": [
+      "x0"
+    ],
+    "states": 3,
+    "events": [
+      [
+        "0x1cb2b4",
+        "bl-receiver-argument",
+        "x0 0x20a6a0 <_ZN7android19GraphicBufferMapper6unlockEPK13native_handlePNS_4base14unique_fd_implINS4_13DefaultCloserEEE@plt>"
+      ]
+    ],
+    "unknown_tainted_operations": [],
+    "limitations": "Conservative register-only taint with conditional successors; all recorded stores/fields and local call origins need explicit manual review. External AAPCS64 calls clobber x0..18; no inferred whole-program acceptance."
+  }
+]

@@ -1,0 +1,52 @@
+{
+  "prior": {
+    "symbol": {
+      "name": "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+      "value": 400144,
+      "size": 20,
+      "defined": true,
+      "type": 2
+    },
+    "singleton_data": [
+      {
+        "name": "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE",
+        "value": 463552,
+        "size": 8,
+        "defined": true,
+        "type": 1
+      },
+      {
+        "name": "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "value": 463512,
+        "size": 40,
+        "defined": true,
+        "type": 1
+      }
+    ]
+  },
+  "latest": {
+    "symbol": {
+      "name": "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+      "value": 384920,
+      "size": 20,
+      "defined": true,
+      "type": 2
+    },
+    "singleton_data": [
+      {
+        "name": "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+        "value": 447152,
+        "size": 40,
+        "defined": true,
+        "type": 1
+      },
+      {
+        "name": "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE",
+        "value": 447192,
+        "size": 8,
+        "defined": true,
+        "type": 1
+      }
+    ]
+  }
+}

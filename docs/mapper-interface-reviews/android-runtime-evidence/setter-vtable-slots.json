@@ -1,0 +1,52 @@
+[
+  {
+    "variant": "patched",
+    "vtable": "_ZTVN7android14Gralloc3MapperE",
+    "slot45": {
+      "symbols": [],
+      "local_address": "0x483fc"
+    }
+  },
+  {
+    "variant": "patched",
+    "vtable": "_ZTVN7android14Gralloc4MapperE",
+    "slot45": {
+      "symbols": [],
+      "local_address": "0x483fc"
+    }
+  },
+  {
+    "variant": "patched",
+    "vtable": "_ZTVN7android14Gralloc5MapperE",
+    "slot45": {
+      "symbol": "_ZNK7android14Gralloc5Mapper15setSmpte2094_50EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+      "addend": 0,
+      "relocation_type": 257
+    }
+  },
+  {
+    "variant": "patched",
+    "vtable": "_ZTVN7android14Gralloc2MapperE",
+    "slot45": {
+      "symbols": [],
+      "local_address": "0x483fc"
+    }
+  },
+  {
+    "variant": "latest",
+    "vtable": "_ZTVN7android14Gralloc4MapperE",
+    "slot45": {
+      "symbols": [],
+      "local_address": "0x4f780"
+    }
+  },
+  {
+    "variant": "latest",
+    "vtable": "_ZTVN7android14Gralloc5MapperE",
+    "slot45": {
+      "symbol": "_ZNK7android14Gralloc5Mapper15setSmpte2094_50EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+      "addend": 0,
+      "relocation_type": 257
+    }
+  }
+]

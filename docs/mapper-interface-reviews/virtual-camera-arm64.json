@@ -1,0 +1,188 @@
+{
+  "schema": 1,
+  "status": "proposed-exact-hash-bound-mapper-interface-review",
+  "full_rom_acceptance": false,
+  "runtime_verified": false,
+  "abi": "arm64",
+  "consumer": {
+    "file": "/system/bin/virtual_camera",
+    "context": "system",
+    "sha256": "426691a42682cc87f107ead1df0d2b3dd6bad363be8f7a7684c662e165d51dfd",
+    "bytes": 670760
+  },
+  "patched_system_libui_sha256": "00906cd51a696c0be6e17a8caac100442cc3f42a176351e4785f99f156f9e15b",
+  "latest_system_libui_sha256": "7430c7994ba3f669adb7c1529ff143c901c06b42f8109f2cb5503a5aade7199b",
+  "interface_symbols": [
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+    "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE"
+  ],
+  "decoding": {
+    "text_bytes": 439064,
+    "mini_debug_bytes": 224520,
+    "exact_function_extents": 1443,
+    "unknown_instructions": 0,
+    "function_extent_gaps": "11 gaps; each exact raw word00000000, not executable mapper paths",
+    "GOT_references": "426 page9a000 materializations scanned; exact three loads of mapper singleton/lock",
+    "direct_calls": "All seven mapper PLT calls in one exact function"
+  },
+  "affected_receiver_paths": [
+    {
+      "function": "VirtualCameraStream::importBuffer(StreamBuffer const&)",
+      "entry": "0x5f0fc",
+      "bytes": 1932,
+      "sLock": [
+        "0x5f1e4/0x5f1e8->GOT9a1f8",
+        "0x5f214/0x5f218->GOT9a1f8"
+      ],
+      "sInstance": "0x5f1f0/0x5f1f4->GOT9a200",
+      "receiver_load": "0x5f1f8 x23=[x24]",
+      "allocation16": "0x5f200 w0=16;0x5f204 new;0x5f208 x23=x0",
+      "constructor": "0x5f20c->0x94198",
+      "owned_singleton_store": "0x5f210 [x24]=x23",
+      "uses": [
+        "0x5f224 x0=x23;0x5f230 importBufferNoValidate",
+        "0x5f268 x0=x23;0x5f284 getWidth",
+        "0x5f290 x0=x23;0x5f298 getHeight",
+        "0x5f2a4 x0=x23;0x5f2ac getUsage",
+        "0x5f2b8 x0=x23;0x5f2c0 getLayerCount",
+        "0x5f2cc x0=x23;0x5f2d4 getPixelFormatRequested"
+      ],
+      "receiver_end": "On success no use after getter;0x5f7c4 replaces x23 with literal CFI type; on metadata error0x5f318 replaces x23 from [sp]; on import error no use until callee-saved restore. Later [x23]/CFI are GraphicBuffer-derived after redefinition, not mapper.",
+      "inline_mapper_fields": [],
+      "mapper_virtual_calls": [],
+      "mapper_escape": "Only own Singleton store; no receiver field, stack spill, output, or unreviewed helper argument"
+    }
+  ],
+  "mapper_object": {
+    "allocation_bytes": 16,
+    "pointer_offset": 0,
+    "HAL_version_offset": 8,
+    "HAL_version_bytes": 4,
+    "actual_constructor": "0x357b8 x19=this;357bc zero+0;357ec store mapper+0;3580c version32+8; all paths fit16"
+  },
+  "forwarding_wrappers_exact_byte_matches": [
+    {
+      "name": "_ZN7android19GraphicBufferMapper8getUsageEPK13native_handlePm",
+      "sha256": "fbb0259c85cb7cce5b2b36ef1c49c945af9278a7c7c6b607eeb500f566fd2f6c",
+      "patched_address": "0x61a48",
+      "latest_address": "0x5ded0"
+    },
+    {
+      "name": "_ZN7android19GraphicBufferMapper9getHeightEPK13native_handlePm",
+      "sha256": "0f4f0768ad6d7b83294205c4f15c712f486b66a1e8ad8fe35fcfaab8bb31e190",
+      "patched_address": "0x619e4",
+      "latest_address": "0x5de6c"
+    },
+    {
+      "name": "_ZN7android19GraphicBufferMapper13getLayerCountEPK13native_handlePm",
+      "sha256": "d8fd81bbce2e6e95e358d322bda22355f7583a47d7a8744c233657ce2b2ddbd1",
+      "patched_address": "0x619f8",
+      "latest_address": "0x5de80"
+    },
+    {
+      "name": "_ZN7android19GraphicBufferMapper23getPixelFormatRequestedEPK13native_handlePNS_8hardware8graphics6common4V1_211PixelFormatE",
+      "sha256": "77dbccd4d0848b1cb624a6ca6ee27218edeb062147b20bed357b765fe7b6b081",
+      "patched_address": "0x61a0c",
+      "latest_address": "0x5de94"
+    },
+    {
+      "name": "_ZN7android19GraphicBufferMapper8getWidthEPK13native_handlePm",
+      "sha256": "7f319da263ebb0352952961205331fba623a431f04d18d815e62676164148810",
+      "patched_address": "0x619d0",
+      "latest_address": "0x5de58"
+    },
+    {
+      "name": "_ZN7android19GraphicBufferMapper22importBufferNoValidateEPK13native_handlePS3_",
+      "sha256": "694952b01fdb337ef2e122093de0353f196ab359b7dd3a1324e74ace49dea57a",
+      "patched_address": "0x616fc",
+      "latest_address": "0x5dc64"
+    }
+  ],
+  "protocols": {
+    "importBufferNoValidate": "x0 this,x1 opaque nativehandle,x2 address of initialized8-byte handle pointer atsp+8;return32-bitw0 checked at5f234",
+    "metadata_output_buffers": {
+      "getWidth": {
+        "bytes": 8,
+        "address": "x29-0x18"
+      },
+      "getHeight": {
+        "bytes": 8,
+        "address": "x29-0x20"
+      },
+      "getUsage": {
+        "bytes": 8,
+        "address": "sp+0x28"
+      },
+      "getLayerCount": {
+        "bytes": 8,
+        "address": "sp+0x20"
+      },
+      "getPixelFormatRequested": {
+        "bytes": 4,
+        "address": "sp+0x1c"
+      }
+    },
+    "status": "Every getterw0 checked before consuming outputs; no vector/string/PlaneLayout returned by this mapper interface",
+    "actual_Gralloc5_output_writes": {
+      "Width": "0x3a770 str x8,[x19]",
+      "Height": "0x408a8 str x8,[x19]",
+      "Layer": "0x40a6c str x8,[x19]",
+      "Usage": "0x52c14 str x8,[x19]",
+      "PixelFormat": "0x52b90 str w8,[x19]"
+    },
+    "actual_Gralloc4_scalar_decoder_hash": "e317b632b2f49abadc7d17c4f7bf6730936b709a7ad6ec04e71d21a5d2eb1881",
+    "actual_decoder_output_writes": {
+      "Width": "0xb924 str x9,[x19]",
+      "Height": "0xbba4 str x9,[x19]",
+      "Layer": "0xbe24 str x9,[x19]",
+      "Usage": "0xc828 str x9,[x19]",
+      "PixelFormat": "0xc0a8 str w9,[x19]"
+    }
+  },
+  "vtable_dispatch": {
+    "importBufferNoValidate": {
+      "table_index": 6,
+      "address_point_offset": 32
+    },
+    "getWidth": {
+      "table_index": 16,
+      "address_point_offset": 112
+    },
+    "getHeight": {
+      "table_index": 17,
+      "address_point_offset": 120
+    },
+    "getLayerCount": {
+      "table_index": 18,
+      "address_point_offset": 128
+    },
+    "getPixelFormatRequested": {
+      "table_index": 19,
+      "address_point_offset": 136
+    },
+    "getUsage": {
+      "table_index": 22,
+      "address_point_offset": 160
+    },
+    "Gralloc4_5": "Relocation-backed names match exact signatures in both actual patched/latest tables",
+    "Gralloc2_3": "Import slot remains named matching nativehandle protocol; all five metadata getters local483fc return-38. Virtual-camera import fails through preserved status checks on unsupported metadata, not accepted as functionality."
+  },
+  "limitations": [
+    "Only exact affected mapper Singleton interface; independent GraphicBuffer construction/CFI/ANativeWindow/native-handle internals are not blanket accepted",
+    "Fresh final hash and namespace/dependency closure required, including decoder binding",
+    "No lock/lockAsync/changed virtual lock invoked in affected mapper receiver path",
+    "No runtime virtual-camera capability proven; Gralloc2/3 metadata unsupported",
+    "No ROM/device acceptance"
+  ],
+  "evidence": [
+    "virtual-camera-arm64-functions.json",
+    "virtual-camera-arm64-mini-debug.elf",
+    "virtual-camera-arm64-reference-inventory.json",
+    "virtual-camera-arm64-mapper-relocations.json",
+    "virtual-camera-arm64-function-5f0fc.asm",
+    "virtual-camera-arm64-provider-methods.json",
+    "virtual-camera-arm64-backend-methods.json",
+    "virtual-camera-scalar-decoders.json",
+    "virtual-camera-legacy-getter-unsupported.asm"
+  ]
+}

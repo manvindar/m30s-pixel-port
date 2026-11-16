@@ -1,0 +1,37 @@
+{
+  "0x212b88": {
+    "symbol": "_ZN7android9SingletonINS_19GraphicBufferMapperEE5sLockE",
+    "addend": 0,
+    "relocation_type": 1025
+  },
+  "0x212b90": {
+    "symbol": "_ZN7android9SingletonINS_19GraphicBufferMapperEE9sInstanceE",
+    "addend": 0,
+    "relocation_type": 1025
+  },
+  "0x213f40": {
+    "symbol": "_ZN7android19GraphicBufferMapper12setDataspaceEPK13native_handleNS_8hardware8graphics6common4V1_29DataspaceE",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x213f48": {
+    "symbol": "_ZN7android19GraphicBufferMapper12setSmpte2086EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common9Smpte2086EEE",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x213f50": {
+    "symbol": "_ZN7android19GraphicBufferMapper11setCta861_3EPK13native_handleNSt3__18optionalIN4aidl7android8hardware8graphics6common8Cta861_3EEE",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x213f58": {
+    "symbol": "_ZN7android19GraphicBufferMapper15setSmpte2094_40EPK13native_handleNSt3__18optionalINS4_6vectorIhNS4_9allocatorIhEEEEEE",
+    "addend": 0,
+    "relocation_type": 1026
+  },
+  "0x214010": {
+    "symbol": "_ZN7android19GraphicBufferMapperC1Ev",
+    "addend": 0,
+    "relocation_type": 1026
+  }
+}
