@@ -16,7 +16,7 @@ VENDOR=/dev/block/by-name/vendor
 [ "$(blockdev --getsize64 "$SYSTEM")" = 5033164800 ] || fail 'System geometry differs'
 [ -r /proc/mounts ] || fail 'Cannot inspect mounted partitions'
 awk '$2=="/system" || $2=="/system_root" || ($2=="/" && $3=="ext4") {found=1} END {exit !found}' /proc/mounts && fail 'Unmount System/System Root before installing'
-for part in "$SYSTEM" "$BOOT" "$VENDOR"; do
+for part in "$SYSTEM"; do
     resolved=$(readlink -f "$part")
     awk -v a="$part" -v b="$resolved" '$1==a || $1==b {found=1} END {exit !found}' /proc/mounts && fail "Unmount $part before installing"
 done
@@ -33,7 +33,7 @@ ui 'Verifying complete system image before any write...'
 actual=$(unzip -p "$ZIP" system.img.xz | decompress | sha256sum)
 [ "${actual%% *}" = "$expected" ] || fail 'System image checksum mismatch'
 boot_before=$(sha256sum "$BOOT"); vendor_before=$(sha256sum "$VENDOR")
-[ "${boot_before%% *}" = 5219d618dad571438312ab1fcd62deaa9af17f3e49a48b70638bb9e817917426 ] || fail 'ACPM-fixed boot required; follow first-install instructions'
+[ "${boot_before%% *}" = 5219d618dad571438312ab1fcd62deaa9af17f3e49a48b70638bb9e817917426 ] || fail 'ACPM-fixed boot required; install supplied Boot separately, without a data wipe'
 case "${vendor_before%% *}" in
     5cc3c84c90655d46d558b317cfadf4764211f56295da59904d5197c4c1f13e30|63548021f66206ce28fc1739eb157febcc0c456fe2e1e11886ec8fa782433646) ;;
     *) fail 'Unverified Vendor; use the documented compatible Vendor first';;

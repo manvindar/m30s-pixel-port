@@ -6,6 +6,8 @@ Only Samsung Galaxy M30s **SM-M307F**, unlocked bootloader, compatible TWRP and 
 
 Back up System and personal files to a computer first; keep stock firmware and your established recovery route. Keep the verified ACPM-fixed Boot, compatible Vendor, VBMETA, Recovery, EFS/modem and all data. Do not wipe or format data. Unmount System in TWRP before installing.
 
+If upgrading from v0.6 or another older boot, back up Boot, then install the supplied `boot-acpm-fixed.img` through **TWRP Install → Install Image → Boot** before the System upgrade. This preparatory Boot update does not require Format Data. The system-only ZIP itself retains Boot and will reject an older/unverified one. If the supplied fixed Boot is already installed, keep it.
+
 1. Download the TWRP system-upgrade ZIP, `SHA256SUMS` and the release instructions. If the ZIP is split for GitHub's file-size limit, download **every** part and reconstruct on your computer:
 
    ```sh

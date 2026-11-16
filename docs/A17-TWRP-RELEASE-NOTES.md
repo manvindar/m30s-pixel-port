@@ -2,7 +2,7 @@ Complete experimental Android 17 QPR3 Beta 4 (DP11.261030.003) images for Samsun
 
 - `M30s-A17-TWRP-system-upgrade.zip`: guarded TWRP **System-only** dirty upgrade; preserves compatible Boot/Vendor and all data. If split, reconstruct all parts on a computer before installing. Recovery needs xz or busybox xzcat. Exact ACPM-fixed boot and a known compatible vendor are required.
 - `system-a17-pixel.img.xz.part-*`: complete System image; join/decompress on a computer, verify, then TWRP **Install Image → System**. Raw size 5033164800 bytes.
-- `vendor-a17.img.xz`, `boot-acpm-fixed.img`, `vbmeta-disabled.img`: first-install components. Existing compatible Pixel installations retain these partitions. No recovery/modem/EFS/bootloader images are included.
+- `vendor-a17.img.xz`, `boot-acpm-fixed.img`, `vbmeta-disabled.img`: first-install components. Existing installations retain an already installed ACPM-fixed Boot and compatible Vendor/VBMETA. Older v0.6 boots need a separate backed-up fixed-Boot update before using the system-only ZIP; no data wipe. No recovery/modem/EFS/bootloader images are included.
 - `TWRP-INSTALL.md`: dirty-upgrade and first-install instructions. VBMETA is a Download mode step; the retained M30s TWRP fstab does not expose its GUI target.
 - `SHA256SUMS`, `IMAGE-SHA256SUMS`, build and package receipts: exact compressed/raw identities and explicit experimental compatibility limits.
 - `kernel-source-acpm-fixed.tar.gz` and `kernel.config`: corresponding modified Samsung kernel source and exact build configuration for the included fixed boot. Kernel build instructions accompany the source.
