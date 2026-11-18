@@ -20,7 +20,7 @@ Download every system part, vendor image, boot, vbmeta, SHA256SUMS, IMAGE-SHA256
 
 ```sh
 sha256sum -c SHA256SUMS
-cat system-a17-pixel.img.xz.part-* | xz -dc > system-a17-pixel.img
+xz -dc system-a17-pixel.img.xz > system-a17-pixel.img
 xz -dc vendor-a17.img.xz > vendor-a17.img
 sha256sum -c IMAGE-SHA256SUMS
 ```

@@ -9,6 +9,7 @@ import shutil
 import zipfile
 
 SYSTEM_BYTES = 5033164800
+RELEASE_FILE_LIMIT = 2_000_000_000  # conservative GitHub single-asset ceiling; never split
 BOOT_SHA = '5219d618dad571438312ab1fcd62deaa9af17f3e49a48b70638bb9e817917426'
 
 
@@ -33,6 +34,18 @@ def validate_receipts(candidate, source, run):
     return build, graphics
 
 
+def validate_system_archive(path, expected_hash, expected_bytes=SYSTEM_BYTES):
+    if path.stat().st_size >= RELEASE_FILE_LIMIT:
+        raise RuntimeError('Complete System archive exceeds single-file release limit; recompress, never split')
+    size = 0; h = hashlib.sha256()
+    with lzma.open(path, 'rb') as src:
+        for block in iter(lambda: src.read(1024 * 1024), b''):
+            size += len(block); h.update(block)
+    if size != expected_bytes or h.hexdigest() != expected_hash:
+        raise RuntimeError('Complete decompressed system identity mismatch')
+    return size
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('candidate', type=Path); ap.add_argument('boot', type=Path); ap.add_argument('output', type=Path)
@@ -55,23 +68,14 @@ def main():
     raw_hashes = dict((name.lstrip('*'), h) for h, name in
                       (line.split(maxsplit=1) for line in (c / 'IMAGE-SHA256SUMS').read_text().splitlines()))
     expected = raw_hashes['system-a17-pixel.img']
-    parts = sorted(c.glob('system-a17-pixel.img.xz.part-*'))
-    if not parts or [p.name.rsplit('-', 1)[-1] for p in parts] != [f'{i:02d}' for i in range(len(parts))]:
-        raise RuntimeError('Missing/out-of-order system parts')
+    source_archive = c / 'system-a17-pixel.img.xz'
+    if any(c.glob('system-a17-pixel.img.xz.part-*')):
+        raise RuntimeError('Split System files are unsupported; provide one complete .xz archive')
+    size = validate_system_archive(source_archive, expected)
     args.output.mkdir(exist_ok=False)
     out = args.output
-    packed = out / 'system.img.xz'
-    with packed.open('wb') as dst:
-        for p in parts:
-            with p.open('rb') as src: shutil.copyfileobj(src, dst)
-    size = 0; h = hashlib.sha256()
-    with lzma.open(packed, 'rb') as src:
-        for block in iter(lambda: src.read(1024 * 1024), b''):
-            size += len(block); h.update(block)
-    if size != SYSTEM_BYTES or h.hexdigest() != expected:
-        raise RuntimeError('Complete decompressed system identity mismatch')
-    if packed.stat().st_size >= 2**32:
-        raise RuntimeError('Compressed system exceeds recovery ZIP32 limit')
+    packed = out / 'system-a17-pixel.img.xz'
+    shutil.copy2(source_archive, packed)
     archive = out / 'M30s-A17-TWRP-system-upgrade.zip'
     with zipfile.ZipFile(archive, 'w', allowZip64=False) as z:
         script = Path(__file__).with_name('twrp-system-update.sh')
@@ -82,9 +86,7 @@ def main():
         z.write(packed, 'system.img.xz', compress_type=zipfile.ZIP_STORED)
     with zipfile.ZipFile(archive) as z:
         if z.testzip() is not None: raise RuntimeError('TWRP archive CRC failure')
-    # Raw system is obtained by xz -dc; retain original download parts under 2 GiB.
-    packed.unlink()
-    for p in parts: shutil.copy2(p, out / p.name)
+    # Retain the complete archive beside the complete ZIP; neither is split.
     shutil.copy2(args.boot, out / 'boot-acpm-fixed.img')
     for name in ['vendor-a17.img.xz', 'vbmeta-disabled.img', 'build-receipt.json',
                  'graphics-compatibility-verification.json', 'image-fixes-verification.json', 'm30s-fixes-verification.json',
@@ -94,21 +96,8 @@ def main():
         f"{raw_hashes['vendor-a17.img']}  vendor-a17.img\n" + f'{BOOT_SHA}  boot-acpm-fixed.img\n' +
         f"{raw_hashes['vbmeta-disabled.img']}  vbmeta-disabled.img\n")
     archive_sha = digest(archive)
-    if archive.stat().st_size >= 2_000_000_000:
-        with archive.open('rb') as src:
-            i = 0
-            while True:
-                first = src.read(1024 * 1024)
-                if not first: break
-                with (out / (archive.name + f'.part-{i:02d}')).open('wb') as dst:
-                    dst.write(first)
-                    remaining = 1899 * 1024 * 1024
-                    while remaining:
-                        block = src.read(min(1024 * 1024, remaining))
-                        if not block: break
-                        dst.write(block); remaining -= len(block)
-                i += 1
-        archive.unlink()
+    if archive.stat().st_size >= RELEASE_FILE_LIMIT:
+        raise RuntimeError('Complete TWRP ZIP exceeds single-file release limit; recompress System, never split')
     (out / 'package-receipt.json').write_text(json.dumps({
         'source_commit': args.source, 'actions_run': args.run, 'system_sha256': expected,
         'complete_reconstructed_twrp_zip_sha256': archive_sha,

@@ -8,13 +8,7 @@ Back up System and personal files to a computer first; keep stock firmware and y
 
 If upgrading from v0.6 or another older boot, back up Boot, then install the supplied `boot-acpm-fixed.img` through **TWRP Install → Install Image → Boot** before the System upgrade. This preparatory Boot update does not require Format Data. The system-only ZIP itself retains Boot and will reject an older/unverified one. If the supplied fixed Boot is already installed, keep it.
 
-1. Download the TWRP system-upgrade ZIP, `SHA256SUMS` and the release instructions. If the ZIP is split for GitHub's file-size limit, download **every** part and reconstruct on your computer:
-
-   ```sh
-   cat M30s-A17-TWRP-system-upgrade.zip.part-* > M30s-A17-TWRP-system-upgrade.zip
-   ```
-
-   Verify downloaded parts against `SHA256SUMS`. Copy the reconstructed ZIP to recovery-readable storage with enough space; do not delete or format any existing files. Use a filesystem supporting files larger than 4 GB when needed.
+1. Download the complete `M30s-A17-TWRP-system-upgrade.zip`, `SHA256SUMS` and the release instructions. Each download is a single complete file. Verify the ZIP against its entry in `SHA256SUMS`, then copy it to recovery-readable storage with enough space. Keep existing files and data.
 2. TWRP **Install → select ZIP → Swipe to confirm**. This ZIP writes **System only**. It requires a recovery xz decoder (xz or busybox xzcat), verifies the full decompressed system before writing, checks 5033164800-byte geometry, writes, checks complete System readback and compares Boot/Vendor before/after. It never wipes data or reboots automatically. Allow time for two decompressions and full readback; keep a reliable cable and power.
 3. On success, choose **Reboot → System**. On a write/readback error, remain in recovery; restore your verified backup or retry the complete verified image. Never reboot a partially written System.
 
@@ -22,15 +16,16 @@ The ZIP installer itself has host validation but has **not** been exercised on t
 
 ## Raw System route in TWRP
 
-Download every `system-a17-pixel.img.xz.part-*` plus checksums. On a computer:
+Download the complete `system-a17-pixel.img.xz` and checksum files. Verify its compressed SHA-256 before extraction. On a computer:
 
 ```sh
-cat system-a17-pixel.img.xz.part-* | xz -dc > system-a17-pixel.img
+xz -t system-a17-pixel.img.xz
+xz -dc system-a17-pixel.img.xz > system-a17-pixel.img
 xz -dc vendor-a17.img.xz > vendor-a17.img
 sha256sum -c IMAGE-SHA256SUMS
 ```
 
-On macOS use `shasum -a 256 -c`. Verify the files you plan to use; the complete checksum command requires all four raw image files. System must be exactly **5033164800 bytes**; Vendor **629145600 bytes**. Never flash a compressed `.xz` or split part directly. TWRP **Install → Install Image → system-a17-pixel.img → System Image**. For an existing compatible installation, this is the only partition to write.
+On macOS use `shasum -a 256 -c`. Verify the files you plan to use; the complete checksum command requires all four raw image files. System must be exactly **5033164800 bytes**; Vendor **629145600 bytes**. Never flash a compressed `.xz` directly. TWRP **Install → Install Image → system-a17-pixel.img → System Image**. For an existing compatible installation, this is the only partition to write.
 
 ## First installation from stock
 
