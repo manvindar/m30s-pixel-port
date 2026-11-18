@@ -53,13 +53,13 @@ jobs:
           python3 tools/release/package_twrp.py candidate fixed/boot-acpm-fixed.img out --source "$CANDIDATE_SOURCE" --run "$CANDIDATE_RUN"
           cp fixed/kernel-source-acpm-fixed.tar.gz fixed/kernel.config fixed/kernel-provenance.json fixed/KERNEL-BUILD.md out/
           cp docs/TWRP-RELEASE.md out/TWRP-INSTALL.md
-          cp docs/XDA-A17-TWRP.md out/XDA-POST.md
           cp docs/A17-TWRP-RELEASE-NOTES.md out/RELEASE-NOTES.md
           (cd out && sha256sum * > SHA256SUMS)
       - name: Upload full checked assets before publishing
         run: |
           ! ls out | grep -q '\.part-' || { echo 'split assets are not allowed' >&2; exit 1; }
-          gh release upload "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" out/* --clobber
+          python3 tools/release/select_public_assets.py out public --kind twrp
+          gh release upload "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" public/* --clobber
           gh release edit "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" --draft=false --prerelease=false --latest --title 'Galaxy M30s Android 17 QPR3 Beta 4 — full TWRP release' --notes-file out/RELEASE-NOTES.md
       - name: Verify the published release remotely (names, sizes, digests; no split parts)
         run: |
@@ -69,7 +69,8 @@ jobs:
           from pathlib import Path
           remote = {a['name']: a for a in json.load(open('remote.json'))['assets']}
           assert not [n for n in remote if '.part-' in n], 'split part asset on the release'
-          for f in sorted(Path('out').iterdir()):
+          assert set(remote) == {f.name for f in Path('public').iterdir()}, 'unexpected public release assets'
+          for f in sorted(Path('public').iterdir()):
               a = remote.get(f.name)
               assert a and a['state'] == 'uploaded', 'missing remote asset ' + f.name
               h = hashlib.sha256()

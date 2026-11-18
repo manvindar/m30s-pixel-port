@@ -500,7 +500,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag }}
         run: |
-          gh release create "$TAG" -R "$GITHUB_REPOSITORY" out/* --target "$GITHUB_SHA" --prerelease --title "Galaxy M30s Android 17 Pixel experimental ($TAG)" --notes-file out/RELEASE-NOTES.md
+          python3 tools/release/select_public_assets.py out public --kind image
+          gh release create "$TAG" -R "$GITHUB_REPOSITORY" public/* --target "$GITHUB_SHA" --prerelease --title "Galaxy M30s Android 17 Pixel experimental ($TAG)" --notes-file out/RELEASE-NOTES.md
 
       - name: Retain graphics verification evidence
         if: always()
