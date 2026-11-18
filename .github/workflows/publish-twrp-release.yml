@@ -58,8 +58,25 @@ jobs:
           (cd out && sha256sum * > SHA256SUMS)
       - name: Upload full checked assets before publishing
         run: |
+          ! ls out | grep -q '\.part-' || { echo 'split assets are not allowed' >&2; exit 1; }
           gh release upload "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" out/* --clobber
           gh release edit "$RELEASE_TAG" -R "$GITHUB_REPOSITORY" --draft=false --prerelease=false --latest --title 'Galaxy M30s Android 17 QPR3 Beta 4 — full TWRP release' --notes-file out/RELEASE-NOTES.md
+      - name: Verify the published release remotely (names, sizes, digests; no split parts)
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > remote.json
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          remote = {a['name']: a for a in json.load(open('remote.json'))['assets']}
+          assert not [n for n in remote if '.part-' in n], 'split part asset on the release'
+          for f in sorted(Path('out').iterdir()):
+              a = remote.get(f.name)
+              assert a and a['state'] == 'uploaded', 'missing remote asset ' + f.name
+              h = hashlib.sha256()
+              with f.open('rb') as src:
+                  for block in iter(lambda: src.read(1 << 20), b''): h.update(block)
+              assert a['size'] == f.stat().st_size and a['digest'] == 'sha256:' + h.hexdigest(), 'remote mismatch ' + f.name
+          PY
       - uses: actions/upload-artifact@v6
         if: always()
         with:

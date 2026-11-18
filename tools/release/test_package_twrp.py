@@ -1,7 +1,7 @@
 import importlib.util
 import json
 from pathlib import Path
-import tempfile
+import io, lzma, tempfile, zipfile
 import unittest
 
 spec = importlib.util.spec_from_file_location('package', Path(__file__).with_name('package_twrp.py'))
@@ -72,3 +72,15 @@ class CompleteArchiveTests(unittest.TestCase):
         with patch.object(package, 'RELEASE_FILE_LIMIT', self.path.stat().st_size):
             with self.assertRaisesRegex(RuntimeError, 'never split'):
                 package.validate_system_archive(self.path, self.sha, len(self.raw))
+
+
+class EmbeddedZipStreamTests(unittest.TestCase):
+    def test_truncated_embedded_stream_detected(self):
+        data = bytes(range(256)) * 16; sha = package.hashlib.sha256(data).hexdigest(); xz = lzma.compress(data)
+        def zipped(blob):
+            b = io.BytesIO()
+            with zipfile.ZipFile(b, 'w') as z: z.writestr('system.sha256', sha + '\n'); z.writestr('system.img.xz', blob)
+            return zipfile.ZipFile(io.BytesIO(b.getvalue()))
+        package.verify_zip_system(zipped(xz), sha, 4096)
+        with self.assertRaises(Exception): package.verify_zip_system(zipped(xz[:len(xz) // 2]), sha, 4096)
+        with self.assertRaises(RuntimeError): package.verify_zip_system(zipped(xz), sha, 4097)

@@ -20,6 +20,16 @@ def digest(path):
     return h.hexdigest()
 
 
+def verify_zip_system(z, expected, expected_bytes=SYSTEM_BYTES):
+    """The system stream embedded in the TWRP ZIP must decompress to exactly the expected length and hash."""
+    if z.read('system.sha256').decode().strip() != expected: raise RuntimeError('ZIP system.sha256 differs from the image hash')
+    size = 0; h = hashlib.sha256()
+    with z.open('system.img.xz') as raw, lzma.open(raw, 'rb') as src:
+        for block in iter(lambda: src.read(1024 * 1024), b''):
+            size += len(block); h.update(block)
+    if size != expected_bytes or h.hexdigest() != expected: raise RuntimeError('Embedded ZIP system stream is incomplete or differs')
+
+
 def validate_receipts(candidate, source, run):
     build = json.loads((candidate / 'build-receipt.json').read_text())
     graphics = json.loads((candidate / 'graphics-compatibility-verification.json').read_text())
@@ -86,6 +96,7 @@ def main():
         z.write(packed, 'system.img.xz', compress_type=zipfile.ZIP_STORED)
     with zipfile.ZipFile(archive) as z:
         if z.testzip() is not None: raise RuntimeError('TWRP archive CRC failure')
+        verify_zip_system(z, expected)
     # Retain the complete archive beside the complete ZIP; neither is split.
     shutil.copy2(args.boot, out / 'boot-acpm-fixed.img')
     for name in ['vendor-a17.img.xz', 'vbmeta-disabled.img', 'build-receipt.json',
