@@ -363,7 +363,7 @@ jobs:
           "$BT/apksigner" verify --print-certs tablet-tuner-signed.apk > tablet-tuner-signer.txt
           grep -Fx 'Signer #1 certificate SHA-256 digest: 17bb00988f8ac7c2a74109c5e77a834e6c4a34ddcfa2f004efa141377e623fb8' tablet-tuner-signer.txt
           python3 tools/img/build_a17.py --gsi system.img --donor "$DONOR_IMG" --vndk-dir vndk30 --a14fs a14fs \
-            --pixel-phone pixel_stage --legacy-graphics legacy_graphics --gapps gapps/*.zip --tablet-tuner-apk tablet-tuner-signed.apk $DEV --build-tools "$BT" --out system-a17-pixel.img
+            --pixel-phone pixel_stage --platform-keys tablet/tools/pixel --legacy-graphics legacy_graphics --gapps gapps/*.zip --tablet-tuner-apk tablet-tuner-signed.apk $DEV --build-tools "$BT" --out system-a17-pixel.img
           rm -rf system.img "$DONOR_IMG" pixel_stage; ls -la *.img; df -h /
 
       - name: Pinned reviewed kernel
@@ -394,6 +394,14 @@ jobs:
               KERNEL_SHA=9d02f121b11f043dca9dbdc3a7459764b7284357bc266cf2966c8fcff36d43fa
               echo 'KERNEL_SOURCE_COMMIT=0d82b075ad8cf16d340bb2f3b787af46e2993f41' >> "$GITHUB_ENV"
               echo 'KERNEL_ACTIONS_RUN=https://github.com/manvindar/m30s-kernel/actions/runs/42899549058' >> "$GITHUB_ENV"
+              ;;
+            kernel-4.14.113-a17-mint)
+              gh release download "$KERNEL_TAG_IN" -R manvindar/m30s-kernel -p Image -p kernel.config -p fmp-integrity-evidence.txt -p extras-receipt.txt -D kernel
+              grep -q 'RESULT: OK' kernel/fmp-integrity-evidence.txt
+              grep -q 'CONFIG_PANIC_FOR_SELFTEST_FAIL=y' kernel/fmp-integrity-evidence.txt
+              KERNEL_SHA=36d1540f7ef4e6bcd1908b4e8fefd333fcac3cb353f13dfe02f871cef11a542e
+              echo 'KERNEL_SOURCE_COMMIT=d5b04d3df5f443af12f782628208ecf22de932f2' >> "$GITHUB_ENV"
+              echo 'KERNEL_ACTIONS_RUN=https://github.com/manvindar/m30s-kernel/actions/runs/44998703276' >> "$GITHUB_ENV"
               ;;
             *) echo "Unreviewed kernel tag" >&2; exit 1 ;;
           esac

@@ -33,6 +33,7 @@ PKGS = [
     ('product', '/priv-app/SettingsIntelligenceGooglePrebuilt', 'priv-app/SettingsIntelligenceGooglePrebuilt'),
     ('product', '/priv-app/PixelLiveWallpaperPrebuilt-27000055', 'priv-app/PixelLiveWallpaperPrebuilt'),
     ('product', '/priv-app/CustomizationBundlePrebuiltFullVersionStable', 'priv-app/CustomizationBundlePrebuilt'),    # Wallpaper & style bundles (colours, icon shapes, clock faces)
+    ('product', '/priv-app/GoogleRestorePrebuilt-v1140078', 'priv-app/GoogleRestorePrebuilt'),    # Android Switch (com.google.android.apps.restore) needs android.permission.BACKUP, so it must be a priv-app: as a Play-installed app the setup wizard stops with "Android Switch keeps stopping"
     ('product', '/priv-app/Velvet', 'priv-app/Velvet'),                                   # Google app (search bar, assistant)
     ('product', '/priv-app/DevicePersonalizationAiAiPrebuiltPixel2024', 'priv-app/DevicePersonalizationAiAiPrebuilt'),    # At a Glance
     ('product', '/priv-app/WeatherPixelPrebuilt_10008663', 'priv-app/WeatherPixelPrebuilt'),
