@@ -183,7 +183,21 @@ jobs:
             vbmeta-disabled.img
           key: a17-input-v1-device-${{ env.VENDOR_MP2_SHA256 }}-${{ env.BOOT_SHA256 }}-${{ env.VBMETA_SHA256 }}
 
+      - name: Key of the built-image cache
+        run: echo "BUILT_KEY=a17-built-v1-${{ hashFiles('tools/**', 'docs/A17-UPSTREAM.json') }}-${{ env.GSI_ZIP_SHA256 }}-${{ env.FACTORY_SHA256 }}-${{ env.DONOR_7Z_SHA256 }}-${{ env.CRDROID_SHA256 }}-${{ env.GAPPS_ZIP_SHA256 }}-${{ inputs.dev_tools }}" >> "$GITHUB_ENV"
+
+      - name: Restore built system, vendor and graphics donor
+        id: cache_built
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            system-a17-pixel.img
+            vendor-a17.img
+            legacy_graphics
+          key: ${{ env.BUILT_KEY }}
+
       - name: Restore verified gsi archive cache
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         id: cache_gsi
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
@@ -191,22 +205,25 @@ jobs:
           key: a17-input-v1-gsi-${{ env.GSI_ZIP_SHA256 }}
 
       - name: Google's Android 17 GSI
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: |
           python3 tools/downloads/verified_input.py "$GSI_URL" "$GSI_ZIP_SHA256" download-cache/gsi/gsi.zip
           unzip -o -q download-cache/gsi/gsi.zip system.img
           ls -la system.img
 
       - name: Save verified gsi archive cache
-        if: steps.cache_gsi.outputs.cache-hit != 'true'
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' && (steps.cache_gsi.outputs.cache-hit != 'true') }}
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: download-cache/gsi/gsi.zip
           key: a17-input-v1-gsi-${{ env.GSI_ZIP_SHA256 }}
 
       - name: Release temporary runner gsi archive after cache save
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: rm -- download-cache/gsi/gsi.zip
 
       - name: Restore verified audio archive cache
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         id: cache_audio
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
@@ -214,22 +231,25 @@ jobs:
           key: a17-input-v1-audio-${{ env.DONOR_7Z_SHA256 }}
 
       - name: LineageOS 23.2 GSI (audio donor)
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: |
           python3 tools/downloads/verified_input.py "$DONOR_URL" "$DONOR_7Z_SHA256" download-cache/audio/donor.7z
           7z x -y download-cache/audio/donor.7z "$DONOR_IMG"
           ls -la "$DONOR_IMG"
 
       - name: Save verified audio archive cache
-        if: steps.cache_audio.outputs.cache-hit != 'true'
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' && (steps.cache_audio.outputs.cache-hit != 'true') }}
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: download-cache/audio/donor.7z
           key: a17-input-v1-audio-${{ env.DONOR_7Z_SHA256 }}
 
       - name: Release temporary runner audio archive after cache save
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: rm -- download-cache/audio/donor.7z
 
       - name: Restore verified a14 archive cache
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         id: cache_a14
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
@@ -237,6 +257,7 @@ jobs:
           key: a17-input-v1-a14-${{ env.CRDROID_SHA256 }}
 
       - name: Android 14 first stage bundle and VNDK v30 (crDroid 10.13 GSI)
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -251,19 +272,22 @@ jobs:
           rm crdroid.img; df -h /
 
       - name: Save verified a14 archive cache
-        if: steps.cache_a14.outputs.cache-hit != 'true'
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' && (steps.cache_a14.outputs.cache-hit != 'true') }}
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: download-cache/a14/crdroid.img.xz
           key: a17-input-v1-a14-${{ env.CRDROID_SHA256 }}
 
       - name: Release temporary runner a14 archive after cache save
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: rm -- download-cache/a14/crdroid.img.xz
 
       - name: Browser packaging regression checks
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: python3 -m unittest discover -s tools/pixel -p test_browser_packages.py -v
 
       - name: Restore verified pixel archive cache
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         id: cache_pixel
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
@@ -271,22 +295,25 @@ jobs:
           key: a17-input-v1-pixel-${{ env.FACTORY_SHA256 }}
 
       - name: Pixel 9a pieces from Google's factory image
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: |
           python3 tools/downloads/verified_input.py "$FACTORY_URL" "$FACTORY_SHA256" download-cache/pixel/factory.zip
           python3 tools/pixel/stage_pixel_phone.py download-cache/pixel/factory.zip pixel_stage --keys tablet/tools/pixel --build-tools "$BT"
           du -sh pixel_stage; df -h /
 
       - name: Save verified pixel archive cache
-        if: steps.cache_pixel.outputs.cache-hit != 'true'
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' && (steps.cache_pixel.outputs.cache-hit != 'true') }}
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: download-cache/pixel/factory.zip
           key: a17-input-v1-pixel-${{ env.FACTORY_SHA256 }}
 
       - name: Release temporary runner pixel archive after cache save
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: rm -- download-cache/pixel/factory.zip
 
       - name: Restore verified GApps download cache
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         id: cache_gapps
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
@@ -294,6 +321,7 @@ jobs:
           key: a17-input-v2-gapps-${{ env.GAPPS_ZIP_SHA256 }}
 
       - name: MindTheGapps
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -303,25 +331,30 @@ jobs:
           echo "$GAPPS_ZIP_SHA256  ${GAPPS_TAG}.zip" | sha256sum -c -
 
       - name: Save verified GApps download cache
-        if: steps.cache_gapps.outputs.cache-hit != 'true'
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' && (steps.cache_gapps.outputs.cache-hit != 'true') }}
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: gapps/
           key: a17-input-v2-gapps-${{ env.GAPPS_ZIP_SHA256 }}
 
       - name: Vendor image
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: python3 tools/img/build_vendor_a17.py vendor-mp2.img vendor-a17.img tablet/tools/health/vintf_health_aidl.xml
 
       - name: JNI-anchored budget watcher regressions
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: python3 -m unittest discover -s tools/libc -p test_budget_watchers.py -v
 
       - name: Measured tethering and Bluetooth patch regressions
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: python3 -m unittest discover -s tools/bpf -p 'test_*.py' -v
 
       - name: Legacy graphics fail-closed verification regressions
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: python3 -m unittest discover -s tools/graphics -p 'test_*.py' -v
 
       - name: Restore pinned legacy graphics archive cache
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         id: cache_graphics
         uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
@@ -329,29 +362,34 @@ jobs:
           key: a17-input-v1-graphics-d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436
 
       - name: Pinned narrow Android 17 graphics compatibility donor
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: python3 tools/graphics/stage_legacy.py docs/A17-UPSTREAM.json legacy_graphics --archive-cache download-cache/graphics/gsi.zip
 
       - name: Build pinned codec-local genuine LIBSYNC implementation
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: |
           export PATH="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
           python3 tools/graphics/build_sync_provider.py "$ANDROID_NDK_ROOT" legacy_graphics/sync-provider
 
       - name: Save verified legacy graphics archive cache
-        if: steps.cache_graphics.outputs.cache-hit != 'true'
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' && (steps.cache_graphics.outputs.cache-hit != 'true') }}
         uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: download-cache/graphics/gsi.zip
           key: a17-input-v1-graphics-d735a3b11fe1b76a736f325f5500f7211167642fe2ed39dae0cf530d1cf51436
 
       - name: Release temporary runner graphics archive after cache save
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: rm -- download-cache/graphics/gsi.zip
 
       - name: Runner free-space gate before system and APEX generation
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         run: |
           python3 tools/downloads/check_runner_space.py 24 runner-space-before-system.json
           df -h /
 
       - name: System image
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
         env:
           DEV_TOOLS: ${{ inputs.dev_tools }}
         run: |
@@ -365,6 +403,16 @@ jobs:
           python3 tools/img/build_a17.py --gsi system.img --donor "$DONOR_IMG" --vndk-dir vndk30 --a14fs a14fs \
             --pixel-phone pixel_stage --platform-keys tablet/tools/pixel --legacy-graphics legacy_graphics --gapps gapps/*.zip --tablet-tuner-apk tablet-tuner-signed.apk $DEV --build-tools "$BT" --out system-a17-pixel.img
           rm -rf system.img "$DONOR_IMG" pixel_stage; ls -la *.img; df -h /
+
+      - name: Save built system, vendor and graphics donor (a rerun after a later failure skips the build)
+        if: ${{ steps.cache_built.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: |
+            system-a17-pixel.img
+            vendor-a17.img
+            legacy_graphics
+          key: ${{ env.BUILT_KEY }}
 
       - name: Pinned reviewed kernel
         env:
