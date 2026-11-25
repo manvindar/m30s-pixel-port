@@ -506,7 +506,8 @@ jobs:
         run: |
           mkdir out
           python3 tools/img/make_readback_manifest.py system-a17-pixel.img out/system-readback-manifest.json
-          xz -T0 -6 -c system-a17-pixel.img > out/system-a17-pixel.img.xz
+          xz -T0 -9e -c system-a17-pixel.img > out/system-a17-pixel.img.xz     # -6 gave 1985710048 B for v0.8; the baked oat seed (165 MB) needs the stronger setting
+          echo "system-a17-pixel.img.xz $(stat -c %s out/system-a17-pixel.img.xz) B (limit 2000000000)"
           [ "$(stat -c %s out/system-a17-pixel.img.xz)" -lt 2000000000 ] || { echo "Complete System exceeds single-file release limit; recompress, never split" >&2; exit 1; }
           xz -t out/system-a17-pixel.img.xz
           [ "$(xz -dc out/system-a17-pixel.img.xz | sha256sum | cut -d' ' -f1)" = "$(sha256sum system-a17-pixel.img | cut -d' ' -f1)" ]
