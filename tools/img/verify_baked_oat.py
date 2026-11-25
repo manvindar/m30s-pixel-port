@@ -50,7 +50,7 @@ def check_app(seed, app, read, boot_crcs):
         if not os.path.isfile(p): return [f'{apk}: {p} is missing']
         files[ext] = open(p, 'rb').read()
         if hashlib.sha256(files[ext]).hexdigest() != app['sha256'][ext]: bad.append(f'{apk}: {base}.{ext} differs from the manifest sha256')
-    have, want = vdex_checksums(files['vdex']), apk_crcs(read(apk))
+    have, want = list(dict.fromkeys(vdex_checksums(files['vdex']))), apk_crcs(read(apk))     # a dex container (one classes.dex, several dex sections) repeats its CRC per section
     if have != want: bad.append(f'{apk}: baked for another APK (vdex dex CRCs {[hex(x) for x in have]}, APK in the image {[hex(x) for x in want]})')
     _, bcp = oat_bcp_checksums(files['odex'])
     if set(bcp) != boot_crcs: bad.append(f'{apk}: baked against another boot image ({len(set(bcp) ^ boot_crcs)} of {len(boot_crcs)} boot class path CRCs differ)')

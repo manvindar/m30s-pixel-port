@@ -40,6 +40,9 @@ class Verify(unittest.TestCase):
 
     def test_matching_seed_passes(self): self.assertEqual(self.run_verify(), [])
 
+    def test_dex_container_repeats_crc(self):
+        self.write(vdex([zlib.crc32(self.dex)] * 3), odex(BOOT)); self.assertEqual(self.run_verify(), [])
+
     def test_altered_apk_fails(self):
         self.image[APK] = apk(self.dex + b'B')
         self.assertIn('another APK', self.run_verify()[0])
