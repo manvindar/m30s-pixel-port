@@ -57,8 +57,9 @@ class StartupScriptsTest(unittest.TestCase):
     def run_firstboot(self, setup_complete, steps="120"):
         with tempfile.TemporaryDirectory() as d:
             calls = self.run_script(SCRIPTS / "firstboot_dexopt.sh", {
-                "FIRSTBOOT_DIR": d, "DEXOPT_ALL": str(DEXOPT), "SETUP_COMPLETE": setup_complete, "SETUP_WAIT_STEPS": steps})
+                "FIRSTBOOT_DIR": d, "CPUCTL_DEX2OAT": d, "DEXOPT_ALL": str(DEXOPT), "SETUP_COMPLETE": setup_complete, "SETUP_WAIT_STEPS": steps})
             self.assertTrue((Path(d) / ".dexopt_done").exists())
+            self.shares = (Path(d) / "cpu.shares").read_text() if (Path(d) / "cpu.shares").exists() else None
             return calls, (Path(d) / "dexopt.log").read_text()
 
     def test_firstboot_compiles_at_once_when_setup_is_complete(self):
@@ -73,6 +74,13 @@ class StartupScriptsTest(unittest.TestCase):
         self.assertEqual(calls.count("sleep <10>"), 7)
         self.assertIn("sleep <2700>", calls)
         self.assertTrue(any(x.startswith("renice <-n> <19> <-p> <123>") for x in calls))
+
+    def test_firstboot_restores_cpu_shares_after_each_pass(self):
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "cpu.shares").write_text("1024\n")
+            self.run_script(SCRIPTS / "firstboot_dexopt.sh", {
+                "FIRSTBOOT_DIR": d, "CPUCTL_DEX2OAT": d, "DEXOPT_ALL": str(DEXOPT), "SETUP_WAIT_STEPS": "1"})
+            self.assertEqual((Path(d) / "cpu.shares").read_text(), "1024\n")
 
     def test_firstboot_keeps_location_grants_once(self):
         calls, _ = self.run_firstboot("1")

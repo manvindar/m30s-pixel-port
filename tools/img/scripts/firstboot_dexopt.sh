@@ -3,7 +3,9 @@
 # Pass 1 waits until the setup wizard is finished (Settings.Secure user_setup_complete=1; at most 20 minutes, then it starts anyway), so the wizard has the CPU
 # (measured on a fresh-data boot: dex2oat at about 400% CPU and load average 25 to 57 while the wizard was open). Pass 2 runs 45 minutes after pass 1,
 # after the Play Store has updated Play services, Maps and YouTube (an update resets them to interpreted code). Apps that are already compiled are skipped
-# (DEXOPT_FORCE empty). While a pass runs, the dex2oat processes are reniced to 19: ART Service starts them itself, so nice on this shell would not reach them.
+# (DEXOPT_FORCE empty). ART Service starts dex2oat itself (nice 10, cgroup /dev/cpuctl/dex2oat with the default cpu.shares 1024, measured on the phone), so
+# nice on this shell would not reach it and renice alone only orders tasks inside that group. While a pass runs, cpu.shares of that group is 2 (the wizard and
+# GMS in other groups win every contention, also in the 20-minute fallback) and the dex2oat processes are reniced to 19.
 # Log: $D/dexopt.log. The D, DEXOPT_ALL and SETUP_WAIT_STEPS overrides are for the host test (tools/img/test_startup_scripts.py).
 D=${FIRSTBOOT_DIR:-/data/local/tmp}
 # Network location (Wi-Fi positioning): without the setup wizard Play services has no location opt-in and its location app ops stay on "ignore", so
@@ -22,8 +24,9 @@ M=$D/.dexopt_done
 [ -f $M ] && exit 0
 export DEXOPT_FORCE=""
 A=${DEXOPT_ALL:-/system/bin/dexopt_all.sh}
+C=${CPUCTL_DEX2OAT:-/dev/cpuctl/dex2oat}
 lowprio() { while :; do renice -n 19 -p $(pidof dex2oat32 dex2oat64 dex2oat) >/dev/null 2>&1; sleep 5; done; }
-pass() { lowprio & r=$!; sh $A >> $D/dexopt.log 2>&1; kill $r; }
+pass() { [ -w $C/cpu.shares ] && echo 2 > $C/cpu.shares; lowprio & r=$!; sh $A >> $D/dexopt.log 2>&1; kill $r; [ -w $C/cpu.shares ] && echo 1024 > $C/cpu.shares; }
 echo "$(date) firstboot dexopt waiting for setup" >> $D/dexopt.log
 i=0; while [ $i -lt ${SETUP_WAIT_STEPS:-120} ] && [ "$(settings get secure user_setup_complete 2>/dev/null)" != 1 ]; do sleep 10; i=$((i + 1)); done
 echo "$(date) firstboot dexopt pass 1 (setup wait steps: $i)" >> $D/dexopt.log
