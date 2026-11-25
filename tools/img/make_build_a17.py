@@ -191,14 +191,10 @@ sub(old, new)
 sub("run('sh', os.path.join(TOOLS, 'health', 'build.sh'), env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))\nput(os.path.join(TOOLS, 'health', 'out', 'healthshim.jar'), '/system/etc/healthshim.jar', '644')", "health = wp('m30s-health')\nrun(sys.executable, os.path.join(HERE, '..', 'health', 'stage_m30s.py'), os.path.join(TOOLS, 'health'), health)\nrun('sh', os.path.join(health, 'build.sh'), env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))\nput(os.path.join(health, 'out', 'healthshim.jar'), '/system/etc/healthshim.jar', '644')")
 
 # M30s-specific tuner replaces the excluded MediaTek backend.
-sub("ap.add_argument('--no-tuner', action='store_true', default=True);", "ap.add_argument('--tablet-tuner-apk', help='externally signed tablet-interface APK; preserve installed app signing identity');\nap.add_argument('--no-m30s-tuner', action='store_true', help='omit the M30s ROM Tuner app and root backend');\nap.add_argument('--no-tuner', action='store_true', default=True);")
+sub("ap.add_argument('--no-tuner', action='store_true', default=True);", "ap.add_argument('--tablet-tuner-apk', help='externally signed tablet-interface APK; preserve installed app signing identity');\nap.add_argument('--no-m30s-tuner', action='store_true', help='omit the ROM Tuner app (org.tablet.tuner) and the root backend; the compact M30s app is no longer installed');\nap.add_argument('--no-tuner', action='store_true', default=True);")
 sub("if a.dev_tools:\n    for f, mode", """if not a.no_m30s_tuner:
     tuner = os.path.join(HERE, '..', 'tuner')
     tuner_out = wp('m30s-tuner')
-    run('sh', os.path.join(tuner, 'build.sh'), tuner_out, os.path.join(TOOLS, 'pixel'),
-        env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))
-    mkdir('/system/app/M30sRomTuner')
-    put(os.path.join(tuner_out, 'RomTuner-M30s.apk'), '/system/app/M30sRomTuner/M30sRomTuner.apk', '644')
     tablet_apk = a.tablet_tuner_apk
     if not tablet_apk:
         run('sh', os.path.join(tuner, 'build.sh'), tuner_out + '-tablet', os.path.join(TOOLS, 'pixel'),
@@ -216,8 +212,7 @@ s = s.replace('no ROM Tuner (MediaTek only)', 'M30s ROM Tuner (MediaTek backend 
 sub("if not a.keep_work and not a.workdir: shutil.rmtree(W, ignore_errors=True)", """# Check the actual completed image against the exact staged fixes before cleanup.
 fixes = [('/system/etc/healthshim.jar', open(os.path.join(health, 'out', 'healthshim.jar'), 'rb').read(), '644')]
 if not a.no_m30s_tuner:
-    fixes += [('/system/app/M30sRomTuner/M30sRomTuner.apk', open(os.path.join(tuner_out, 'RomTuner-M30s.apk'), 'rb').read(), '644'),
-              ('/system/app/TabletRomTuner/TabletRomTuner.apk', open(tablet_apk, 'rb').read(), '644'),
+    fixes += [('/system/app/TabletRomTuner/TabletRomTuner.apk', open(tablet_apk, 'rb').read(), '644'),
               ('/system/bin/m30s_tunerd.sh', open(os.path.join(tuner, 'device', 'm30s_tunerd.sh'), 'rb').read(), '755'),
               ('/system/etc/init/m30s_tunerd.rc', rc_fix(os.path.join(tuner, 'device', 'm30s_tunerd.rc')).encode(), '644')]
 fix_receipt = {'status': 'complete-image-readback-pass', 'files': [], 'runtime_acceptance': False}

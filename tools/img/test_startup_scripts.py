@@ -162,6 +162,16 @@ class StartupScriptsTest(unittest.TestCase):
     def test_checked_in_builder_stages_local_startup_scripts(self):
         self.assert_startup_wiring((ROOT / "tools/img/build_a17.py").read_text())
 
+    def test_builder_installs_only_the_tablet_rom_tuner(self):
+        src = (ROOT / "tools/img/build_a17.py").read_text()
+        gen = (ROOT / "tools/img/make_build_a17.py").read_text()
+        for text in (src, gen):
+            self.assertNotIn("M30sRomTuner", text)
+            self.assertNotIn("RomTuner-M30s.apk", text)
+        for path in ("/system/app/TabletRomTuner/TabletRomTuner.apk", "/system/bin/m30s_tunerd.sh",
+                     "/system/etc/init/m30s_tunerd.rc"):
+            self.assertEqual(src.count(path), 2, path)      # staged once, read back once
+
     def test_generator_emits_actual_startup_wiring(self):
         tablet = Path(os.environ.get("STARTUP_TEST_TABLET_REPO",
                                      str(ROOT.parent / "tb-x606v-android17")))

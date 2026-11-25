@@ -42,7 +42,7 @@ ap.add_argument('--port-repo', default=os.path.join(HERE, '..', '..', 'tb-x606v-
 ap.add_argument('--dev-tools', action='store_true', help='development safety net (tools/debug): boot_watchdog reboots into recovery when a boot does not finish, bootdiag writes the boot logcat to /data/local/tmp/bootdiag')
 ap.add_argument('--experimental', action='store_true', help='EXPERIMENTAL features, off in release builds: virtual compass service (tools/compass; its vendor half is installed by tools/compass/install.sh, never by the image)')
 ap.add_argument('--tablet-tuner-apk', help='externally signed tablet-interface APK; preserve installed app signing identity');
-ap.add_argument('--no-m30s-tuner', action='store_true', help='omit the M30s ROM Tuner app and root backend');
+ap.add_argument('--no-m30s-tuner', action='store_true', help='omit the ROM Tuner app (org.tablet.tuner) and the root backend; the compact M30s app is no longer installed');
 ap.add_argument('--no-tuner', action='store_true', default=True); ap.add_argument('--with-bootdiag', action='store_true', help='boot diagnostics service (logcat/kmsg into /data/local/tmp/bootdiag, costs performance)')
 ap.add_argument('--dolby', help='directory with DaxUI.apk, daxService.patched.apk (or daxService.apk) and com.dolby.daxservice.xml from the stock Lenovo firmware')
 ap.add_argument('--pixel', help='NikGapps-full-arm64-16-*.zip: source of the Pixel apps (Android 16 build; the launcher itself comes from --pixel-launcher-apk)')
@@ -446,10 +446,6 @@ if not a.no_tuner:
 if not a.no_m30s_tuner:
     tuner = os.path.join(HERE, '..', 'tuner')
     tuner_out = wp('m30s-tuner')
-    run('sh', os.path.join(tuner, 'build.sh'), tuner_out, os.path.join(TOOLS, 'pixel'),
-        env=dict(os.environ, ANDROID_HOME=os.path.abspath(os.path.join(BT, '..', '..')), BUILD_TOOLS=BT))
-    mkdir('/system/app/M30sRomTuner')
-    put(os.path.join(tuner_out, 'RomTuner-M30s.apk'), '/system/app/M30sRomTuner/M30sRomTuner.apk', '644')
     tablet_apk = a.tablet_tuner_apk
     if not tablet_apk:
         run('sh', os.path.join(tuner, 'build.sh'), tuner_out + '-tablet', os.path.join(TOOLS, 'pixel'),
@@ -648,8 +644,7 @@ if a.baked_oat: add_baked_oat(a.out_gapps or a.out)
 # Check the actual completed image against the exact staged fixes before cleanup.
 fixes = [('/system/etc/healthshim.jar', open(os.path.join(health, 'out', 'healthshim.jar'), 'rb').read(), '644')]
 if not a.no_m30s_tuner:
-    fixes += [('/system/app/M30sRomTuner/M30sRomTuner.apk', open(os.path.join(tuner_out, 'RomTuner-M30s.apk'), 'rb').read(), '644'),
-              ('/system/app/TabletRomTuner/TabletRomTuner.apk', open(tablet_apk, 'rb').read(), '644'),
+    fixes += [('/system/app/TabletRomTuner/TabletRomTuner.apk', open(tablet_apk, 'rb').read(), '644'),
               ('/system/bin/m30s_tunerd.sh', open(os.path.join(tuner, 'device', 'm30s_tunerd.sh'), 'rb').read(), '755'),
               ('/system/etc/init/m30s_tunerd.rc', rc_fix(os.path.join(tuner, 'device', 'm30s_tunerd.rc')).encode(), '644')]
 fix_receipt = {'status': 'complete-image-readback-pass', 'files': [], 'runtime_acceptance': False}

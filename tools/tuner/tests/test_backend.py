@@ -153,6 +153,20 @@ esac
         self.assertIn('perf_profile=battery', state)
         self.assertIn('big_freqs=2314000,1768000,936000', state)
 
+    def test_tablet_app_alone_works_without_the_compact_app(self):
+        import shutil
+        shutil.rmtree(self.app)
+        tablet = self.root / 'app-tablet'; tablet.mkdir()
+        (tablet / 'request').write_text('touch_duration_ms=200\n')
+        self.run_backend_tablet()
+        self.assertIn('Applied touch_duration_ms', (tablet / 'state').read_text())
+        self.assertEqual(self.read('sys/module/input_boost_m30s/parameters/duration_ms'), '200')
+
+    def run_backend_tablet(self):
+        result = subprocess.run(['sh', str(SCRIPT), '--test', str(self.root), '--once'], env=self.env,
+                                capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_tablet_unsupported_extreme_rejected(self):
         before = self.read('sys/devices/system/cpu/cpufreq/policy4/scaling_max_freq')
         self.assertIn('Rejected', self.run_backend('preset=extreme\n'))
