@@ -42,6 +42,10 @@ env:
   FACTORY_SHA256: 639e8f85c463121e59292f4832e26837d42f1c97d0370944f4c680651e8ae452
   GAPPS_TAG: MindTheGapps-16.0.0-arm64-20261023_034858
   GAPPS_ZIP_SHA256: 6929593937cd85541228e4e5db9cbb5455338bf33c75eabf610de632ac155810
+  # Baked compiled code (docs/superpowers/specs/2026-11-25-baked-precompiled-apps-design.md): release asset baked-oat-<DP build>.tar.zst made by tools/img/make_baked_seed.py on a phone running the
+  # same base build. Empty = no baked code. The build fails when the seed does not match the image (tools/img/verify_baked_oat.py).
+  BAKED_OAT_URL: ''
+  BAKED_OAT_SHA256: ''
   TABLET_REF: 44cde4e25a160d95900ad12e3415b5527792be06   # tb-x606v-android17 branch exp/pixel-tablet (last pushed commit): patch library (tools/) and the public AOSP platform test keys
   VENDOR_MP2_SHA256: 285a28cc6785a25eb208d98ed9d387b2f345597c46e92403f42cbdf25dc113f9
   BOOT_SHA256: d788f41397481fd7990ece136460edc1b62bac35c73bc4eda1593bdb50704c65
@@ -151,6 +155,7 @@ jobs:
           export STARTUP_TEST_TABLET_REPO="$PWD/tablet"
           python3 -m unittest discover -s tools/downloads -p test_verified_input.py -v
           python3 tools/img/test_startup_scripts.py
+          python3 tools/img/test_verify_baked_oat.py
           python3 tools/pixel/test_compat_overlays.py
           python3 tools/img/test_readback_manifest.py
 
@@ -184,7 +189,7 @@ jobs:
           key: a17-input-v1-device-${{ env.VENDOR_MP2_SHA256 }}-${{ env.BOOT_SHA256 }}-${{ env.VBMETA_SHA256 }}
 
       - name: Key of the built-image cache
-        run: echo "BUILT_KEY=a17-built-v1-${{ hashFiles('tools/**', 'docs/A17-UPSTREAM.json') }}-${{ env.GSI_ZIP_SHA256 }}-${{ env.FACTORY_SHA256 }}-${{ env.DONOR_7Z_SHA256 }}-${{ env.CRDROID_SHA256 }}-${{ env.GAPPS_ZIP_SHA256 }}-${{ inputs.dev_tools }}" >> "$GITHUB_ENV"
+        run: echo "BUILT_KEY=a17-built-v1-${{ hashFiles('tools/**', 'docs/A17-UPSTREAM.json') }}-${{ env.GSI_ZIP_SHA256 }}-${{ env.FACTORY_SHA256 }}-${{ env.DONOR_7Z_SHA256 }}-${{ env.CRDROID_SHA256 }}-${{ env.GAPPS_ZIP_SHA256 }}-${{ inputs.dev_tools }}-${{ env.BAKED_OAT_SHA256 }}" >> "$GITHUB_ENV"
 
       - name: Restore built system, vendor and graphics donor
         id: cache_built
@@ -395,13 +400,19 @@ jobs:
         run: |
           export A17_TOOLS="$PWD/tablet/tools"
           DEV=""; [ "$DEV_TOOLS" = true ] && DEV="--dev-tools"
+          BAKED=""
+          if [ -n "$BAKED_OAT_URL" ]; then
+            python3 tools/downloads/verified_input.py "$BAKED_OAT_URL" "$BAKED_OAT_SHA256" baked-oat.tar.zst
+            mkdir baked-oat && tar --zstd -xf baked-oat.tar.zst -C baked-oat
+            BAKED="--baked-oat baked-oat"
+          fi
           python3 tools/downloads/verified_input.py \
             https://github.com/manvindar/m30s-pixel-port/releases/download/v0.7-a17-m30s-fixes-20261116/RomTuner-Tablet-M30s.apk \
             6a9bc65cfde17e49292d802ec383cf3de1a79e6506fa9e2d2d368375b9a07eae tablet-tuner-signed.apk
           "$BT/apksigner" verify --print-certs tablet-tuner-signed.apk > tablet-tuner-signer.txt
           grep -Fx 'Signer #1 certificate SHA-256 digest: 17bb00988f8ac7c2a74109c5e77a834e6c4a34ddcfa2f004efa141377e623fb8' tablet-tuner-signer.txt
           python3 tools/img/build_a17.py --gsi system.img --donor "$DONOR_IMG" --vndk-dir vndk30 --a14fs a14fs \
-            --pixel-phone pixel_stage --platform-keys tablet/tools/pixel --legacy-graphics legacy_graphics --gapps gapps/*.zip --tablet-tuner-apk tablet-tuner-signed.apk $DEV --build-tools "$BT" --out system-a17-pixel.img
+            --pixel-phone pixel_stage --platform-keys tablet/tools/pixel --legacy-graphics legacy_graphics --gapps gapps/*.zip --tablet-tuner-apk tablet-tuner-signed.apk $DEV $BAKED --build-tools "$BT" --out system-a17-pixel.img
           rm -rf system.img "$DONOR_IMG" pixel_stage; ls -la *.img; df -h /
 
       - name: Save built system, vendor and graphics donor (a rerun after a later failure skips the build)

@@ -81,6 +81,8 @@ sub("zigcc(os.path.join(TOOLS, 'bpf', 'netbpfload_tracer.c'), wp('tracer')); zig
 # Local startup helper: automatic compilation must not restart the visible UI.
 sub("put(os.path.join(TOOLS, 'scripts', 'dexopt_all.sh'), '/system/bin/dexopt_all.sh', '755')",
     "put(os.path.join(HERE, 'scripts', 'dexopt_all.sh'), '/system/bin/dexopt_all.sh', '755')")
+sub("put(os.path.join(TOOLS, 'firstboot', 'odex_bind.sh'), '/system/bin/odex_bind.sh', '755')",      # skips apps with baked oat (--baked-oat)
+    "put(os.path.join(HERE, 'scripts', 'odex_bind.sh'), '/system/bin/odex_bind.sh', '755')")
 
 # Pixel phone layer (tools/pixel/stage_pixel_phone.py) -----------------------------------------------------------------------------
 sub("ap.add_argument('--pixel-launcher-apk',", "ap.add_argument('--pixel-phone', help='directory made by tools/pixel/stage_pixel_phone.py (Pixel 9a SystemUI, Settings, launcher, Google apps, Chrome + WebView, overlays of the matching Android 17 build)')\nap.add_argument('--pixel-launcher-apk',")

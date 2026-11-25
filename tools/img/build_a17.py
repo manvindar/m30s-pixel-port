@@ -50,6 +50,8 @@ ap.add_argument('--pixel-tablet', help='directory made by tools/pixel/stage_pixe
 ap.add_argument('--pixel-phone', help='directory made by tools/pixel/stage_pixel_phone.py (Pixel 9a SystemUI, Settings, launcher, Google apps, Chrome + WebView, overlays of the matching Android 17 build)')
 ap.add_argument('--pixel-launcher-apk', help='Pixel Launcher built by tools/pixel/build_pixel_launcher.sh')
 ap.add_argument('--platform-keys', help='directory with platform.pk8 and platform.x509.pem (the public AOSP platform test key): with it framework-res.apk also accepts Chrome WebView Beta as a WebView provider (tools/framework/allow_webview_beta.py)')
+ap.add_argument('--baked-oat', help='seed made by make_baked_seed.py (manifest.json + <app dir>/oat/arm64/*.odex|vdex): compiled code baked into the image, checked by verify_baked_oat.py (docs/superpowers/specs/2026-11-25-baked-precompiled-apps-design.md)')
+ap.add_argument('--baked-oat-budget-mb', type=int, default=200, help='the build fails when the seed is larger (/system has about 248 MB free)')
 ap.add_argument('--e2fs', help='directory with debugfs, e2fsck, resize2fs, mke2fs (default: found on PATH, /sbin, Homebrew)')
 ap.add_argument('--build-tools', help='Android SDK build-tools directory (zipalign, apksigner, d8); default $ANDROID_HOME/build-tools/<newest>')
 ap.add_argument('--workdir'); ap.add_argument('--keep-work', action='store_true')
@@ -365,7 +367,7 @@ for rc in ('bpf/00_bpf_bind.rc', 'bpf/00_aee_off.rc', 'zz_a17_rt.rc'): put(os.pa
 # compiles the apps in speed mode by itself after a data wipe (CI images carry no compiled code); skips what is already compiled
 put(os.path.join(TOOLS, 'firstboot', 'firstboot_dexopt.sh'), '/system/bin/firstboot_dexopt.sh', '755'); put(os.path.join(HERE, 'scripts', 'dexopt_all.sh'), '/system/bin/dexopt_all.sh', '755')
 put(os.path.join(TOOLS, 'firstboot', 'zz_firstboot_dexopt.rc'), '/system/etc/init/zz_firstboot_dexopt.rc', '644')
-put(os.path.join(TOOLS, 'firstboot', 'odex_bind.sh'), '/system/bin/odex_bind.sh', '755'); put(os.path.join(TOOLS, 'firstboot', 'zz_odex_bind.rc'), '/system/etc/init/zz_odex_bind.rc', '644')
+put(os.path.join(HERE, 'scripts', 'odex_bind.sh'), '/system/bin/odex_bind.sh', '755'); put(os.path.join(TOOLS, 'firstboot', 'zz_odex_bind.rc'), '/system/etc/init/zz_odex_bind.rc', '644')
 rc = cat(S, '/system/etc/init/netbpfload.rc').decode(); assert 'reboot_on_failure reboot,netbpfload-missing' in rc
 replace(S, '/system/etc/init/netbpfload.rc', tmpf('netbpfload.rc', ''.join(l for l in rc.splitlines(True) if 'reboot_on_failure reboot,netbpfload-missing' not in l)))
 
@@ -627,6 +629,22 @@ if a.gapps:
     print('10 google apps')
     if a.out_gapps: shutil.copyfile(a.out, a.out_gapps)
     add_gapps(a.out_gapps or a.out)
+# 11 baked compiled code: <app dir>/oat/arm64/X.odex + X.vdex from the seed, root:root 644 like the stock oat files; odex_bind.sh then leaves those apps alone
+def add_baked_oat(img):
+    m = json.load(open(os.path.join(a.baked_oat, 'manifest.json'))); total = 0
+    for app in m['apps']:
+        d, base = os.path.split(app['apk']); base = base[:-4]
+        if not exists(img, app['apk']): sys.exit(f"--baked-oat: {app['apk']} is not in the image")
+        if not exists(img, d + '/oat'): mkdir(d + '/oat', '751')
+        if not exists(img, d + '/oat/arm64'): mkdir(d + '/oat/arm64')
+        for ext in ('odex', 'vdex'):
+            src = os.path.join(a.baked_oat, d.lstrip('/'), 'oat', 'arm64', f'{base}.{ext}'); total += os.path.getsize(src); put(src, f'{d}/oat/arm64/{base}.{ext}', '644')
+    if total > a.baked_oat_budget_mb * 2**20: sys.exit(f'--baked-oat: {total / 2**20:.0f} MB is over the {a.baked_oat_budget_mb} MB budget: drop the largest app from the seed')
+    apply(img); print(f"11 baked oat: {len(m['apps'])} apps, {total / 2**20:.0f} MB")
+    r = subprocess.run([sys.executable, '-I', os.path.join(HERE, 'verify_baked_oat.py'), '--seed', a.baked_oat, '--image', img, '--e2fs', E2], capture_output=True, text=True)
+    print(r.stdout + r.stderr)
+    if r.returncode: sys.exit('--baked-oat: the seed does not match this image (stale seed: make a new one on a phone running this image)')
+if a.baked_oat: add_baked_oat(a.out_gapps or a.out)
 # Check the actual completed image against the exact staged fixes before cleanup.
 fixes = [('/system/etc/healthshim.jar', open(os.path.join(health, 'out', 'healthshim.jar'), 'rb').read(), '644')]
 if not a.no_m30s_tuner:

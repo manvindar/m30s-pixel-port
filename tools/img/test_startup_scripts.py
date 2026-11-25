@@ -85,6 +85,8 @@ class StartupScriptsTest(unittest.TestCase):
                          ("os.path.join(HERE, 'scripts', 'nosensorhog.sh')", "755"))
         self.assertEqual(puts["/system/bin/dexopt_all.sh"],
                          ("os.path.join(HERE, 'scripts', 'dexopt_all.sh')", "755"))
+        self.assertEqual(puts["/system/bin/odex_bind.sh"],
+                         ("os.path.join(HERE, 'scripts', 'odex_bind.sh')", "755"))
         self.assertEqual(puts["/system/bin/firstboot_dexopt.sh"],
                          ("os.path.join(TOOLS, 'firstboot', 'firstboot_dexopt.sh')", "755"))
 
@@ -101,6 +103,18 @@ class StartupScriptsTest(unittest.TestCase):
                                     capture_output=True, text=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assert_startup_wiring((Path(temp) / "build_a17.py").read_text())
+
+    def test_odex_bind_skips_apps_with_baked_oat(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for app, baked in (("Baked", True), ("Plain", False)):
+                (root / "app" / app / "oat" / "arm64").mkdir(parents=True)
+                if baked: (root / "app" / app / "oat" / "arm64" / f"{app}.odex").write_text("x")
+            text = (SCRIPTS / "odex_bind.sh").read_text().replace("/data/odex", str(root / "odex")).replace("/system/app/*", str(root / "app") + "/*")
+            text = "\n".join(l for l in text.splitlines() if not l.startswith(("chown", "  chown")))
+            text = text.replace("mount -o bind", "echo bind").replace("grep -q", "false && grep -q")
+            out = subprocess.run(["sh", "-c", text], capture_output=True, text=True).stdout
+            self.assertIn("Plain/oat", out); self.assertNotIn("Baked/oat", out)
 
     def test_manual_precompile_declares_explicit_ui_restart(self):
         text = (ROOT / "tools/img/rc/04_precompile.rc").read_text()
