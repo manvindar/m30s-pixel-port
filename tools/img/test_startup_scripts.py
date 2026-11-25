@@ -17,7 +17,7 @@ class StartupScriptsTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             tmp = Path(temp)
             log = tmp / "commands"
-            for name in ("pm", "cmd", "killall", "sleep", "settings", "appops", "renice", "pidof"):
+            for name in ("pm", "cmd", "killall", "sleep", "settings", "appops", "renice", "ionice", "pidof"):
                 command = tmp / name
                 command.write_text('#!/bin/sh\nprintf "%s" "' + name + '" >> "$STARTUP_COMMAND_LOG"\n'
                                    'for arg; do printf " <%s>" "$arg" >> "$STARTUP_COMMAND_LOG"; done\n'
@@ -56,8 +56,10 @@ class StartupScriptsTest(unittest.TestCase):
 
     def run_firstboot(self, setup_complete, steps="120"):
         with tempfile.TemporaryDirectory() as d:
+            slow = Path(d) / "slow_dexopt.sh"     # the stubbed pass must outlive one turn of the renice loop
+            slow.write_text("/bin/sleep 1\nsh " + str(DEXOPT) + "\n")
             calls = self.run_script(SCRIPTS / "firstboot_dexopt.sh", {
-                "FIRSTBOOT_DIR": d, "CPUCTL_DEX2OAT": d, "DEXOPT_ALL": str(DEXOPT), "SETUP_COMPLETE": setup_complete, "SETUP_WAIT_STEPS": steps})
+                "FIRSTBOOT_DIR": d, "CPUCTL_DEX2OAT": d, "DEXOPT_ALL": str(slow), "SETUP_COMPLETE": setup_complete, "SETUP_WAIT_STEPS": steps})
             self.assertTrue((Path(d) / ".dexopt_done").exists())
             self.shares = (Path(d) / "cpu.shares").read_text() if (Path(d) / "cpu.shares").exists() else None
             return calls, (Path(d) / "dexopt.log").read_text()
@@ -74,6 +76,7 @@ class StartupScriptsTest(unittest.TestCase):
         self.assertEqual(calls.count("sleep <10>"), 7)
         self.assertIn("sleep <2700>", calls)
         self.assertTrue(any(x.startswith("renice <-n> <19> <-p> <123>") for x in calls))
+        self.assertTrue(any(x.startswith("ionice <-c> <3> <-p> <123>") for x in calls))
 
     def test_firstboot_restores_cpu_shares_after_each_pass(self):
         with tempfile.TemporaryDirectory() as d:
