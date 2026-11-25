@@ -44,8 +44,8 @@ env:
   GAPPS_ZIP_SHA256: 6929593937cd85541228e4e5db9cbb5455338bf33c75eabf610de632ac155810
   # Baked compiled code (docs/superpowers/specs/2026-11-25-baked-precompiled-apps-design.md): release asset baked-oat-<DP build>.tar.zst made by tools/img/make_baked_seed.py on a phone running the
   # same base build. Empty = no baked code. The build fails when the seed does not match the image (tools/img/verify_baked_oat.py).
-  BAKED_OAT_URL: ''
-  BAKED_OAT_SHA256: ''
+  BAKED_OAT_URL: https://github.com/manvindar/m30s-pixel-port/releases/download/baked-oat-DP11.261030.003/baked-oat-DP11.261030.003.tar.zst
+  BAKED_OAT_SHA256: a63aa7c35ed207183001816f8566011b2bd71a210e8e4f9ed569bc89ff1d85ff
   TABLET_REF: 44cde4e25a160d95900ad12e3415b5527792be06   # tb-x606v-android17 branch exp/pixel-tablet (last pushed commit): patch library (tools/) and the public AOSP platform test keys
   VENDOR_MP2_SHA256: 285a28cc6785a25eb208d98ed9d387b2f345597c46e92403f42cbdf25dc113f9
   BOOT_SHA256: d788f41397481fd7990ece136460edc1b62bac35c73bc4eda1593bdb50704c65
