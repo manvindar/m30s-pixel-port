@@ -4,8 +4,10 @@ import os
 import shutil
 from pathlib import Path
 import shlex
+import signal
 import subprocess
 import tempfile
+import time
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -13,24 +15,26 @@ SCRIPTS = ROOT / "tools/img/scripts"
 DEXOPT = Path(os.environ.get("STARTUP_DEXOPT_TEST_SOURCE", str(SCRIPTS / "dexopt_all.sh")))
 
 class StartupScriptsTest(unittest.TestCase):
+    def stubs(self, tmp):
+        """directory of fake pm/cmd/sleep/... that log their arguments; returns the environment for a script run"""
+        for name in ("pm", "cmd", "killall", "sleep", "settings", "appops", "renice", "ionice", "pidof"):
+            command = tmp / name
+            command.write_text('#!/bin/sh\nprintf "%s" "' + name + '" >> "$STARTUP_COMMAND_LOG"\n'
+                               'for arg; do printf " <%s>" "$arg" >> "$STARTUP_COMMAND_LOG"; done\n'
+                               'printf "\\n" >> "$STARTUP_COMMAND_LOG"\n'
+                               '[ "$1" = get ] && echo "${SETUP_COMPLETE:-1}"\n'
+                               '[ "$0" = "' + str(tmp / "pidof") + '" ] && echo 123\n'
+                               'exit 0\n')
+            command.chmod(0o755)
+        env = dict(os.environ, PATH=str(tmp) + os.pathsep + os.environ["PATH"], STARTUP_COMMAND_LOG=str(tmp / "commands"))
+        env.pop("DEXOPT_FORCE", None)
+        env.pop("DEXOPT_RESTART_UI", None)
+        return env
+
     def run_script(self, source, extra_env=None):
         with tempfile.TemporaryDirectory() as temp:
-            tmp = Path(temp)
-            log = tmp / "commands"
-            for name in ("pm", "cmd", "killall", "sleep", "settings", "appops", "renice", "ionice", "pidof"):
-                command = tmp / name
-                command.write_text('#!/bin/sh\nprintf "%s" "' + name + '" >> "$STARTUP_COMMAND_LOG"\n'
-                                   'for arg; do printf " <%s>" "$arg" >> "$STARTUP_COMMAND_LOG"; done\n'
-                                   'printf "\\n" >> "$STARTUP_COMMAND_LOG"\n'
-                                   '[ "$1" = get ] && echo "${SETUP_COMPLETE:-1}"\n'
-                                   '[ "$0" = "' + str(tmp / "pidof") + '" ] && echo 123\n'
-                                   'exit 0\n')
-                command.chmod(0o755)
-            env = dict(os.environ, PATH=str(tmp) + os.pathsep + os.environ["PATH"],
-                       STARTUP_COMMAND_LOG=str(log))
-            env.pop("DEXOPT_FORCE", None)
-            env.pop("DEXOPT_RESTART_UI", None)
-            env.update(extra_env or {})
+            tmp = Path(temp); log = tmp / "commands"
+            env = self.stubs(tmp); env.update(extra_env or {})
             result = subprocess.run(["sh", str(source)], env=env, capture_output=True, text=True, timeout=15)
             self.assertEqual(result.returncode, 0, result.stderr)
             return log.read_text().splitlines() if log.exists() else []
@@ -78,12 +82,40 @@ class StartupScriptsTest(unittest.TestCase):
         self.assertTrue(any(x.startswith("renice <-n> <19> <-p> <123>") for x in calls))
         self.assertTrue(any(x.startswith("ionice <-c> <3> <-p> <123>") for x in calls))
 
-    def test_firstboot_restores_cpu_shares_after_each_pass(self):
+    def test_firstboot_restores_the_prior_cpu_shares_after_each_pass(self):
         with tempfile.TemporaryDirectory() as d:
-            (Path(d) / "cpu.shares").write_text("1024\n")
+            (Path(d) / "cpu.shares").write_text("777\n")      # not 1024: the value found is the value put back
             self.run_script(SCRIPTS / "firstboot_dexopt.sh", {
                 "FIRSTBOOT_DIR": d, "CPUCTL_DEX2OAT": d, "DEXOPT_ALL": str(DEXOPT), "SETUP_WAIT_STEPS": "1"})
-            self.assertEqual((Path(d) / "cpu.shares").read_text(), "1024\n")
+            self.assertEqual((Path(d) / "cpu.shares").read_text(), "777\n")
+            log = (Path(d) / "dexopt.log").read_text()
+            self.assertEqual(log.count("pass start, was 777, now shares=2"), 2, log)
+
+    def test_firstboot_without_a_cpu_group_still_compiles(self):
+        with tempfile.TemporaryDirectory() as d:
+            calls = self.run_script(SCRIPTS / "firstboot_dexopt.sh", {
+                "FIRSTBOOT_DIR": d, "CPUCTL_DEX2OAT": d + "/missing", "DEXOPT_ALL": str(DEXOPT), "SETUP_WAIT_STEPS": "1"})
+            self.assertTrue(any("<-a>" in x for x in calls if x.startswith("cmd")))
+            self.assertFalse((Path(d) / "missing").exists())
+
+    def test_firstboot_restores_cpu_shares_on_term_during_a_pass(self):
+        for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+            with self.subTest(sig=sig.name), tempfile.TemporaryDirectory() as temp:
+                tmp = Path(temp); (tmp / "cpu.shares").write_text("777\n")
+                busy = tmp / "busy.sh"; busy.write_text("touch " + str(tmp / "in_pass") + "\nexec /bin/sleep 30\n")      # a pass that does not end by itself
+                env = self.stubs(tmp); env.update(FIRSTBOOT_DIR=temp, CPUCTL_DEX2OAT=temp, DEXOPT_ALL=str(busy), SETUP_WAIT_STEPS="1")
+                proc = subprocess.Popen(["sh", str(SCRIPTS / "firstboot_dexopt.sh")], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                try:
+                    for _ in range(100):
+                        if (tmp / "in_pass").exists(): break
+                        time.sleep(0.1)
+                    self.assertTrue((tmp / "in_pass").exists())
+                    self.assertEqual((tmp / "cpu.shares").read_text(), "2\n")
+                    proc.send_signal(sig); proc.wait(timeout=10)
+                finally:
+                    if proc.poll() is None: proc.kill()
+                self.assertEqual((tmp / "cpu.shares").read_text(), "777\n")
+                self.assertFalse((tmp / ".dexopt_done").exists())      # an interrupted run must not count as done
 
     def test_firstboot_keeps_location_grants_once(self):
         calls, _ = self.run_firstboot("1")
