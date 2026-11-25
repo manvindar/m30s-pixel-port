@@ -25,5 +25,7 @@ All five pass `verify_baked_oat.py` against a clone of the real v0.8 `system.img
 - `/data/dalvik-cache/arm64/*@classes.{dex,vdex}` for SystemUI, Pixel Launcher, both Setup Wizards, WebView, replaced by the speed-compiled copies (Settings' was deleted by the test). Undo: `cmd package compile --reset <package>` (or any flash/wipe).
 - No setting, property, partition or boot change; no reboot; nothing pushed or flashed. A reboot is not needed for either undo.
 
-## Unproven
-Acceptance across a real fingerprint-change boot (fresh flash, `boot-after-ota`). The in-place test (`compile -r boot-after-ota` leaves baked files alone) is the only evidence so far.
+## Unproven (explicitly)
+- Acceptance across a real fingerprint-change boot (fresh flash, `boot-after-ota`). The in-place test (`compile -r boot-after-ota` leaves baked files alone) is the only evidence so far.
+- SELinux labeling at runtime. The builder writes `u:object_r:system_file:s0` (files and the new `arm64` dir) and a read-back on a clone of the v0.8 image shows that label, but the in-place phone test used the `/data/odex` bind dir (`system_data_file`) and the ROM boots with SELinux permissive, so a label denial would not have shown. Not checked on a flashed baked image.
+- First-boot time gain: not measured.
