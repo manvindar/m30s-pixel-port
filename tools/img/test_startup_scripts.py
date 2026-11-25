@@ -17,11 +17,13 @@ class StartupScriptsTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             tmp = Path(temp)
             log = tmp / "commands"
-            for name in ("pm", "cmd", "killall", "sleep"):
+            for name in ("pm", "cmd", "killall", "sleep", "settings", "appops", "renice", "pidof"):
                 command = tmp / name
                 command.write_text('#!/bin/sh\nprintf "%s" "' + name + '" >> "$STARTUP_COMMAND_LOG"\n'
                                    'for arg; do printf " <%s>" "$arg" >> "$STARTUP_COMMAND_LOG"; done\n'
                                    'printf "\\n" >> "$STARTUP_COMMAND_LOG"\n'
+                                   '[ "$1" = get ] && echo "${SETUP_COMPLETE:-1}"\n'
+                                   '[ "$0" = "' + str(tmp / "pidof") + '" ] && echo 123\n'
                                    'exit 0\n')
                 command.chmod(0o755)
             env = dict(os.environ, PATH=str(tmp) + os.pathsep + os.environ["PATH"],
@@ -51,6 +53,30 @@ class StartupScriptsTest(unittest.TestCase):
         calls = self.run_script(DEXOPT, {"DEXOPT_RESTART_UI": "1"})
         self.assertFalse([x for x in calls if x.startswith("killall")])
         self.assertTrue(any("<-f>" in x for x in calls if x.startswith("cmd")))
+
+    def run_firstboot(self, setup_complete, steps="120"):
+        with tempfile.TemporaryDirectory() as d:
+            calls = self.run_script(SCRIPTS / "firstboot_dexopt.sh", {
+                "FIRSTBOOT_DIR": d, "DEXOPT_ALL": str(DEXOPT), "SETUP_COMPLETE": setup_complete, "SETUP_WAIT_STEPS": steps})
+            self.assertTrue((Path(d) / ".dexopt_done").exists())
+            return calls, (Path(d) / "dexopt.log").read_text()
+
+    def test_firstboot_compiles_at_once_when_setup_is_complete(self):
+        calls, log = self.run_firstboot("1")
+        self.assertIn("pass 1 (setup wait steps: 0)", log)
+        self.assertEqual([x for x in calls if x.startswith("sleep")].count("sleep <10>"), 0)
+        self.assertTrue(any("<com.android.systemui>" in x for x in calls if x.startswith("cmd")))
+
+    def test_firstboot_waits_for_setup_then_gives_up_after_the_limit(self):
+        calls, log = self.run_firstboot("0", steps="7")
+        self.assertIn("pass 1 (setup wait steps: 7)", log)
+        self.assertEqual(calls.count("sleep <10>"), 7)
+        self.assertIn("sleep <2700>", calls)
+        self.assertTrue(any(x.startswith("renice <-n> <19> <-p> <123>") for x in calls))
+
+    def test_firstboot_keeps_location_grants_once(self):
+        calls, _ = self.run_firstboot("1")
+        self.assertEqual(len([x for x in calls if x.startswith("appops <reset>")]), 1)
 
     def test_sensor_init_passes_no_shell_variable_to_init(self):
         text = (ROOT / "tools/img/rc/06_nosensorhog.rc").read_text()
@@ -88,9 +114,9 @@ class StartupScriptsTest(unittest.TestCase):
         self.assertEqual(puts["/system/bin/odex_bind.sh"],
                          ("os.path.join(HERE, 'scripts', 'odex_bind.sh')", "755"))
         self.assertEqual(puts["/system/bin/firstboot_dexopt.sh"],
-                         ("os.path.join(TOOLS, 'firstboot', 'firstboot_dexopt.sh')", "755"))
+                         ("os.path.join(HERE, 'scripts', 'firstboot_dexopt.sh')", "755"))
 
-    def test_checked_in_builder_stages_local_scripts_without_changing_firstboot(self):
+    def test_checked_in_builder_stages_local_startup_scripts(self):
         self.assert_startup_wiring((ROOT / "tools/img/build_a17.py").read_text())
 
     def test_generator_emits_actual_startup_wiring(self):

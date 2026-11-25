@@ -365,7 +365,7 @@ def netd(i, o): py('bpf/btfmaps.py', i, '--patch', wp('netd.btf.o')); py('bpf/pa
 bpf_file('netd.o', T, '/etc/bpf/mainline/netd.o', netd, '644', SYS)
 for rc in ('bpf/00_bpf_bind.rc', 'bpf/00_aee_off.rc', 'zz_a17_rt.rc'): put(os.path.join(TOOLS, rc), '/system/etc/init/' + os.path.basename(rc), '644')
 # compiles the apps in speed mode by itself after a data wipe (CI images carry no compiled code); skips what is already compiled
-put(os.path.join(TOOLS, 'firstboot', 'firstboot_dexopt.sh'), '/system/bin/firstboot_dexopt.sh', '755'); put(os.path.join(HERE, 'scripts', 'dexopt_all.sh'), '/system/bin/dexopt_all.sh', '755')
+put(os.path.join(HERE, 'scripts', 'firstboot_dexopt.sh'), '/system/bin/firstboot_dexopt.sh', '755'); put(os.path.join(HERE, 'scripts', 'dexopt_all.sh'), '/system/bin/dexopt_all.sh', '755')
 put(os.path.join(TOOLS, 'firstboot', 'zz_firstboot_dexopt.rc'), '/system/etc/init/zz_firstboot_dexopt.rc', '644')
 put(os.path.join(HERE, 'scripts', 'odex_bind.sh'), '/system/bin/odex_bind.sh', '755'); put(os.path.join(TOOLS, 'firstboot', 'zz_odex_bind.rc'), '/system/etc/init/zz_odex_bind.rc', '644')
 rc = cat(S, '/system/etc/init/netbpfload.rc').decode(); assert 'reboot_on_failure reboot,netbpfload-missing' in rc
