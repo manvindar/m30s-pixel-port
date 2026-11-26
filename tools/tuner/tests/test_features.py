@@ -6,7 +6,9 @@ import os
 import re
 import stat
 import time
+import shutil
 import subprocess
+import threading
 import unittest
 from pathlib import Path
 
@@ -861,9 +863,39 @@ class RateProbe(Features):
                 'echo 5000 > $P0/schedutil/up_rate_limit_us; echo 5000 > $P4/schedutil/up_rate_limit_us\n'
                 'log() { :; }; writecheck() { echo "$2" >> $D/writes; return 1; }\n'
                 'rate_probe up; cat $D/rate.up; rate_ok up && echo ok || echo notok')
-        out, err = harness(['readnode', 'rate_probe', 'rate_ok'], body, D=str(d))
+        out, err = harness(['readnode', 'rate_set', 'rate_probe', 'rate_ok'], body, D=str(d))
         self.assertEqual(out.split(), ['b1', 'unsupported', 'notok'], err)
         self.assertEqual((d / 'writes').read_text().split(), ['10000', '5000', '5000'])      # tried another value, then put the old one back on both
+
+    def kernel_resets(self):
+        """The M30s kernel: a write reads back at once and 5000 is back half a second later."""
+        nodes = [self.root / (pol + 'schedutil/%s_rate_limit_us' % k) for pol in (P0, P4) for k in ('up', 'down')]
+        stop = threading.Event()
+        def run():
+            while not stop.is_set():
+                for n in nodes:
+                    try:
+                        if n.read_text().strip() != '5000': time.sleep(0.5); n.write_text('5000\n')
+                    except OSError: pass
+                time.sleep(0.02)
+        t = threading.Thread(target=run, daemon=True); t.start()
+        self.addCleanup(lambda: (stop.set(), t.join(5)))
+
+    def test_a_value_the_kernel_resets_a_moment_later_does_not_count_as_sticking(self):
+        self.kernel_resets()
+        s = self.state()
+        self.assertNotIn('up_rate', s); self.assertNotIn('down_rate', s)
+        self.assertEqual([(self.root / ('private/rate.%s' % k)).read_text().split()[1] for k in ('up', 'down')], ['unsupported', 'unsupported'])
+
+    def test_a_request_the_kernel_resets_is_rejected_not_reported_applied(self):
+        (self.root / 'private').mkdir(exist_ok=True)
+        for k in ('up', 'down'):
+            (self.root / ('private/rate.%s' % k)).write_text('boot-1 supported\n')       # what the first v2.3 probe recorded on the phone
+        self.kernel_resets()
+        s = self.state('up_rate=2000\n')
+        self.assertIn('Rejected', s['status']); self.assertNotIn('Applied', s['status'])
+        self.assertEqual(self.read(P0 + 'schedutil/up_rate_limit_us'), '5000')
+        self.assertNotIn('up_rate', self.config())
 
     def test_nothing_is_recorded_while_schedutil_is_absent_and_the_probe_runs_once_per_boot(self):
         for pol in (P0, P4):
@@ -981,7 +1013,7 @@ class DeviceLikeReads(Features):
         self.assertEqual(body.count('read -r'), 1)
         for line in text.splitlines():
             if re.search(r'\bread (-r )?\w+ *(\|\||<)', line) and not line.lstrip().startswith('#'):
-                self.assertRegex(line, r'<\s*"\$(CFG|STOCK|PF|QC|PST|STATE|WORK/idle\.snap)"|\|\|', line)
+                self.assertRegex(line, r'<\s*"\$(CFG|STOCK|PF|QC|PST|STATE|WORK/idle\.snap|WORK/lock/pid)"|\|\|', line)
 
 
 class OlderVersionFiles(Features):
@@ -1141,6 +1173,117 @@ class RequestLatency(Features):
         while 'vfs_cache=150' not in [l for l in (self.app / 'state').read_text().splitlines()] and time.time() < end:
             time.sleep(0.1)
         self.assertIn('vfs_cache=150', (self.app / 'state').read_text().splitlines())
+
+
+class DaemonLifecycle(Features):
+    """Pam's v2.2 validation: the rollback killed the pid in lock/pid (6314) but the daemon that was running (2732) went on, and with the state files gone it ran
+    the system compile. The lock must name the daemon that runs, a daemon must leave when its lock is gone, and one command must stop every copy and say so."""
+
+    def setUp(self):
+        super().setUp()
+        # the daemon lists processes with ps on the phone; here the test says which it started (ps is not available in every sandbox)
+        lister = self.root / 'proclist.sh'
+        lister.write_text('#!/bin/sh\nwhile read -r pp rest; do kill -0 "$pp" 2>/dev/null && echo "$pp $rest"; done < "%s/procs.txt"\n' % self.root)
+        lister.chmod(0o755)
+        (self.root / 'procs.txt').write_text('')
+        self.env['M30S_PROCLIST'] = str(lister)
+
+    def start(self, script=None, **extra):
+        script = script or SCRIPT
+        daemon = subprocess.Popen(['sh', str(script), '--test', str(self.root)], env=dict(self.env, **extra), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        with open(self.root / 'procs.txt', 'a') as f: f.write('%d sh %s --test %s\n' % (daemon.pid, script, self.root))
+        threading.Thread(target=daemon.wait, daemon=True).start()   # reaped when it ends, so that kill -0 in the process list sees it gone
+        def end():
+            if daemon.poll() is None: daemon.kill(); daemon.wait(timeout=20)
+            time.sleep(1.5)   # its background jobs finish before the fixture directory is removed
+        self.addCleanup(end)
+        return daemon
+
+    def wait_for(self, what, timeout=20):
+        end = time.time() + timeout
+        while time.time() < end:
+            if what(): return True
+            time.sleep(0.05)
+        return False
+
+    def log(self):
+        path = self.root / 'private/tuner.log'
+        return path.read_text() if path.exists() else ''
+
+    def lock_pid(self):
+        try: return (self.root / 'private/lock/pid').read_text().strip()
+        except OSError: return ''
+
+    def stop(self):
+        return subprocess.run(['sh', str(SCRIPT), '--test', str(self.root), '--stop'], env=self.env, capture_output=True, text=True, timeout=60)
+
+    def copy(self):
+        copy = self.root / 'm30s_tunerd_v22.sh'; copy.write_text(SCRIPT.read_text()); return copy
+
+    def test_the_lock_names_the_daemon_that_runs(self):
+        d = self.start()
+        self.assertTrue(self.wait_for(lambda: self.lock_pid() == str(d.pid)), 'lock/pid is not the pid of the daemon (%s)' % self.lock_pid())
+
+    def test_a_second_daemon_from_another_copy_of_the_script_does_not_take_the_lock(self):
+        a = self.start(self.copy())
+        self.assertTrue(self.wait_for(lambda: self.lock_pid() == str(a.pid)))
+        b = self.start()
+        self.assertTrue(self.wait_for(lambda: b.poll() is not None, 15), 'a second daemon is running next to the first')
+        self.assertNotEqual(b.returncode, 0)
+        self.assertEqual(self.lock_pid(), str(a.pid))
+        self.assertIsNone(a.poll())
+
+    def test_a_daemon_whose_lock_is_gone_exits_and_never_compiles(self):
+        d = self.start()
+        self.assertTrue(self.wait_for(lambda: self.lock_pid() == str(d.pid)))
+        self.assertTrue(self.wait_for(lambda: (self.app / 'state').exists()))
+        for name in ('lock', 'config', 'stock', 'static', 'slow', 'profiles', 'ra.state'):   # what the rollback removed
+            path = self.root / 'private' / name
+            shutil.rmtree(path) if path.is_dir() else path.unlink(missing_ok=True)
+        self.assertTrue(self.wait_for(lambda: d.poll() is not None, 20), 'the daemon went on without its lock')
+        self.assertEqual(self.called('env force'), [])
+        self.assertFalse((self.root / 'private/dexopt.pid').exists())
+
+    def test_an_exiting_daemon_leaves_the_lock_of_its_successor(self):
+        d = self.start()
+        self.assertTrue(self.wait_for(lambda: self.lock_pid() == str(d.pid)))
+        (self.root / 'private/lock/pid').write_text('424242\n')   # another daemon took over
+        self.assertTrue(self.wait_for(lambda: d.poll() is not None, 20))
+        self.assertEqual(self.lock_pid(), '424242')
+
+    def test_no_request_no_compile_over_many_rounds(self):
+        d = self.start()
+        self.assertTrue(self.wait_for(lambda: (self.app / 'state').exists()))
+        time.sleep(4)
+        self.assertIsNone(d.poll())
+        self.assertEqual(self.called('env force'), [])
+        self.assertNotIn('compile started', self.log())
+
+    def test_stop_ends_every_daemon_and_says_so(self):
+        a = self.start(self.copy())
+        self.assertTrue(self.wait_for(lambda: self.lock_pid() == str(a.pid)))
+        self.assertTrue(self.wait_for(lambda: (self.app / 'state').exists()))
+        r = self.stop()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn(str(a.pid), r.stdout)
+        self.assertIn('no daemon left', r.stdout)
+        self.assertIsNotNone(a.poll())
+
+    def test_stop_with_nothing_running_is_quiet_success(self):
+        r = self.stop()
+        self.assertEqual(r.returncode, 0)
+        self.assertIn('no daemon left', r.stdout)
+
+    def test_a_validation_daemon_can_be_started_unable_to_compile(self):
+        d = self.start(M30S_NO_COMPILE='1')
+        (self.app / 'request').parent.mkdir(exist_ok=True)
+        self.assertTrue(self.wait_for(lambda: (self.app / 'state').exists()))
+        for req in ('compile_now=1', 'compile_all=1', 'compile_pkg=com.example.one'):
+            (self.app / 'request').write_text(req + '\n')
+            self.assertTrue(self.wait_for(lambda: 'last_request=%s' % req in (self.app / 'state').read_text(), 30), req)
+            self.assertIn('Rejected', dict(l.split('=', 1) for l in (self.app / 'state').read_text().splitlines() if '=' in l)['status'])
+        self.assertEqual(self.called('env force'), [])
+        self.assertFalse((self.root / 'private/dexopt.pid').exists())
 
 
 if __name__ == '__main__':

@@ -1324,8 +1324,12 @@ public class MainActivity extends Activity {
         Map<String, String> s = Cfg.load(this);
         if ("running".equals(s.get("compile_status"))) { Toast.makeText(this, "Already running", Toast.LENGTH_SHORT).show(); return; }
         if (!get0(s, "compile_queue").isEmpty() || get0(s, "compile_pkg_status").endsWith(":running")) { Toast.makeText(this, "An app is compiling. Wait for it to finish.", Toast.LENGTH_SHORT).show(); return; }
-        Cfg.request(this, key, "1");
-        setStatus("Starting…");
+        boolean all = "compile_all".equals(key);
+        new AlertDialog.Builder(this)
+            .setMessage(all ? "Recompile all apps now? It takes 10 to 15 minutes and the interface may restart." : "Compile the apps that are not compiled yet? It takes 10 to 15 minutes and the interface may restart.")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton(all ? "Recompile" : "Compile", (d, w) -> { Cfg.request(this, key, "1"); setStatus("Starting…"); })
+            .show();
     }
 
     private TextView liveCell(LinearLayout c, String label, float weight) {

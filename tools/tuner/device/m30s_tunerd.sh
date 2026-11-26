@@ -14,19 +14,55 @@ P0=$SYS/devices/system/cpu/cpufreq/policy0
 P4=$SYS/devices/system/cpu/cpufreq/policy4
 BOOST=$SYS/module/input_boost_m30s/parameters
 GPU=; for g in "$SYS"/devices/platform/*.mali; do [ -f "$g/clock" ] && { GPU=$g; break; }; done
+# "PID ARGS" per process. ps shows a script as "sh", so the arguments are asked for (and /proc read where ps gives nothing). The host test supplies its own list.
+proclist() {
+    if [ "$TEST" = 1 ] && [ -n "$M30S_PROCLIST" ]; then "$M30S_PROCLIST"; return; fi
+    _pl=$(ps -A -o PID,ARGS 2>/dev/null)
+    if [ -n "$_pl" ]; then printf '%s\n' "$_pl"; return; fi
+    for pd in /proc/[0-9]*; do pd=${pd#/proc/}; printf '%s %s\n' "$pd" "$(tr '\000' ' ' < "/proc/$pd/cmdline" 2>/dev/null)"; done
+}
+# the arguments of one process (empty when it is gone)
+pidargs() {
+    if [ "$TEST" = 1 ] && [ -n "$M30S_PROCLIST" ]; then proclist | while read -r pp rest; do [ "$pp" = "$1" ] && { echo "$rest"; break; }; done
+    else tr '\000' ' ' < "/proc/$1/cmdline" 2>/dev/null; fi
+}
+# every daemon process: any copy of this script (a validation copy has another path), its background jobs included; not this shell and not a --stop call
+daemons() {
+    proclist | while read -r dp rest; do
+        case "$dp" in ''|*[!0-9]*) continue;; esac
+        [ "$dp" = "$$" ] && continue
+        case "$rest" in *--stop*) continue;; *m30s_tunerd*.sh*) ;; *) continue;; esac
+        if [ "$TEST" = 1 ]; then case "$rest" in *"$FIXTURE"*) ;; *) continue;; esac; fi
+        echo "$dp"
+    done
+}
+if [ "$1" = --stop ]; then   # ends every daemon, says which and whether one is left (the lock file names one pid; this looks at the processes)
+    first=$(daemons | tr '\n' ' '); [ -n "$first" ] && echo "stopping: $first"
+    i=0
+    while left=$(daemons | tr '\n' ' '); [ -n "$left" ] && [ $i -lt 12 ]; do
+        i=$((i + 1)); if [ $i -gt 5 ]; then kill -9 $left 2>/dev/null; else kill $left 2>/dev/null; fi
+        sleep 1
+    done
+    left=$(daemons | tr '\n' ' ')
+    if [ -n "$left" ]; then echo "still running: $left"; exit 1; fi
+    rm -f "$WORK/lock/pid"; rmdir "$WORK/lock" 2>/dev/null
+    echo "no daemon left"; exit 0
+fi
 [ ! -L "$WORK" ] || exit 1
 mkdir -p "$WORK" || exit 1
 chmod 0700 "$WORK"
 if ! mkdir "$WORK/lock" 2>/dev/null; then
     previous=$(cat "$WORK/lock/pid" 2>/dev/null)
     case "$previous" in ''|*[!0-9]*) previous=0;; esac
-    if [ "$previous" -gt 0 ] && kill -0 "$previous" 2>/dev/null &&
-        tr '\000' ' ' < "$PROC/$previous/cmdline" 2>/dev/null | grep -q '/system/bin/m30s_tunerd.sh'; then exit 1; fi
+    # a live daemon of any copy of the script owns the lock; the old test looked for /system/bin/m30s_tunerd.sh only, so a copy elsewhere took the lock of a daemon that went on running
+    if [ "$previous" -gt 0 ] && [ "$previous" != "$$" ] && kill -0 "$previous" 2>/dev/null && pidargs "$previous" | grep -q 'm30s_tunerd.*\.sh'; then exit 1; fi
     rm -f "$WORK/lock/pid"; rmdir "$WORK/lock" 2>/dev/null || exit 1
     mkdir "$WORK/lock" || exit 1
 fi
 printf '%s\n' "$$" > "$WORK/lock/pid"
-trap 'rm -f "$WORK/lock/pid"; rmdir "$WORK/lock" 2>/dev/null' EXIT
+# the lock is released only by the daemon it names (an exiting daemon must not remove the lock of the one that took over)
+own_lock() { _lp=; { read -r _lp < "$WORK/lock/pid"; } 2>/dev/null; [ "$_lp" = "$$" ]; }
+trap 'own_lock && { rm -f "$WORK/lock/pid"; rmdir "$WORK/lock" 2>/dev/null; }' EXIT
 CFG=$WORK/config; STATE=$APP/state; STATUS='Ready; thermal limits unchanged'; LASTREQ=
 # The first line of a node or file. A /proc/sys node is read with cat, never with the shell's read: the builtin takes one byte at a time and a
 # sysctl answers a one byte read with one character and nothing after it (130 became 1). Stable sysfs attributes are read with the builtin (no
@@ -171,6 +207,13 @@ ra_ok() { [ -n "$(disks)" ] && case "$(readnode "$RAF")" in *" supported") retur
 
 # Same for the schedutil rate limits: the M30s kernel takes a write to up/down_rate_limit_us and keeps 5000. A row exists only where a changed value sticks on both
 # clusters; once per boot (and again if schedutil was not there yet) the node is given another value, read back and put back.
+# Both nodes are written and read again after a second: the M30s kernel answers the write and reads the new value back at once, then puts 5000 back about half a second later
+# (device, 2026-11-26), so a read back straight after the write proves nothing. Needs r0 and r4.
+rate_set() {
+    writecheck "$r0" "$1" && writecheck "$r4" "$1" || return 1
+    sleep 1
+    [ "$(readnode "$r0")" = "$1" ] && [ "$(readnode "$r4")" = "$1" ]
+}
 rate_probe() {
     rk=$1; rn=${rk}_rate_limit_us; r0=$P0/schedutil/$rn; r4=$P4/schedutil/$rn
     [ -f "$r0" ] && [ ! -L "$r0" ] && [ -f "$r4" ] && [ ! -L "$r4" ] || return 0
@@ -178,7 +221,7 @@ rate_probe() {
     case "$(readnode "$WORK/rate.$rk")" in "$rb "*) return 0;; esac
     o0=$(readnode "$r0"); o4=$(readnode "$r4"); rv=10000; [ "$o0" = 10000 ] && rv=5000
     rr=unsupported
-    if writecheck "$r0" "$rv" && writecheck "$r4" "$rv"; then rr=supported; fi
+    if rate_set "$rv"; then rr=supported; fi
     writecheck "$r0" "$o0" || log "rate probe: could not put $rn back to $o0"
     writecheck "$r4" "$o4" || log "rate probe: could not put $rn back to $o4"
     printf '%s %s\n' "$rb" "$rr" > "$WORK/rate.$rk"
@@ -531,6 +574,7 @@ qunlock() { rmdir "$WORK/qf.lock" 2>/dev/null; }
 countpkgs() { pm list packages 2>/dev/null | wc -l | tr -d ' ' > "$DXT"; }
 runcompile() { DEXOPT_RESTART_UI=$([ -z "$1" ] && echo 1 || echo 0) DEXOPT_FORCE=$1 sh "$DXS" >> "$DXL" 2>&1 < /dev/null; date +%s > "$DXE"; }
 compile() {   # $1 empty skips apps that are already compiled, -f recompiles all
+    [ "$M30S_NO_COMPILE" = 1 ] && { log "compile refused: validation daemon (M30S_NO_COMPILE=1)"; return 1; }
     [ "$(cstat)" = running ] && { log "compile already running"; return 1; }
     [ -d "$QR" ] && { log "app compile running"; return 1; }
     [ -f "$DXS" ] || { log "no $DXS"; return 1; }
@@ -615,6 +659,7 @@ qworker() {   # one job at a time; the empty check and the flag reset happen und
     done
 }
 pkg_enqueue() {   # $1 speed|speed-profile|reset, $2 package
+    [ "$M30S_NO_COMPILE" = 1 ] && { log "compile refused: validation daemon (M30S_NO_COMPILE=1)"; return 1; }
     if [ "$(cstat)" = running ] || fbrunning; then log "refused $1 $2: system compile running"; echo "$2:failed" > "$PST"; return 1; fi
     pkgok "$2" && pm path "$2" > /dev/null 2>&1 || { log "no package $2"; return 1; }
     qlock || return 1
@@ -738,7 +783,7 @@ apply() {
             r0=$P0/schedutil/$rn; r4=$P4/schedutil/$rn
             [ -f "$r0" ] && [ ! -L "$r0" ] && [ -f "$r4" ] && [ ! -L "$r4" ] || return 1
             o0=$(readnode "$r0"); o4=$(readnode "$r4")
-            if writecheck "$r0" "$v" && writecheck "$r4" "$v"; then return 0; fi
+            if rate_set "$v"; then return 0; fi
             writecheck "$r0" "$o0"; writecheck "$r4" "$o4"; return 1;;
         deep_idle)
             bool01 "$v" || return 1
@@ -1014,6 +1059,7 @@ rmdir "$WORK/static.lock" "$WORK/qf.lock" "$WORK/q.run" "$WORK/r.lock" "$WORK/sl
 # the daemon does little per round: the state is rebuilt (about a hundred small commands) after a request, every round while something compiles and every 20 s
 # otherwise; the live clocks and temperature in the app come from /sys directly
 while :; do
+    own_lock || { log "lock lost, daemon exits"; exit 1; }   # rollback or a newer daemon: nothing is done here without the lock
     now=$(date +%s)
     if [ $((now - DISKAT)) -ge 20 ]; then DISKAT=$now; DISKS=$(disks_scan | tr '\n' ' '); DISKS_OK=1; fi
     if [ $((now - SLOWAT)) -ge 60 ]; then SLOWAT=$now; rate_probe up; rate_probe down; bg refresh_slow; bg refresh_static; fi
