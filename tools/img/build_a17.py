@@ -558,6 +558,9 @@ if a.pixel_phone:
         for d in dsts: put(fitted, '/system/product/media/' + d, '644')
     # AOSP Provision is a second SETUP_WIZARD activity: with two, the Google wizard never gets the `setup` permissions
     cmds.append('rm /system/system_ext/priv-app/Provision/Provision.apk')
+    # Google Phone (GoogleDialer, staged above) is the only dialer: the GSI's AOSP Dialer and its permission file go. Telecom, TeleService (com.android.phone) and the telephony apex stay.
+    for f in ('/system/product/priv-app/Dialer/Dialer.apk', '/system/product/etc/permissions/com.android.dialer.xml'):
+        if exists(S, f): cmds.append('rm ' + f)
     put(os.path.join(TOOLS, 'pixel', 'pixel_home.sh'), '/system/bin/pixel_home.sh', '755')
     put(tmpf('zz_pixel_home.rc', open(os.path.join(TOOLS, 'pixel', 'zz_pixel_home.rc')).read()), '/system/etc/init/zz_pixel_home.rc', '644')
     put(os.path.join(TOOLS, 'pixel', 'wizard_lock_skip.sh'), '/system/bin/wizard_lock_skip.sh', '755')

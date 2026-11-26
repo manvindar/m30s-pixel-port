@@ -406,9 +406,9 @@ jobs:
             mkdir baked-oat && tar --zstd -xf baked-oat.tar.zst -C baked-oat
             BAKED="--baked-oat baked-oat"
           fi
-          python3 tools/downloads/verified_input.py \
-            https://github.com/manvindar/m30s-pixel-port/releases/download/v0.7-a17-m30s-fixes-20261116/RomTuner-Tablet-M30s.apk \
-            6a9bc65cfde17e49292d802ec383cf3de1a79e6506fa9e2d2d368375b9a07eae tablet-tuner-signed.apk
+          # ROM Tuner v2.4 (versionCode 7), built from tools/tuner/tablet and signed outside CI with the tablet tuner key (signer checked below)
+          cp tools/tuner/prebuilt/RomTuner-Tablet-M30s-vc7.apk tablet-tuner-signed.apk
+          echo "0187109a04d6f1620958ff24c3d03c9d08b1d84b8442223730517df3ed9b42eb  tablet-tuner-signed.apk" | sha256sum -c -
           "$BT/apksigner" verify --print-certs tablet-tuner-signed.apk > tablet-tuner-signer.txt
           grep -Fx 'Signer #1 certificate SHA-256 digest: 17bb00988f8ac7c2a74109c5e77a834e6c4a34ddcfa2f004efa141377e623fb8' tablet-tuner-signer.txt
           python3 tools/img/build_a17.py --gsi system.img --donor "$DONOR_IMG" --vndk-dir vndk30 --a14fs a14fs \
