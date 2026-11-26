@@ -928,7 +928,9 @@ build_state() {
         printf 'status=%s\n' "$STATUS"
         printf 'last_request=%s\n' "$LASTREQ"
         mn=$(mode_now); echo "perf_profile=$mn"; echo "preset=$mn"
+        checkpoint && return 2   # mode_now compares every stock value: seconds on a loaded phone
         for spec in "cap_little:$P0/scaling_max_freq" "cap_big:$P4/scaling_max_freq" "governor:$P0/scaling_governor" "governor_big:$P4/scaling_governor" "swappiness:$PROC/sys/vm/swappiness" "cpu_little_khz:$P0/scaling_cur_freq" "cpu_big_khz:$P4/scaling_cur_freq" "temp_mc:$SYS/class/thermal/thermal_zone0/temp" "battery_percent:$SYS/class/power_supply/battery/capacity"; do
+            checkpoint && return 2
             key=${spec%%:*}; node=${spec#*:}; printf '%s=%s\n' "$key" "$(readnode "$node")"
         done
         if touch_ok; then
@@ -947,6 +949,7 @@ build_state() {
         fi
         checkpoint && return 2
         for ck in vfs_cache page_cluster watermark extra_free schedstats up_rate down_rate deep_idle; do
+            checkpoint && return 2
             cv=$(curval "$ck"); [ -n "$cv" ] && echo "$ck=$cv"
         done
         checkpoint && return 2
@@ -957,6 +960,7 @@ build_state() {
         checkpoint && return 2
         [ -f "$WORK/static" ] && cat "$WORK/static"
         [ -f "$WORK/slow" ] && cat "$WORK/slow"
+        checkpoint && return 2
         pubcompile
     } > "$WORK/state.new"
     _br=$?
