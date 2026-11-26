@@ -3,6 +3,7 @@
 The fake commands keep their state in files under <fixture>/mock and log every call to <fixture>/calls.log, so a test can assert that a command was
 (or was not) run. Nothing here talks to a device."""
 import os
+import re
 import stat
 import subprocess
 import unittest
@@ -824,6 +825,111 @@ class ModeAndStatus(Features):
             s = self.state('anim_scale=%s\n' % v)
             self.assertIn('Applied anim_scale', s['status'])
             self.assertEqual(self.mockval('settings.animator_duration_scale'), v)
+
+
+# What a /proc/sys node does to the shell's read builtin on the phone: the builtin asks for one byte, the node answers it with one
+# character and nothing after it (130 became 1). A function in front of the script gives readnode's old variable that behaviour.
+ONE_BYTE_READ = '''read() { if [ "$#" = 2 ] && [ "$2" = _rn ]; then command read -r _rn || return 1; _rn=${_rn%"${_rn#?}"}; return 0; fi; command read "$@"; }
+'''
+
+
+class DeviceLikeReads(Features):
+    def run_backend(self, request=None):
+        wrapped = self.root / 'daemon_with_one_byte_reads.sh'
+        wrapped.write_text(ONE_BYTE_READ + SCRIPT.read_text())
+        if request is not None:
+            (self.app / 'request').write_text(request)
+        result = subprocess.run(['sh', str(wrapped), '--test', str(self.root), '--once'], env=self.env, capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return (self.app / 'state').read_text()
+
+    def test_the_stand_in_really_truncates_what_read_returns(self):
+        probe = subprocess.run(['sh', '-c', ONE_BYTE_READ + 'echo 130 > "$1"; _rn=; read -r _rn < "$1"; echo "$_rn"', 'sh', str(self.root / 'x')], capture_output=True, text=True)
+        self.assertEqual(probe.stdout.strip(), '1')
+
+    def test_whole_values_are_published_and_recorded(self):
+        s = self.state()
+        self.assertEqual((s['swappiness'], s['vfs_cache'], s['page_cluster'], s['watermark'], s['extra_free']), ('130', '100', '3', '10', '29615'))
+        self.assertEqual((s['stock_swappiness'], s['stock_vfs_cache'], s['stock_watermark'], s['stock_extra_free']), ('130', '100', '10', '29615'))
+        self.assertEqual(s['cap_big'], '2314000')
+
+    def test_a_profile_saved_and_used_keeps_the_whole_values(self):
+        self.state('save_profile=Keep\n')
+        text = (self.root / 'private/profiles').read_text()
+        self.assertIn('swappiness=130', text); self.assertIn('extra_free=29615', text)
+        self.state('swappiness=100\n')
+        self.state('apply_profile=Keep\n')
+        self.assertEqual(self.read('proc/sys/vm/swappiness'), '130')
+        self.assertEqual(self.read('proc/sys/vm/extra_free_kbytes'), '29615')
+
+    def test_a_rejected_change_puts_back_the_whole_old_value(self):
+        self.state('vfs_cache=7\n')
+        self.assertEqual(self.read('proc/sys/vm/vfs_cache_pressure'), '100')
+
+    def test_the_daemon_never_reads_a_kernel_node_with_the_shell_builtin(self):
+        text = SCRIPT.read_text()
+        body = text.split('readnode() ', 1)[1].split('\nallowed()', 1)[0]
+        self.assertNotRegex(body, r'\bread\b[^\n]*<')
+        for line in text.splitlines():
+            if re.search(r'\bread (-r )?\w+ *(\|\||<)', line) and not line.lstrip().startswith('#'):
+                self.assertRegex(line, r'<\s*"\$(CFG|STOCK|PF|QC|PST|STATE|WORK/idle\.snap)"|\|\|', line)
+
+
+class OlderVersionFiles(Features):
+    """Version 2 wrote truncated values into its stock snapshot and its saved profiles."""
+
+    def test_an_old_stock_snapshot_is_dropped_and_its_values_are_never_allowed(self):
+        (self.root / 'private').mkdir(exist_ok=True)
+        (self.root / 'private/stock').write_text('boot=boot-1\nswappiness=1\nvfs_cache=1\nextra_free=2\n')
+        s = self.state()
+        self.assertNotIn('stock_swappiness', s); self.assertNotIn('stock_vfs_cache', s); self.assertNotIn('stock_extra_free', s)
+        self.assertEqual(s['vfs_cache'], '100')
+        self.assertUnchanged('vfs_cache=1\n')
+
+    def test_the_stock_values_come_back_at_the_next_boot(self):
+        (self.root / 'private').mkdir(exist_ok=True)
+        (self.root / 'private/stock').write_text('boot=boot-1\nswappiness=1\n')
+        self.state()
+        self.put('proc/sys/kernel/random/boot_id', 'boot-2')
+        s = self.state()
+        self.assertEqual((s['stock_swappiness'], s['stock_extra_free']), ('130', '29615'))
+
+    def test_old_saved_profiles_are_set_aside_once(self):
+        (self.root / 'private').mkdir(exist_ok=True)
+        (self.root / 'private/profiles').write_text('Old|swappiness=1 vfs_cache=1 \n')
+        s = self.state()
+        self.assertEqual(s['saved_profiles'], '')
+        self.assertEqual((self.root / 'private/profiles.v2').read_text(), 'Old|swappiness=1 vfs_cache=1 \n')
+        s = self.state('save_profile=New\n')
+        self.assertEqual(s['saved_profiles'], 'New')
+        self.assertEqual(self.state()['saved_profiles'], 'New')
+
+
+class RequestEcho(Features):
+    def test_the_state_names_the_request_it_answers(self):
+        s = self.state('vfs_cache=150\n')
+        self.assertEqual(s['last_request'], 'vfs_cache=150'); self.assertIn('Applied vfs_cache', s['status'])
+        s = self.state('vfs_cache=7\n')
+        self.assertEqual(s['last_request'], 'vfs_cache=7'); self.assertIn('Rejected', s['status'])
+
+    def test_a_request_with_odd_characters_is_echoed_without_them(self):
+        s = self.state('swappiness=1;reboot\n')
+        self.assertEqual(s['last_request'], 'rejected'); self.assertIn('Rejected', s['status'])
+        s = self.state('x' * 200 + '=1\n')
+        self.assertEqual(s['last_request'], 'oversized')
+
+    def test_the_quick_rewrite_alone_replaces_status_and_echo_and_keeps_the_rest(self):
+        # a full publish takes seconds on the phone: only this rewrite is in time for the first reading after a request
+        text = SCRIPT.read_text()
+        func = 'quick_status() {' + text.split('\nquick_status() {', 1)[1].split('\n}\n', 1)[0] + '\n}\n'
+        (self.root / 'state').write_text('backend=m30s\nstatus=old\nlast_request=a=1\nx=2\n')
+        script = 'WORK=$1; STATE=$1/state; APP=$1; TEST=1; STATUS="Applied b"; LASTREQ=b=2\n' + func + 'quick_status\n'
+        subprocess.run(['sh', '-c', script, 'sh', str(self.root)], check=True)
+        self.assertEqual((self.root / 'state').read_text(), 'backend=m30s\nstatus=Applied b\nlast_request=b=2\nx=2\n')
+
+    def test_a_restarted_daemon_has_answered_nothing_yet(self):
+        self.state('swappiness=100\n')
+        self.assertEqual(self.state()['last_request'], '')   # a restarted daemon has handled nothing yet
 
 
 if __name__ == '__main__':

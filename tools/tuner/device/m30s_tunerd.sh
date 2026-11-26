@@ -27,9 +27,11 @@ if ! mkdir "$WORK/lock" 2>/dev/null; then
 fi
 printf '%s\n' "$$" > "$WORK/lock/pid"
 trap 'rm -f "$WORK/lock/pid"; rmdir "$WORK/lock" 2>/dev/null' EXIT
-CFG=$WORK/config; STATE=$APP/state; STATUS='Ready; thermal limits unchanged'
-# one line of a node or file without starting a process (the round reads about a hundred of them)
-readnode() { _rn=; if [ -r "$1" ]; then read -r _rn < "$1" || :; fi; printf '%s\n' "$_rn"; }
+CFG=$WORK/config; STATE=$APP/state; STATUS='Ready; thermal limits unchanged'; LASTREQ=
+# the first line of a node or file. Never the shell's read: it takes one byte at a time, and a /proc/sys node answers a one byte read with one
+# character and nothing after it (130 became 1)
+readnode() { _rn=$(cat "$1" 2>/dev/null); printf '%s\n' "${_rn%%
+*}"; }
 allowed() { for a in $(readnode "$2"); do [ "$1" = "$a" ] && return 0; done; return 1; }
 number() { case "$1" in ''|*[!0-9]*) return 1;; esac; [ ${#1} -le 8 ]; }
 name_ok() { case "$1" in ''|*[!A-Za-z0-9_.-]*) return 1;; esac; [ ${#1} -le 32 ]; }
@@ -170,11 +172,15 @@ mode_now() {
 # The values this kernel had when the daemon first ran after a boot, before saved values were restored. The app labels them "stock" and compares modes against them.
 STOCK=$WORK/stock
 STOCKKEYS="cap_little cap_big governor io_sched read_ahead_kb tcp_cc gpu_max swappiness vfs_cache page_cluster watermark extra_free schedstats up_rate down_rate deep_idle touch_enabled touch_duration_ms"
-stockof() { _sr=; if [ -r "$STOCK" ]; then while IFS='=' read -r _sk _sv || [ -n "$_sk" ]; do [ "$_sk" = "$1" ] && _sr=$_sv; done < "$STOCK"; fi; printf '%s\n' "$_sr"; }
+STOCKV=3   # files written by version 2 hold truncated values (see readnode): never read them
+stockraw() { _sr=; if [ -r "$STOCK" ]; then while IFS='=' read -r _sk _sv || [ -n "$_sk" ]; do [ "$_sk" = "$1" ] && _sr=$_sv; done < "$STOCK"; fi; printf '%s\n' "$_sr"; }
+stockof() { case "$1" in boot|v) stockraw "$1";; *) [ "$(stockraw v)" = "$STOCKV" ] && stockraw "$1" || echo;; esac; }
 stock_capture() {
     bid=$(readnode "$PROC/sys/kernel/random/boot_id")
-    [ "$(stockof boot)" = "$bid" ] && [ -n "$bid" ] && return 0
-    { echo "boot=$bid"; for sk in $STOCKKEYS; do sv=$(curval "$sk"); case "$sv" in ''|mixed) ;; *) echo "$sk=$sv";; esac; done; } > "$STOCK.new" && mv "$STOCK.new" "$STOCK"
+    # an old snapshot cannot be repaired and the values are no longer the kernel's own: keep none until the next boot
+    if [ -e "$STOCK" ] && [ "$(stockraw v)" != "$STOCKV" ]; then printf 'boot=%s\nv=%s\n' "$bid" "$STOCKV" > "$STOCK.new" && mv "$STOCK.new" "$STOCK"; log "dropped the stock values of an older version"; return 0; fi
+    [ "$(stockraw boot)" = "$bid" ] && [ -n "$bid" ] && return 0
+    { echo "boot=$bid"; echo "v=$STOCKV"; for sk in $STOCKKEYS; do sv=$(curval "$sk"); case "$sv" in ''|mixed) ;; *) echo "$sk=$sv";; esac; done; } > "$STOCK.new" && mv "$STOCK.new" "$STOCK"
 }
 # the current value of a kernel node or setting, empty when this device does not have it
 ratecur() { a=$(readnode "$P0/schedutil/$1"); b=$(readnode "$P4/schedutil/$1"); [ -n "$a" ] && [ -n "$b" ] || return 0; if [ "$a" = "$b" ]; then echo "$a"; else echo mixed; fi; }
@@ -408,6 +414,8 @@ set_any() { if is_x "$1"; then xapply "$1" "$2"; else apply "$1" "$2"; fi; }
 # ---------- saved profiles ----------
 # One line per profile in $PF: "name|key=value key=value". They hold the performance, memory and a few system keys, not the look.
 PF=$WORK/profiles
+# version 2 saved profiles with truncated values (see readnode): put them aside once
+pf_check() { [ "$(cat "$WORK/profiles.v" 2>/dev/null)" = 3 ] && return 0; [ -e "$PF" ] && { mv "$PF" "$PF.v2" 2>/dev/null; log "set aside the saved profiles of an older version"; }; echo 3 > "$WORK/profiles.v"; }
 PKEYS="cap_little cap_big governor gpu_max io_sched read_ahead_kb tcp_cc swappiness vfs_cache page_cluster watermark extra_free schedstats up_rate down_rate deep_idle touch_enabled touch_duration_ms anim_scale window_blur cached_apps bg_procs carplay_boost"
 pf_names() { cut -d'|' -f1 "$PF" 2>/dev/null | tr '\n' ',' | sed 's/,$//'; }
 pf_line() { [ -r "$PF" ] || return 0; while IFS= read -r pln || [ -n "$pln" ]; do [ "${pln%%\|*}" = "$1" ] && { echo "${pln#*\|}"; return 0; }; done < "$PF"; return 0; }
@@ -788,6 +796,7 @@ publish() {
     {
         echo backend=m30s
         printf 'status=%s\n' "$STATUS"
+        printf 'last_request=%s\n' "$LASTREQ"
         mn=$(mode_now); echo "perf_profile=$mn"; echo "preset=$mn"
         for spec in "cap_little:$P0/scaling_max_freq" "cap_big:$P4/scaling_max_freq" "governor:$P0/scaling_governor" "governor_big:$P4/scaling_governor" "swappiness:$PROC/sys/vm/swappiness" "cpu_little_khz:$P0/scaling_cur_freq" "cpu_big_khz:$P4/scaling_cur_freq" "temp_mc:$SYS/class/thermal/thermal_zone0/temp" "battery_percent:$SYS/class/power_supply/battery/capacity"; do
             key=${spec%%:*}; node=${spec#*:}; printf '%s=%s\n' "$key" "$(readnode "$node")"
@@ -847,17 +856,18 @@ publish() {
 # the new status line goes into the published state at once (a full publish takes seconds on the phone)
 quick_status() {
     [ -f "$STATE" ] && [ ! -L "$STATE" ] || return 0
-    { while IFS= read -r ql || [ -n "$ql" ]; do case "$ql" in status=*) printf 'status=%s\n' "$STATUS";; *) printf '%s\n' "$ql";; esac; done < "$STATE"; } > "$WORK/state.quick" 2>/dev/null || return 0
+    { while IFS= read -r ql || [ -n "$ql" ]; do case "$ql" in status=*) printf 'status=%s\n' "$STATUS";; last_request=*) printf 'last_request=%s\n' "$LASTREQ";; *) printf '%s\n' "$ql";; esac; done < "$STATE"; } > "$WORK/state.quick" 2>/dev/null || return 0
     if [ "$TEST" = 0 ]; then chown "$(stat -c %u "$APP"):$(stat -c %g "$APP")" "$WORK/state.quick"; chcon --reference="$APP" "$WORK/state.quick" 2>/dev/null || restorecon "$WORK/state.quick"; fi
     chmod 0644 "$WORK/state.quick"; mv "$WORK/state.quick" "$STATE"
 }
 reject() { STATUS="Rejected $1; $2"; return 1; }
 handle() {
     [ -f "$APP/request" ] && [ ! -L "$APP/request" ] || return 0
-    [ "$(wc -c < "$APP/request")" -le 128 ] || { rm "$APP/request"; HANDLED=1; STATUS='Rejected oversized request'; return 1; }
+    [ "$(wc -c < "$APP/request")" -le 128 ] || { rm "$APP/request"; HANDLED=1; LASTREQ=oversized; STATUS='Rejected oversized request'; return 1; }
     mv "$APP/request" "$APP/request.processing" || return 1
     HANDLED=1
     line=$(cat "$APP/request.processing"); rm "$APP/request.processing"
+    case "$line" in *[!A-Za-z0-9._=-]*) LASTREQ=rejected;; *) LASTREQ=$line;; esac   # echoed in the state: the app shows the status once this is its newest request
     case "$line" in *=*) key=${line%%=*}; val=${line#*=};; *) STATUS='Rejected malformed request'; return 1;; esac
     case "$line" in *'
 '*) STATUS='Rejected multiple requests'; return 1;; esac
@@ -942,17 +952,19 @@ while :; do
             if [ "$started" = 0 ]; then
                 started=1; need=1
                 ra_probe
+                pf_check
                 stock_capture
                 restore_config
                 [ -f "$AFD" ] && put_app_file "$AFD" apps_state
                 [ "$TEST" = 1 ] && bg wifiboot
             fi
-            HANDLED=0; handle; [ "$HANDLED" = 1 ] && { need=1; FAST=5; quick_status; }
+            HANDLED=0; handle; [ "$HANDLED" = 1 ] && { need=1; FAST=5; quick_status; log "request $LASTREQ answered: $STATUS"; }
         fi
     done
     if [ "$need" = 1 ]; then
         PUBAT=$now
         for APP in $APPS; do STATE=$APP/state; [ -d "$APP" ] && [ ! -L "$APP" ] && publish; done
+        pubs=$(( $(date +%s) - now )); [ $pubs -ge 3 ] && log "publish took $pubs s"   # evidence for the stale-state reports
     fi
     boostwatch
     if [ $((now % 5)) -eq 0 ] || [ "$TEST" = 1 ]; then sp=$(pidof system_server 2>/dev/null); if [ -n "$sp" ] && [ "$sp" != "$SSPID" ]; then SSPID=$sp; bg wifiboot; fi; fi

@@ -37,13 +37,22 @@ final class Cfg {
         return end && m.size() > 1 ? m : null;
     }
 
-    static void request(Context c, String key, String value) {
+    private static final Requests REQ = new Requests();
+
+    /** Queues a change; it is written now when the request file is free, else on the next pump. */
+    static void request(Context c, String key, String value) { REQ.offer(key, value); pump(c); }
+
+    /** Writes the next queued change once the daemon has taken the previous one. */
+    static void pump(Context c) {
         File f = new File(c.getFilesDir(), "request"), tmp = new File(c.getFilesDir(), "request.new");
-        if (f.exists() || new File(c.getFilesDir(), "request.processing").exists()) {
-            android.widget.Toast.makeText(c, "Waiting for the previous change", android.widget.Toast.LENGTH_SHORT).show(); return;
-        }
-        try (FileWriter w = new FileWriter(tmp)) { w.write(key + "=" + value + "\n"); }
+        boolean free = !f.exists() && !new File(c.getFilesDir(), "request.processing").exists();
+        String line = REQ.next(free, System.currentTimeMillis());
+        if (line == null) return;
+        try (FileWriter w = new FileWriter(tmp)) { w.write(line); }
         catch (IOException e) { return; }
         if (!tmp.renameTo(f)) android.widget.Toast.makeText(c, "Could not queue change", android.widget.Toast.LENGTH_SHORT).show();
     }
+
+    /** True while a change is queued or not yet reported back by the daemon. */
+    static boolean waiting(String lastRequest) { return REQ.waiting(lastRequest, System.currentTimeMillis()); }
 }

@@ -142,7 +142,28 @@ public final class CapsTest {
         eq(0, Layouts.scrollTo(500, -10, 230, 360), "never below zero");
         eq(230, Layouts.scrollTo(400, 230, 460, 360), "card hidden on the left moves back");
         eq(150, Layouts.scrollTo(150, 200, 300, 360), "visible card: no movement");
+        requests();
         System.out.println("CapsTest OK");
+    }
+
+    private static void requests() {
+        Requests r = new Requests();
+        eq(false, r.waiting(null, 0), "nothing sent, nothing awaited");
+        r.offer("swappiness", "100"); r.offer("vfs_cache", "50"); r.offer("swappiness", "60");
+        eq(null, r.next(false, 0), "busy slot: nothing is written");
+        eq("vfs_cache=50\n", r.next(true, 0), "a later value of a setting replaces the queued one and goes after the other change");
+        eq(true, r.waiting("", 1), "queued change still waits");
+        eq("swappiness=60\n", r.next(true, 1), "the replaced setting is sent once, with the last value");
+        eq(null, r.next(true, 1), "queue empty");
+        eq(true, r.waiting("vfs_cache=50", 2), "the daemon has answered an older request: still applying");
+        eq(false, r.waiting("swappiness=60", 3), "the echo matches the newest request: show the status");
+        eq(false, r.waiting("vfs_cache=50", 4), "and it stays settled");
+        r.offer("compile_pkg", "a.b"); r.offer("compile_pkg", "c.d");
+        eq("compile_pkg=a.b\n", r.next(true, 5), "two packages are two jobs (1)"); eq("compile_pkg=c.d\n", r.next(true, 5), "two packages are two jobs (2)");
+        eq(true, r.waiting("x=1", 6), "no echo yet"); eq(false, r.waiting("x=1", 5 + Requests.WAIT_MS + 1), "a daemon that never answers does not hold the header");
+        for (int i = 0; i < Requests.MAX + 5; i++) r.offer("k" + i, "1");
+        int n = 0; while (r.next(true, 9) != null) n++;
+        eq(Requests.MAX, n, "the queue is bounded");
     }
 
     private static void eq(Object want, Object got) { eq(want, got, String.valueOf(want)); }

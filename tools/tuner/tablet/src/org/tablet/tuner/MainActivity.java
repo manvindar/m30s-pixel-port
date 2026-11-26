@@ -53,11 +53,11 @@ public class MainActivity extends Activity {
     private TextView status;
     private TextView liveCpu, liveGpu, liveMem, liveHeat, compileView, ocView;
     private final android.os.Handler ui = new android.os.Handler();
-    private final Runnable tick = new Runnable() { @Override public void run() { sample(); refreshLive(); refreshOverview(); refreshGraphs(); refreshCompile(); refreshProgress(); refreshOc(); refreshApps(); ui.postDelayed(this, 1000); } };
+    private final Runnable tick = new Runnable() { @Override public void run() { Cfg.pump(MainActivity.this); refreshStatus(); sample(); refreshLive(); refreshOverview(); refreshGraphs(); refreshCompile(); refreshProgress(); refreshOc(); refreshApps(); ui.postDelayed(this, 1000); } };
     private final Pending pend = new Pending();
     /** The published state with the values changed in the last seconds laid over it (the daemon publishes late). */
     private Map<String, String> loadState() { return pend.overlay(Cfg.load(this), System.currentTimeMillis()); }
-    private final Runnable reload = () -> { st = loadState(); setStatus(get("status", "Waiting for M30s service")); build(); };
+    private final Runnable reload = () -> { st = loadState(); setStatus(statusText(Cfg.load(this))); build(); };
 
     // id, name, one-line description: only the profiles this kernel's backend accepts, described with the clocks it really has
     private String[][] presets() { return Caps.presets(st); }
@@ -115,6 +115,21 @@ public class MainActivity extends Activity {
     }
 
     private void setStatus(String s) { if (status != null) status.setText(s); }
+    /** The header status: "Applying…" until the daemon reports the newest change it was given, then its own words for it. */
+    private String statusText(Map<String, String> s) {
+        if (Cfg.waiting(s.get("last_request"))) return "Applying…";
+        String t = s.get("status");
+        return t == null || t.isEmpty() ? "Waiting for M30s service" : t;
+    }
+    private String shownStatus;
+    private boolean summaryShowsStatus;   // the System entry of the page list repeats the status: rebuilt when the status changes
+    private void refreshStatus() {
+        Map<String, String> s = liveState();
+        if (s == null || s.isEmpty()) return;
+        String t = statusText(s);
+        setStatus(t);
+        if (!t.equals(shownStatus)) { shownStatus = t; if (summaryShowsStatus) build(); }
+    }
 
     private void go(String p) {
         if (wide) { if (!HOME.equals(p)) selectSection(p); return; }
@@ -377,7 +392,7 @@ public class MainActivity extends Activity {
         if (!HOME.equals(page) && !avail.contains(page)) page = HOME;   // a page this device does not offer (an old shortcut, Picture, Overclock) lands on the home screen
         if (!avail.contains(section)) section = "overview";
         int[] y = builtKey.equals(viewKey()) || builtKey.isEmpty() ? new int[]{sy(mainSv), sy(leftSv), sy(rightSv)} : new int[3];
-        resetRefs();
+        resetRefs(); summaryShowsStatus = false;
         barView = null; mainSv = leftSv = rightSv = null; rightCol = null; entryRows.clear(); homeBody = resultsBox = null; searchBox = null;
         Configuration cf = getResources().getConfiguration();
         wide = Layouts.wide(cf.screenWidthDp, cf.screenHeightDp);
@@ -569,7 +584,7 @@ public class MainActivity extends Activity {
             case "display": return displaySummary();
             case "memory": return memoryPageSummary();
             case "connect": return connectSummary();
-            default: return get("status", "Shortcuts, logging, restart");
+            default: summaryShowsStatus = true; return shownStatus != null ? shownStatus : get("status", "Shortcuts, logging, restart");
         }
     }
     private java.util.List<String> entryIds() { ArrayList<String> r = new ArrayList<>(); for (String[] e : entries()) r.add(e[0]); return r; }

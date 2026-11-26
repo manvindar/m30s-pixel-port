@@ -46,7 +46,8 @@ Rule for every row: the backend publishes the control's key in the state file on
 | Free memory reserve | `extra_free` | `extra_free_kbytes` (29615) | node missing | Host |
 | Background apps kept | `bg_procs` | `device_config activity_manager max_cached_processes` | | Host, Device |
 | Cached app limit | `cached_apps` | `settings global activity_manager_constants` (other constants kept) | | Host, Device |
-| Stock values | `stock_*` | recorded by the backend at its first run after a boot, before saved values are restored | | Host |
+| Stock values | `stock_*` | recorded by the backend at its first run after a boot, before saved values are restored; read whole (a `/proc/sys` node answers the shell's byte-wise `read` with one character, so kernel nodes are read with `cat`); a snapshot of an older version is dropped until the next boot | | Host (one-byte-read stand-in) |
+| Request status | `last_request`, `status` | the header shows Applying until the daemon echoes the newest request the app sent; changes made while the daemon is busy are queued in the app, not dropped | | Host, Device |
 | Dark mode | `night` | `cmd uimode night` | service missing | Host, Device |
 | Accent colour, palette source, palette style | `accent`, `palette_source`, `theme_style` | `secure theme_customization_overlay_packages` (rebuilt from the current value) | setting or `cmd overlay` unavailable | Host, Device (SystemUI must pick it up) |
 | Font | `font` | font overlays found by `cmd overlay list` | none installed (the image ships none) | Host |

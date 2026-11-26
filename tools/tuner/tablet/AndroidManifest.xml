@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.tablet.tuner" android:versionCode="4" android:versionName="1.2-m30s-features">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.tablet.tuner" android:versionCode="5" android:versionName="1.2.1-m30s-features">
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="34" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <application android:label="ROM Tuner" android:icon="@mipmap/ic_launcher"
