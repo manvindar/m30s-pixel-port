@@ -133,15 +133,69 @@ final class Caps {
         return p.get(i < 0 ? (p.size() > 1 ? 1 : 0) : (i + 1) % p.size());
     }
 
-    /** What "Balanced" is on this kernel, to compare the other settings against: key, value. Touch boost only when the module exists. */
+    /** The control exists on this device when the backend published its value (the backend publishes a key only when the node or setting is there). */
+    static boolean has(Map<String, String> st, String key) { return !get(st, key).isEmpty(); }
+
+    private static boolean numeric(String s) { return number(s); }
+
+    /**
+     * A tunable with a fixed list of choices, plus what this kernel really has: its stock value (marked "stock", added when the list lacks it) and the current
+     * value when something else set it (marked "current"). The list stays in numeric order when every value is a number, so the user never sees a value that
+     * is not on the list and a list that hides the one in use.
+     */
+    static Choice options(Map<String, String> st, String key, String[] vals, String[] labels, String unit) {
+        List<String> v = new ArrayList<>(Arrays.asList(vals)), l = new ArrayList<>(Arrays.asList(labels));
+        String stock = get(st, "stock_" + key), cur = get(st, key);
+        if (!stock.isEmpty()) {
+            int i = v.indexOf(stock);
+            if (i >= 0) l.set(i, l.get(i) + " (stock)"); else { v.add(stock); l.add(stock + unit + " (stock)"); }
+        }
+        if (!cur.isEmpty() && !cur.equals("mixed") && !v.contains(cur)) { v.add(cur); l.add(cur + unit + " (current)"); }
+        boolean allNumeric = true;
+        for (String x : v) if (!numeric(x)) allNumeric = false;
+        if (allNumeric) {   // insertion sort: lists are short
+            for (int i = 1; i < v.size(); i++) for (int j = i; j > 0 && Long.parseLong(v.get(j)) < Long.parseLong(v.get(j - 1)); j--) { Collections.swap(v, j, j - 1); Collections.swap(l, j, j - 1); }
+        }
+        return new Choice(v.toArray(new String[0]), l.toArray(new String[0]));
+    }
+
+    /** Display size choices: the sizes the backend offers (percentages of the physical density), "reset" standing for the physical value. */
+    static Choice densities(Map<String, String> st) {
+        List<String> v = new ArrayList<>(Arrays.asList(csv(get(st, "density_opts")))), l = new ArrayList<>();
+        String phys = get(st, "density_phys"), cur = get(st, "density");
+        for (String x : v) l.add(x.equals("reset") ? "Stock" + (phys.isEmpty() ? "" : " (" + phys + " dpi)") : x + " dpi");
+        if (!v.isEmpty() && !cur.isEmpty() && !cur.equals(phys) && !v.contains(cur)) { v.add(cur); l.add(cur + " dpi (current)"); }
+        return new Choice(v.toArray(new String[0]), l.toArray(new String[0]));
+    }
+
+    /** The pages this device can offer, in order. Without the backend's state only the pages that read the kernel directly are there. */
+    static List<String> pages(Map<String, String> st) {
+        List<String> r = new ArrayList<>(Arrays.asList("overview", "live", "perf"));
+        if (!st.containsKey("backend")) return r;
+        if (st.containsKey("saved_profiles")) r.add("profiles");
+        if (st.containsKey("compile_status")) r.add("apps");
+        if (has(st, "theme_ok") || has(st, "night")) r.add("look");
+        if (has(st, "screen_timeout") || has(st, "anim_scale") || has(st, "nav_mode") || has(st, "density")) r.add("display");
+        if (has(st, "swappiness")) r.add("memory");
+        if (has(st, "wifi_country") || has(st, "dns") || has(st, "adb_tcp") || has(st, "serial_console")) r.add("connect");
+        r.add("system");
+        return r;
+    }
+
+    private static final String[] TUNABLES = {"swappiness", "vfs_cache", "page_cluster", "watermark", "extra_free", "schedstats", "up_rate", "down_rate", "deep_idle", "io_sched", "read_ahead_kb", "tcp_cc", "gpu_max"};
+
+    /** What "Balanced" is on this kernel, to compare the other settings against: key, value. The values are the stock ones the backend recorded at boot. */
     static String[][] baseline(Map<String, String> st) {
         List<String[]> r = new ArrayList<>();
-        String big = top(st, "big_freqs"), little = top(st, "little_freqs");
+        String big = get(st, "stock_cap_big"), little = get(st, "stock_cap_little");
+        if (big.isEmpty()) big = top(st, "big_freqs");
+        if (little.isEmpty()) little = top(st, "little_freqs");
         if (!big.isEmpty()) r.add(new String[]{"cap_big", big});
         if (!little.isEmpty()) r.add(new String[]{"cap_little", little});
         Choice g = governors(st);
         if (!g.empty()) r.add(new String[]{"governor", Arrays.asList(g.vals).contains("schedutil") ? "schedutil" : g.vals[0]});
         if (touch(st)) r.add(new String[]{"touch_duration_ms", "150"});
+        for (String k : TUNABLES) { String v = get(st, "stock_" + k); if (!v.isEmpty() && has(st, k)) r.add(new String[]{k, v}); }
         return r.toArray(new String[0][]);
     }
 }

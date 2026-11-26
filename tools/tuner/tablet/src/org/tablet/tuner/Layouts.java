@@ -27,4 +27,14 @@ final class Layouts {
 
     /** Dial, preset name and live card stay put above the section list only when the screen is tall enough. */
     static boolean pinHeader(int hDp) { return hDp >= PIN_MIN_H; }
+
+    /** On a phone, up to three mode cards are stacked at full width, so none can sit out of sight; more of them scroll sideways. */
+    static boolean stackCards(boolean wide, int cards) { return !wide && cards <= 3; }
+
+    /** Horizontal scroll offset (px) that brings [left, right) fully into a viewport of the given width, moving as little as possible from cur. */
+    static int scrollTo(int cur, int left, int right, int viewport) {
+        if (left < cur) return Math.max(0, left);
+        if (right > cur + viewport) return Math.max(0, right - viewport);
+        return Math.max(0, cur);
+    }
 }

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 
 TUNER = Path(__file__).resolve().parents[1]
-SOURCES = [TUNER / 'tablet/src/org/tablet/tuner/Caps.java', TUNER / 'tests/CapsTest.java']
+SOURCES = [TUNER / 'tablet/src/org/tablet/tuner/Caps.java', TUNER / 'tablet/src/org/tablet/tuner/Layouts.java', TUNER / 'tests/CapsTest.java']
 
 
 def tool(name):

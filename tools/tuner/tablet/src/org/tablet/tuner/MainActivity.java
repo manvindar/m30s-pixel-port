@@ -56,8 +56,8 @@ public class MainActivity extends Activity {
     private final Runnable tick = new Runnable() { @Override public void run() { sample(); refreshLive(); refreshOverview(); refreshGraphs(); refreshCompile(); refreshProgress(); refreshOc(); refreshApps(); ui.postDelayed(this, 1000); } };
     private final Pending pend = new Pending();
     /** The published state with the values changed in the last seconds laid over it (the daemon publishes late). */
-    private Map<String, String> loadState() { return Cfg.load(this); }
-    private final Runnable reload = () -> { st = Cfg.load(this); setStatus(get("status", "Waiting for M30s service")); build(); };
+    private Map<String, String> loadState() { return pend.overlay(Cfg.load(this), System.currentTimeMillis()); }
+    private final Runnable reload = () -> { st = loadState(); setStatus(get("status", "Waiting for M30s service")); build(); };
 
     // id, name, one-line description: only the profiles this kernel's backend accepts, described with the clocks it really has
     private String[][] presets() { return Caps.presets(st); }
@@ -281,6 +281,9 @@ public class MainActivity extends Activity {
                 .setNegativeButton("Cancel", null).show());
     }
 
+    private void rowChoice(LinearLayout c, String title, String sub, String key, Caps.Choice o) { rowChoice(c, title, sub, key, o.labels, o.vals, "–"); }
+    private void rowChoice(LinearLayout c, String title, String sub, String key, Caps.Choice o, String def) { rowChoice(c, title, sub, key, o.labels, o.vals, def); }
+
     private void rowSlider(LinearLayout c, String title, String sub, final String key, final int max, final int def, final String[] fmt) { rowSlider(c, title, sub, key, max, def, fmt, false); }
 
     private void rowSlider(LinearLayout c, String title, String sub, final String key, final int max, final int def, final String[] fmt, final boolean pic) {
@@ -370,8 +373,9 @@ public class MainActivity extends Activity {
 
     /** Rebuilds the whole tree. The scroll positions survive when the same page is rebuilt (a setting changed, the device turned). */
     private void build() {
-        if (!Arrays.asList("home", "overview", "live", "perf", "memory", "look").contains(page)) page = HOME;
-        if (!Arrays.asList("overview", "live", "perf", "memory", "look").contains(section)) section = "overview";
+        java.util.List<String> avail = Caps.pages(st);
+        if (!HOME.equals(page) && !avail.contains(page)) page = HOME;   // a page this device does not offer (an old shortcut, Picture, Overclock) lands on the home screen
+        if (!avail.contains(section)) section = "overview";
         int[] y = builtKey.equals(viewKey()) || builtKey.isEmpty() ? new int[]{sy(mainSv), sy(leftSv), sy(rightSv)} : new int[3];
         resetRefs();
         barView = null; mainSv = leftSv = rightSv = null; rightCol = null; entryRows.clear(); homeBody = resultsBox = null; searchBox = null;
@@ -441,10 +445,8 @@ public class MainActivity extends Activity {
             case "overview": pageOverview(); break;
             case "live": pageLive(); break;
             case "perf": pagePerf(); break;
-            case "oc": pageOc(); break;
             case "profiles": pageProfiles(); break;
             case "memory": pageMemory(); break;
-            case "picture": pagePicture(); break;
             case "look": pageLook(); break;
             case "display": pageDisplay(); break;
             case "connect": pageConnect(); break;
@@ -528,8 +530,8 @@ public class MainActivity extends Activity {
         setContentView(root);
     }
 
-    private static final String[][] RAIL = {{"overview", "Overview", "home"}, {"live", "Live", "live"}, {"perf", "Speed", "perf"}, {"oc", "Overclock", "oc"}, {"apps", "Apps", "apps"},
-        {"picture", "Picture", "picture"}, {"look", "Look", "look"}, {"display", "Display", "display"}, {"memory", "Memory", "memory"}, {"connect", "Network", "connect"}, {"system", "System", "system"}};
+    private static final String[][] RAIL = {{"overview", "Overview", "home"}, {"live", "Live", "live"}, {"perf", "Speed", "perf"}, {"apps", "Apps", "apps"},
+        {"look", "Look", "look"}, {"display", "Display", "display"}, {"memory", "Memory", "memory"}, {"connect", "Network", "connect"}, {"system", "System", "system"}};
 
     /** One stop of the rail: an icon on a pill (filled when selected) and a short name under it. The pill is what entryRows keeps. */
     private View railItem(final String id) {
@@ -551,15 +553,31 @@ public class MainActivity extends Activity {
 
     /** id, title, summary of the section list, in order. */
     private String[][] entries() {
-        return new String[][]{{"overview", "Overview", overviewSummary()}, {"live", "Live", liveSummary()},
-            {"perf", "Performance", perfSummary()}, {"memory", "Memory", memoryPageSummary()}, {"look", "Animations", "Animation scales"}};
+        java.util.List<String[]> r = new ArrayList<>();
+        for (String id : Caps.pages(st)) r.add(new String[]{id, pageTitle(id), pageSummary(id)});
+        return r.toArray(new String[0][]);
+    }
+
+    private String pageSummary(String id) {
+        switch (id) {
+            case "overview": return overviewSummary();
+            case "live": return liveSummary();
+            case "perf": return perfSummary();
+            case "profiles": return profileSummary();
+            case "apps": return "Compile state of every app, compile or reset one";
+            case "look": return lookSummary();
+            case "display": return displaySummary();
+            case "memory": return memoryPageSummary();
+            case "connect": return connectSummary();
+            default: return get("status", "Shortcuts, logging, restart");
+        }
     }
     private java.util.List<String> entryIds() { ArrayList<String> r = new ArrayList<>(); for (String[] e : entries()) r.add(e[0]); return r; }
 
     private void sectionEntries() {
         LinearLayout c = null;
         for (final String[] e : entries()) {
-            if (e[0].equals("overview")) c = group(null); else if (e[0].equals("live")) c = group("Speed"); else if (e[0].equals("picture")) c = group("Screen"); else if (e[0].equals("memory")) c = group("Device");
+            if (e[0].equals("overview")) c = group(null); else if (e[0].equals("live")) c = group("Speed"); else if (e[0].equals("look")) c = group("Screen"); else if (e[0].equals("memory")) c = group("Device");
             final String id = e[0];
             View r = row(c, e[1], e[2], null);
             TextView sub = (TextView) ((LinearLayout) ((LinearLayout) r).getChildAt(0)).getChildAt(1);   // one line each keeps the list short
@@ -862,6 +880,7 @@ public class MainActivity extends Activity {
         row.setBaselineAligned(false);
         String[] meterNames = {"Speed", "Battery", "Heat"};
         final int shownIdx = idx < 0 ? presets().length : idx;   // the Custom card is the sixth
+        final boolean stack = Layouts.stackCards(wide, presets().length + 1);
         final int perRow = wide && Layouts.contentWidth(getResources().getConfiguration().screenWidthDp) >= 1000 ? 6 : 3;
         for (int i = 0; i <= presets().length; i++) {
             final int n = i; boolean sel = i == shownIdx, custom = i == presets().length;
@@ -881,13 +900,13 @@ public class MainActivity extends Activity {
             c.addView(top, new LinearLayout.LayoutParams(-1, -2));
             String ap = get("profile_active", ""), pb = get("profile_base", "");
             TextView nm = text(custom ? "Custom" : presets()[i][1], wide ? (perRow == 6 ? 17 : 19) : 22, true, fg); nm.setPadding(0, px(wide ? 8 : 12), 0, 0); c.addView(nm);
-            String desc = custom ? (!ap.isEmpty() ? "Profile \u201c" + Profiles.shown(ap) + "\u201d is in use." : !pb.isEmpty() ? "Based on \u201c" + Profiles.shown(pb) + "\u201d, changed." : "Your explicit M30s settings.") : presets()[i][2];
+            String desc = custom ? (!ap.isEmpty() ? "Profile \u201c" + Profiles.shown(ap) + "\u201d is in use." : !pb.isEmpty() ? "Based on \u201c" + Profiles.shown(pb) + "\u201d, changed." : "Your own settings and your saved profiles.") : presets()[i][2];
             TextView ds = text(desc, wide ? 12.5f : 13, false, fg2); ds.setMinLines(wide ? (perRow == 6 ? 5 : 3) : 4); ds.setPadding(0, px(4), 0, px(wide ? 6 : 10)); c.addView(ds);
             if (custom) {
-                String[] ps = get("profiles", "").split(","); int cnt = 0; for (String q : ps) if (!q.isEmpty()) cnt++;
+                String[] ps = get("saved_profiles", "").split(","); int cnt = 0; for (String q : ps) if (!q.isEmpty()) cnt++;
                 LinearLayout.LayoutParams ml = new LinearLayout.LayoutParams(-1, -2); ml.setMargins(0, px(6), 0, 0);
-                c.addView(text(cnt == 0 ? "Named profiles unavailable on M30s" : cnt + (cnt == 1 ? " saved profile" : " saved profiles"), 13, true, fg), ml);
-                c.addView(text("Explicit changes persist at boot", 12.5f, false, fg2), ml);
+                c.addView(text(cnt == 0 ? "No saved profiles yet" : cnt + (cnt == 1 ? " saved profile" : " saved profiles"), 13, true, fg), ml);
+                c.addView(text("Tap to open the list", 12.5f, false, fg2), ml);
             } else for (int m = 0; m < 0; m++) {
                 LinearLayout mr = new LinearLayout(this); mr.setGravity(Gravity.CENTER_VERTICAL);
                 mr.addView(text(meterNames[m], 12.5f, false, fg2), new LinearLayout.LayoutParams(0, -2, 1f));
@@ -909,25 +928,53 @@ public class MainActivity extends Activity {
                 row.addView(c, wl);
                 continue;
             }
+            if (stack) {   // a phone with few modes: full width cards one under the other, so none sits out of sight
+                LinearLayout.LayoutParams sl = new LinearLayout.LayoutParams(-1, -2); sl.setMargins(0, 0, 0, px(10));
+                col.addView(c, sl);
+                continue;
+            }
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(px(220), -2); lp.setMargins(0, 0, px(10), 0);
             row.addView(c, lp);
         }
-        if (wide) return;
+        if (wide || stack) return;
+        final LinearLayout cards = row;
         hs.addView(row);
         col.addView(hs, new LinearLayout.LayoutParams(-1, -2));
-        if (shownIdx > 1) hs.post(() -> hs.scrollTo(Math.max(0, (shownIdx - 1) * px(230)), 0));
+        hs.post(() -> {   // the card in use fully in view, moving as little as possible (the first card stays at the start)
+            View sel = cards.getChildAt(shownIdx);
+            if (sel != null) hs.scrollTo(Layouts.scrollTo(hs.getScrollX(), sel.getLeft(), sel.getRight() + px(10), hs.getWidth()), 0);
+        });
     }
 
     /** The saved profiles in a sheet from the bottom: Use, Delete, update the one in use, save the current settings. */
     private void showProfilesSheet() {
-        Toast.makeText(this, "Named profiles are not supported by the M30s backend yet", Toast.LENGTH_LONG).show();
+        final android.app.Dialog d = new android.app.Dialog(this);
+        d.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+        LinearLayout box = new LinearLayout(this); box.setOrientation(LinearLayout.VERTICAL);
+        GradientDrawable bg = new GradientDrawable(); bg.setColor(sys(android.R.color.system_neutral1_800, android.R.color.system_neutral1_50)); bg.setCornerRadii(new float[]{px(28), px(28), px(28), px(28), 0, 0, 0, 0});
+        box.setBackground(bg); box.setPadding(px(8), px(20), px(8), px(24));
+        TextView title = text("Profiles", 22, true, ink()); title.setPadding(px(20), 0, 0, px(8)); box.addView(title);
+        LinearLayout list = newCard(); box.addView(list, new LinearLayout.LayoutParams(-1, -2));
+        String active = get("profile_active", "");
+        row(list, "Save current settings\u2026", "Keeps performance, memory, picture, overclock and animation settings under a name", text("＋", 22, true, accent())).setOnClickListener(v -> { d.dismiss(); askSaveProfile(); });
+        if (canUpdateProfile()) {
+            final String base = get("profile_base", "");
+            row(list, "Update \u201c" + Profiles.shown(base) + "\u201d", "Overwrites the saved profile with the current settings", text("Update", 15, true, accent()))
+                .setOnClickListener(v -> { d.dismiss(); set("update_profile", base); st.put("profile_active", base); build(); });
+        }
+        for (final String n : get("saved_profiles", "").split(",")) {
+            if (n.isEmpty()) continue;
+            profileRow(list, n, active, () -> d.dismiss());
+        }
+        d.setContentView(box);
+        android.view.Window w = d.getWindow();
+        if (w != null) { w.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0)); w.setGravity(Gravity.BOTTOM); w.setLayout(Math.min(px(680), getResources().getDisplayMetrics().widthPixels), -2); }
+        d.show();
     }
 
     /** The bar under the overview: what is in use, and one button to keep it as a profile. */
     /** The bar is only there when there is something to save (a profile in use that matches has nothing). */
-    private boolean barWanted() {
-        return false;
-    }
+    private boolean barWanted() { return Caps.pages(st).contains("profiles") && get("profile_active", "").isEmpty(); }
 
     private View saveBar(boolean floating) {
         LinearLayout bar = new LinearLayout(this); bar.setGravity(Gravity.CENTER_VERTICAL);
@@ -957,11 +1004,13 @@ public class MainActivity extends Activity {
 
     private void fineTuneGrid() {
         TextView h = text("Fine tune", 14, true, accent()); h.setPadding(px(20), px(24), 0, px(8)); col.addView(h);
-        String[][] t = {{"live", "Live", liveSummary()}, {"perf", "Performance", perfSummary()},
-            {"memory", "Memory", memoryPageSummary()}, {"look", "Animations", "Animation scales"}};
+        java.util.List<String[]> tl = new ArrayList<>();
+        for (String[] e : entries()) if (!e[0].equals("overview") && !e[0].equals("profiles")) tl.add(e);
+        String[][] t = tl.toArray(new String[0][]);
         for (int i = 0; i < t.length; i += 2) {
             LinearLayout r = new LinearLayout(this); r.setBaselineAligned(false);
             for (int k = 0; k < 2; k++) {
+                if (i + k >= t.length) { r.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1f)); continue; }   // an odd last tile leaves its half empty
                 final String[] e = t[i + k];
                 LinearLayout tile = new LinearLayout(this); tile.setGravity(Gravity.CENTER_VERTICAL);
                 tile.setPadding(px(18), px(14), px(14), px(14)); tile.setMinimumHeight(px(84));
@@ -981,22 +1030,25 @@ public class MainActivity extends Activity {
     }
 
     private static String keyLabel(String k) {
-        if (k.equals("touch_duration_ms")) return "Touch boost duration (ms)";
         switch (k) {
-            case "gpu_freq": return "GPU clock"; case "oc": return "Max clocks"; case "governor": return "CPU governor"; case "thermal": return "Thermal limit";
-            case "fg_boost": return "App boost"; case "ta_boost": return "Top app boost"; case "cap_big": return "Fast cores, top speed"; case "cap_little": return "Slow cores, top speed";
-            case "dirty": return "Write buffer"; case "swappiness": return "Swappiness"; default: return "Free memory reserve";
+            case "touch_duration_ms": return "Touch boost duration (ms)";
+            case "governor": return "CPU governor"; case "cap_big": return "Performance cores, maximum"; case "cap_little": return "Efficiency cores, maximum";
+            case "swappiness": return "Swappiness"; case "vfs_cache": return "File cache pressure"; case "page_cluster": return "Swap read-ahead";
+            case "watermark": return "Memory watermark"; case "extra_free": return "Free memory reserve"; case "schedstats": return "Scheduler statistics";
+            case "up_rate": return "Clock rise delay"; case "down_rate": return "Clock drop delay"; case "deep_idle": return "Deep idle";
+            case "io_sched": return "I/O scheduler"; case "read_ahead_kb": return "Read-ahead"; case "tcp_cc": return "TCP congestion control"; case "gpu_max": return "GPU maximum clock";
+            default: return k;
         }
     }
     private static String keyValue(String k, String v) {
         try {
             switch (k) {
-                case "gpu_freq": return "0".equals(v) ? "Auto" : (Integer.parseInt(v) / 1000) + " MHz";
-                case "oc": return "1".equals(v) ? "On" : "Off";
-                case "thermal": return "off".equals(v) ? "Off" : "Stock";
-                case "cap_big": case "cap_little": return "-1".equals(v) ? "No limit" : String.format(Locale.US, "%.2f GHz", Integer.parseInt(v) / 1e6);
-                case "dirty": return v + " %";
+                case "cap_big": case "cap_little": return String.format(Locale.US, "%.2f GHz", Integer.parseInt(v) / 1e6);
+                case "gpu_max": return "-1".equals(v) ? "No limit" : (Integer.parseInt(v) / 1000) + " MHz";
                 case "extra_free": return (Integer.parseInt(v) / 1024) + " MB";
+                case "read_ahead_kb": return v + " KB";
+                case "up_rate": case "down_rate": return (Integer.parseInt(v) / 1000) + " ms";
+                case "schedstats": case "deep_idle": return "1".equals(v) ? "On" : "Off";
                 default: return v.isEmpty() ? v : v.substring(0, 1).toUpperCase(Locale.US) + v.substring(1);
             }
         } catch (NumberFormatException e) { return v; }
@@ -1007,7 +1059,7 @@ public class MainActivity extends Activity {
         p.setPadding(px(22), px(18), px(22), px(10));
         ArrayList<String[]> diff = new ArrayList<>();
         for (String[] b : Caps.baseline(st)) { String c = get(b[0], b[1]); if (!c.equals(b[1])) diff.add(new String[]{keyLabel(b[0]), keyValue(b[0], b[1]), keyValue(b[0], c)}); }
-        boolean base = idx == 1 && diff.isEmpty();
+        boolean base = idx >= 0 && "balanced".equals(presets()[idx][0]) && diff.isEmpty();
         LinearLayout head = new LinearLayout(this); head.setGravity(Gravity.CENTER_VERTICAL);
         head.addView(text(base ? "Balanced is the baseline" : (idx >= 0 ? presets()[idx][1] : "Your settings") + " changes", 18, true, ink()));
         if (!base) { TextView sm = text("compared with Balanced", 13, false, dim()); sm.setPadding(px(12), 0, 0, 0); head.addView(sm); }
@@ -1299,14 +1351,14 @@ public class MainActivity extends Activity {
     // ---------- home ----------
     private void pageHome() { pageOverview(); }
 
-    private String memorySummary() {
-        return "Read-ahead " + pick(get("readahead", "512"), new String[]{"128", "256", "512", "1024", "2048"}, new String[]{"128 KB", "256 KB", "512 KB", "1 MB", "2 MB"}, get("readahead", "512") + " KB") + ", swappiness " + get("swappiness", "100");
-    }
     private String connectSummary() {
-        return "Private DNS " + pick(get("dns", "auto"), new String[]{"off", "auto", "google", "cloudflare", "adguard", "quad9"}, new String[]{"off", "automatic", "Google", "Cloudflare", "AdGuard", "Quad9"}, "automatic");
+        java.util.List<String> p = new ArrayList<>();
+        if (Caps.has(st, "dns")) p.add("Private DNS " + pick(get("dns", "auto"), new String[]{"off", "auto", "google", "cloudflare", "adguard", "quad9", "custom"}, new String[]{"off", "automatic", "Google", "Cloudflare", "AdGuard", "Quad9", "custom"}, "automatic"));
+        if (Caps.has(st, "wifi_country")) p.add("Wi-Fi country " + get("wifi_country", "auto"));
+        return p.isEmpty() ? "Connections" : android.text.TextUtils.join(", ", p);
     }
     private String profileSummary() {
-        int n = 0; for (String p : get("profiles", "").split(",")) if (!p.isEmpty()) n++;
+        int n = 0; for (String p : get("saved_profiles", "").split(",")) if (!p.isEmpty()) n++;
         String a = get("profile_active", "");
         return (n == 0 ? "None saved" : n + " saved") + (a.isEmpty() ? "" : ", in use: " + a.replace('_', ' '));
     }
@@ -1319,7 +1371,7 @@ public class MainActivity extends Activity {
     }
 
     /** The settings came from a saved profile and were edited since (an old daemon sends no profile_base: no row). */
-    private boolean canUpdateProfile() { return Profiles.canUpdate(get("profile_base", ""), get("profile_active", ""), get("profiles", "")); }
+    private boolean canUpdateProfile() { return Profiles.canUpdate(get("profile_base", ""), get("profile_active", ""), get("saved_profiles", "")); }
 
     /** Overwrites the profile the settings came from, after a confirmation. */
     private void updateProfileRow(LinearLayout c) {
@@ -1337,7 +1389,7 @@ public class MainActivity extends Activity {
     private void profileRows(LinearLayout c) {
         String active = get("profile_active", "");
         if (canUpdateProfile()) updateProfileRow(c);
-        for (final String n : get("profiles", "").split(",")) {
+        for (final String n : get("saved_profiles", "").split(",")) {
             if (n.isEmpty()) continue;
             profileRow(c, n, active, null);
         }
@@ -1392,11 +1444,18 @@ public class MainActivity extends Activity {
         return "Custom: contrast " + get("pq_contrast", "4") + ", saturation " + get("pq_sat", "4") + ", gamma " + get("pq_gamma", "7");
     }
     private String lookSummary() {
-        String n = pick(get("night", "yes"), new String[]{"auto", "no", "yes"}, new String[]{"Automatic", "Light", "Dark"}, "Dark");
-        return n + ("1".equals(get("black_theme", "1")) ? ", pure black" : "") + ", " + ("home_wallpaper".equals(get("palette_source", "preset")) ? "wallpaper colours" : "custom accent");
+        java.util.List<String> p = new ArrayList<>();
+        if (Caps.has(st, "night")) p.add(pick(get("night", "auto"), new String[]{"auto", "no", "yes"}, new String[]{"Automatic", "Light", "Dark"}, "Dark"));
+        if ("1".equals(get("black_theme", "0"))) p.add("pure black");
+        if (Caps.has(st, "theme_ok")) p.add("home_wallpaper".equals(get("palette_source", "preset")) ? "wallpaper colours" : "accent colour");
+        return p.isEmpty() ? "Theme" : android.text.TextUtils.join(", ", p);
     }
     private String displaySummary() {
-        return get("anim_scale", "1.0") + "x animations, " + ("gestural".equals(get("nav_mode", "gestural")) ? "gestures" : "three buttons");
+        java.util.List<String> p = new ArrayList<>();
+        if (Caps.has(st, "anim_scale")) p.add(get("anim_scale", "1.0") + "x animations");
+        if (Caps.has(st, "nav_mode")) p.add("gestural".equals(get("nav_mode", "gestural")) ? "gestures" : "three buttons");
+        if (Caps.has(st, "density")) p.add(get("density", "") + " dpi");
+        return p.isEmpty() ? "Display" : android.text.TextUtils.join(", ", p);
     }
 
     // ---------- pages ----------
@@ -1419,7 +1478,20 @@ public class MainActivity extends Activity {
             c = group("GPU");
             rowChoice(c, "GPU maximum clock", "Mali DVFS steps; the GPU still scales below the limit", "gpu_max", gpu.labels, gpu.vals, "-1");
         }
-        col.addView(text("Only what this kernel offers is shown. MediaTek controls, overclocking and thermal overrides are unsupported on M30s.", 14, false, dim()));
+        if (Caps.has(st, "up_rate") || Caps.has(st, "down_rate") || Caps.has(st, "deep_idle") || Caps.has(st, "schedstats")) {
+            c = group("Clock behaviour and idle");
+            if (Caps.has(st, "up_rate")) rowChoice(c, "Clock rise delay", "Minimum time between clock increases (schedutil, both clusters). Shorter reacts faster.", "up_rate",
+                Caps.options(st, "up_rate", new String[]{"0", "2000", "5000", "10000"}, new String[]{"None", "2 ms", "5 ms", "10 ms"}, " µs"));
+            if (Caps.has(st, "down_rate")) rowChoice(c, "Clock drop delay", "How long a clock is held before it is lowered (schedutil, both clusters). Longer keeps short bursts smooth.", "down_rate",
+                Caps.options(st, "down_rate", new String[]{"2000", "5000", "10000", "20000", "40000"}, new String[]{"2 ms", "5 ms", "10 ms", "20 ms", "40 ms"}, " µs"));
+            if (Caps.has(st, "deep_idle")) rowSwitch(c, "Deep idle", "Cluster sleep states. Off wakes cores faster and costs idle battery.", "deep_idle", "1");
+            if (Caps.has(st, "schedstats")) rowSwitch(c, "Scheduler statistics", "Kernel counters used by profilers. Off saves a little CPU time.", "schedstats", "1");
+        }
+        if (Caps.has(st, "carplay_pkgs")) {
+            c = group("Apps");
+            rowSwitch(c, "Boost while CarPlay is open", "Runs Balanced while " + get("carplay_pkgs", "").replace(",", " or ") + " is on screen, then goes back to Battery. Only from Battery with no saved profile in use.", "carplay_boost", "0");
+        }
+        col.addView(text("Only what this kernel offers is shown.", 14, false, dim()));
     }
 
 
@@ -1492,8 +1564,20 @@ public class MainActivity extends Activity {
 
     private void pageMemory() {
         LinearLayout c = group("Memory");
-        rowChoice(c, "Swappiness", "Kernel swap preference; existing zram configuration retained", "swappiness",
-            new String[]{"80", "100", "130", "160", "200"}, new String[]{"80", "100", "130", "160", "200"}, "130");
+        rowChoice(c, "Swappiness", "Higher keeps more apps in memory by compressing them (zram)", "swappiness",
+            Caps.options(st, "swappiness", new String[]{"80", "100", "130", "160", "200"}, new String[]{"80", "100", "130", "160", "200"}, ""), "130");
+        if (Caps.has(st, "page_cluster")) rowChoice(c, "Swap read-ahead", "Pages read back from compressed memory at once", "page_cluster",
+            Caps.options(st, "page_cluster", new String[]{"0", "1", "2", "3"}, new String[]{"1 page", "2 pages", "4 pages", "8 pages"}, ""), "3");
+        if (Caps.has(st, "extra_free")) rowChoice(c, "Free memory reserve", "Memory kept free so new apps start without waiting", "extra_free",
+            Caps.options(st, "extra_free", new String[]{"0", "24576", "49152", "98304"}, new String[]{"None", "24 MB", "48 MB", "96 MB"}, " KB"), "0");
+        if (Caps.has(st, "watermark")) rowChoice(c, "Memory watermark", "How early the kernel frees memory in the background. Higher keeps more free and caches less.", "watermark",
+            Caps.options(st, "watermark", new String[]{"10", "20", "30"}, new String[]{"10", "20", "30"}, ""), "10");
+        if (Caps.has(st, "vfs_cache")) rowChoice(c, "File cache pressure", "Lower keeps file caches longer", "vfs_cache",
+            Caps.options(st, "vfs_cache", new String[]{"25", "50", "100", "150"}, new String[]{"25", "50", "100", "150"}, ""), "100");
+        if (Caps.has(st, "bg_procs")) rowChoice(c, "Background apps kept", "How many background apps stay in memory, set through device config.", "bg_procs",
+            Caps.options(st, "bg_procs", new String[]{"default", "8", "16", "32", "64"}, new String[]{"System default", "8", "16", "32", "64"}, ""), "default");
+        if (Caps.has(st, "cached_apps")) rowChoice(c, "Cached app limit", "The same kind of limit, set through the Settings database. Use this or Background apps kept, not both. Android may ignore one of them.", "cached_apps",
+            Caps.options(st, "cached_apps", new String[]{"default", "16", "24", "32", "48"}, new String[]{"System default", "16", "24", "32", "48"}, ""), "default");
         Caps.Choice io = Caps.names(st, "io_scheds");
         if (!io.empty()) {
             c = group("Storage");
@@ -1509,7 +1593,7 @@ public class MainActivity extends Activity {
     }
 
     private String memoryPageSummary() {
-        return "Swappiness" + (Caps.names(st, "io_scheds").empty() ? "" : ", I/O scheduler") + (Caps.names(st, "tcp_ccs").empty() ? "" : ", TCP");
+        return "Swappiness" + (Caps.has(st, "vfs_cache") ? ", cache" : "") + (Caps.names(st, "io_scheds").empty() ? "" : ", I/O scheduler") + (Caps.names(st, "tcp_ccs").empty() ? "" : ", TCP");
     }
 
     // Picture edits wait here until Apply, so the engine restarts once; the preview shows them at once.
@@ -1611,9 +1695,59 @@ public class MainActivity extends Activity {
     }
 
     private void pageLook() {
-        LinearLayout c = group("Animations");
-        rowChoice(c, "Animation scale", "Window, transition and animator scales", "anim_scale",
-            new String[]{"Off", "0.5×", "1×", "1.5×"}, new String[]{"0", "0.5", "1.0", "1.5"}, "0.5");
+        LinearLayout c = null;
+        if (Caps.has(st, "night") || Caps.has(st, "black_theme")) {
+            c = group("Theme");
+            if (Caps.has(st, "night")) rowChoice(c, "Dark mode", null, "night", new String[]{"Automatic", "Light", "Dark"}, new String[]{"auto", "no", "yes"}, "auto");
+            if (Caps.has(st, "black_theme")) rowSwitch(c, "Pure black backgrounds", "True black behind everything", "black_theme", "0");
+        }
+        if (Caps.has(st, "theme_ok")) {
+            c = group("Accent colour");
+            boolean fromWall = "home_wallpaper".equals(get("palette_source", "preset"));
+            String curAcc = get("accent", "");
+            LinearLayout chips = new LinearLayout(this);
+            chips.setGravity(Gravity.CENTER_VERTICAL);
+            String[][] colors = {{"3E91FF", "Blue"}, {"7C5CFF", "Violet"}, {"00B8A9", "Teal"}, {"34C759", "Green"}, {"FF9500", "Orange"}, {"FF3B30", "Red"}, {"FF4F9A", "Pink"}};
+            for (final String[] cc : colors) {
+                View chip = new View(this);
+                GradientDrawable g = new GradientDrawable();
+                g.setShape(GradientDrawable.OVAL);
+                g.setColor(0xFF000000 | Integer.parseInt(cc[0], 16));
+                if (!fromWall && cc[0].equalsIgnoreCase(curAcc)) g.setStroke(px(3), ink());
+                chip.setBackground(g);
+                chip.setContentDescription(cc[1]);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(px(38), px(38));
+                lp.setMargins(px(5), px(6), px(5), px(6));
+                chip.setOnClickListener(v -> { put("palette_source", "preset"); set("accent", cc[0]); build(); });
+                chips.addView(chip, lp);
+            }
+            HorizontalScrollView hs = new HorizontalScrollView(this);
+            hs.addView(chips);
+            hs.setPadding(px(14), px(8), px(14), px(8));
+            c.addView(hs);
+            rowSwitchLike(c, "Use wallpaper colours", "Picks the accent from your home wallpaper", fromWall, on -> {
+                if (on) set("palette_source", "home_wallpaper"); else set("palette_source", "preset"); build(); });
+            rowChoice(c, "Palette style", null, "theme_style",
+                new String[]{"Tonal spot", "Vibrant", "Expressive", "Spritz", "Rainbow", "Fruit salad", "Monochrome"},
+                new String[]{"TONAL_SPOT", "VIBRANT", "EXPRESSIVE", "SPRITZ", "RAINBOW", "FRUIT_SALAD", "MONOCHROMATIC"}, "TONAL_SPOT");
+            String[] fl = get("fonts", "").split(",");
+            ArrayList<String> fLabels = new ArrayList<>(), fVals = new ArrayList<>();
+            fLabels.add("System default"); fVals.add("default");
+            for (String f : fl) if (!f.isEmpty()) { fVals.add(f); fLabels.add(fontLabel(f)); }
+            boolean shapes = "1".equals(get("has_shapes", "0")), packs = "1".equals(get("has_packs", "0"));
+            if (fVals.size() > 1 || shapes || packs) {
+                c = group("Fonts and icons");
+                if (fVals.size() > 1) rowChoice(c, "Font", null, "font", fLabels.toArray(new String[0]), fVals.toArray(new String[0]), "default");
+                if (shapes) rowChoice(c, "Icon shape", null, "icon_shape",
+                    new String[]{"Default (circle)", "Squircle", "Rounded square", "Teardrop", "Pebble", "Vessel", "Tapered", "Square"},
+                    new String[]{"default", "squircle", "roundedrect", "teardrop", "pebble", "vessel", "taperedrect", "square"}, "default");
+                if (packs) rowChoice(c, "System icon pack", null, "icon_pack",
+                    new String[]{"Default", "Rounded", "Filled", "Kai", "Sam", "Victor", "Circular"},
+                    new String[]{"default", "rounded", "filled", "kai", "sam", "victor", "circular"}, "default");
+            }
+            c = group("Wallpaper");
+            rowButton(c, "Wallpaper and style", "Wallpapers and lock screen", new Intent(Intent.ACTION_SET_WALLPAPER).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        }
     }
 
     private interface OnBool { void on(boolean v); }
@@ -1624,50 +1758,56 @@ public class MainActivity extends Activity {
     }
 
     private void pageDisplay() {
-        LinearLayout c = group("Motion");
-        rowChoice(c, "Navigation", null, "nav_mode", new String[]{"Swipe gestures", "Three buttons"}, new String[]{"gestural", "threebutton"}, "gestural");
-        int a = 10; try { a = Math.round(Float.parseFloat(get("anim_scale", "1.0")) * 10); } catch (Exception ignored) { }
-        final TextView av = text(String.format(Locale.US, "%.1fx", a / 10f), 15, true, accent());
-        SeekBar sb = new SeekBar(this); sb.setMax(20); sb.setProgress(a);
-        sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override public void onProgressChanged(SeekBar s, int p, boolean u) { av.setText(String.format(Locale.US, "%.1fx", p / 10f)); }
-            @Override public void onStartTrackingTouch(SeekBar s) { }
-            @Override public void onStopTrackingTouch(SeekBar s) { set("anim_scale", String.format(Locale.US, "%.1f", s.getProgress() / 10f)); }
-        });
-        sliderTile(c, row(c, "Animation speed", "Lower is faster. 0.5x makes everything feel quicker.", av), sb);
-        rowSwitch(c, "Turn off window blur", "Cheaper to draw, which makes launcher and shade smoother", "window_blur", "0");
+        boolean motion = Caps.has(st, "nav_mode") || Caps.has(st, "anim_scale") || Caps.has(st, "window_blur");
+        LinearLayout c = motion ? group("Motion") : null;
+        if (Caps.has(st, "nav_mode")) rowChoice(c, "Navigation", null, "nav_mode", new String[]{"Swipe gestures", "Three buttons"}, new String[]{"gestural", "threebutton"}, "gestural");
+        if (Caps.has(st, "anim_scale")) {
+            int a = 10; try { a = Math.round(Float.parseFloat(get("anim_scale", "1.0")) * 10); } catch (Exception ignored) { }
+            final TextView av = text(String.format(Locale.US, "%.1fx", a / 10f), 15, true, accent());
+            SeekBar sb = new SeekBar(this); sb.setMax(20); sb.setProgress(a);
+            sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override public void onProgressChanged(SeekBar s, int p, boolean u) { av.setText(String.format(Locale.US, "%.1fx", p / 10f)); }
+                @Override public void onStartTrackingTouch(SeekBar s) { }
+                @Override public void onStopTrackingTouch(SeekBar s) { set("anim_scale", String.format(Locale.US, "%.1f", s.getProgress() / 10f)); }
+            });
+            sliderTile(c, row(c, "Animation speed", "Lower is faster. 0.5x makes everything feel quicker.", av), sb);
+        }
+        if (Caps.has(st, "window_blur")) rowSwitch(c, "Turn off window blur", "Cheaper to draw, which makes launcher and shade smoother", "window_blur", "0");
+        boolean screen = Caps.has(st, "density_opts") || Caps.has(st, "font_scale") || Caps.has(st, "font_weight") || Caps.has(st, "text_contrast") || Caps.has(st, "screen_timeout")
+            || Caps.has(st, "stay_awake") || Caps.has(st, "auto_rotate") || Caps.has(st, "show_taps");
+        if (!screen) return;
         c = group("Screen");
-        rowChoice(c, "Display size", "Smaller numbers show more content. In portrait, above 250 the app uses the single column layout.", "density",
-            new String[]{"Tiny (160)", "Smaller (176)", "Compact (192)", "Small (213)", "Medium (225)", "Stock (240)", "Large (260)", "Larger (280)", "Largest (300)", "Huge (320)"},
-            new String[]{"160", "176", "192", "213", "225", "reset", "260", "280", "300", "320"}, "192");
-        rowChoice(c, "Font size", null, "font_scale", new String[]{"Small", "Default", "Large", "Largest"}, new String[]{"0.85", "1.0", "1.15", "1.3"}, "1.0");
-        rowChoice(c, "Text weight", "Heavier strokes read clearer on this screen", "font_weight", new String[]{"Normal", "Medium", "Bold", "Extra bold"}, new String[]{"0", "100", "200", "300"}, "0");
-        rowSwitch(c, "High contrast text", "Draws text with an outline so it stands out from the background", "text_contrast", "0");
-        rowChoice(c, "Screen timeout", null, "screen_timeout",
-            new String[]{"15 seconds", "30 seconds", "1 minute", "2 minutes", "5 minutes", "10 minutes", "30 minutes"},
-            new String[]{"15000", "30000", "60000", "120000", "300000", "600000", "1800000"}, "60000");
-        rowChoice(c, "Stay awake while charging", null, "stay_awake", new String[]{"Never", "On AC and USB", "On AC, USB and wireless"}, new String[]{"0", "3", "7"}, "0");
-        rowSwitch(c, "Auto-rotate", null, "auto_rotate", "1");
-        rowSwitch(c, "Show taps", "Draws a dot where you touch", "show_taps", "0");
-        c = group("Start-up");
-        rowChoice(c, "Boot animation", null, "bootanim", new String[]{"Gemini (Pixel 10)", "ArrowOS", "Galaxy", "Aurora ring", "Stock LineageOS"}, new String[]{"gemini", "arrow", "galaxy", "aurora", "stock"}, "gemini");
+        Caps.Choice dens = Caps.densities(st);
+        if (!dens.empty()) rowChoice(c, "Display size", "Smaller numbers show more content. Each size is a percentage of this screen's own density.", "density", dens, "reset");
+        if (Caps.has(st, "font_scale")) rowChoice(c, "Font size", null, "font_scale", Caps.options(st, "font_scale", new String[]{"0.85", "1.0", "1.15", "1.3"}, new String[]{"Small", "Default", "Large", "Largest"}, "x"), "1.0");
+        if (Caps.has(st, "font_weight")) rowChoice(c, "Text weight", "Heavier strokes read clearer on this screen", "font_weight", new String[]{"Normal", "Medium", "Bold", "Extra bold"}, new String[]{"0", "100", "200", "300"}, "0");
+        if (Caps.has(st, "text_contrast")) rowSwitch(c, "High contrast text", "Draws text with an outline so it stands out from the background", "text_contrast", "0");
+        if (Caps.has(st, "screen_timeout")) rowChoice(c, "Screen timeout", null, "screen_timeout",
+            Caps.options(st, "screen_timeout", new String[]{"15000", "30000", "60000", "120000", "300000", "600000", "1800000"},
+                new String[]{"15 seconds", "30 seconds", "1 minute", "2 minutes", "5 minutes", "10 minutes", "30 minutes"}, " ms"), "60000");
+        if (Caps.has(st, "stay_awake")) rowChoice(c, "Stay awake while charging", null, "stay_awake", new String[]{"Never", "On AC and USB", "On AC, USB and wireless"}, new String[]{"0", "3", "7"}, "0");
+        if (Caps.has(st, "auto_rotate")) rowSwitch(c, "Auto-rotate", null, "auto_rotate", "1");
+        if (Caps.has(st, "show_taps")) rowSwitch(c, "Show taps", "Draws a dot where you touch", "show_taps", "0");
     }
 
     private void pageConnect() {
-        LinearLayout c = group("Wi-Fi");
-        rowChoice(c, "Country code", "Sets the allowed Wi-Fi channels and power. Pick the country you are in. Applied again after every boot.", "wifi_country",
-            new String[]{"Automatic", "Canada", "United States", "United Kingdom", "Germany", "France", "India", "Australia", "Japan", "Mexico", "Brazil"},
-            new String[]{"auto", "CA", "US", "GB", "DE", "FR", "IN", "AU", "JP", "MX", "BR"}, "CA");
-        c = group("Network");
-        rowChoice(c, "Private DNS", null, "dns",
-            new String[]{"Off", "Automatic", "Google", "Cloudflare", "AdGuard (blocks ads)", "Quad9"}, new String[]{"off", "auto", "google", "cloudflare", "adguard", "quad9"}, "auto");
-        rowChoice(c, "TCP congestion control", "How fast downloads ramp up", "tcp_cc", list("tcps", "bic,cubic,reno"), list("tcps", "bic,cubic,reno"), "bic");
-        c = group("Bluetooth and audio");
-        rowSwitch(c, "Bluetooth MediaTek workaround", "Lets this controller connect. Restarts Bluetooth.", "bt_work", "0");
-        rowSwitch(c, "Allow Treble audio effects", "Left on, app audio can cut out after a few milliseconds.", "phh_effects", "0");
-        c = group("Developer");
-        rowSwitch(c, "ADB over network", "Port 5555 on Wi-Fi. Anyone on the network can connect.", "adb_tcp", "0");
-        rowSwitch(c, "Serial console shell", "Android shows a performance warning while it runs.", "serial_console", "0");
+        LinearLayout c;
+        if (Caps.has(st, "wifi_country")) {
+            c = group("Wi-Fi");
+            rowChoice(c, "Country code", "Sets the allowed Wi-Fi channels and power. Pick the country you are in. Applied again after every boot.", "wifi_country",
+                new String[]{"Automatic", "Canada", "United States", "United Kingdom", "Germany", "France", "India", "Australia", "Japan", "Mexico", "Brazil"},
+                new String[]{"auto", "CA", "US", "GB", "DE", "FR", "IN", "AU", "JP", "MX", "BR"}, "auto");
+        }
+        if (Caps.has(st, "dns")) {
+            c = group("Network");
+            rowChoice(c, "Private DNS", null, "dns",
+                new String[]{"Off", "Automatic", "Google", "Cloudflare", "AdGuard (blocks ads)", "Quad9"}, new String[]{"off", "auto", "google", "cloudflare", "adguard", "quad9"}, "auto");
+        }
+        if (Caps.has(st, "adb_tcp") || Caps.has(st, "serial_console")) {
+            c = group("Developer");
+            if (Caps.has(st, "adb_tcp")) rowSwitch(c, "ADB over network", "Port 5555 on Wi-Fi. Anyone on the network can connect. Turning it on or off restarts the USB connection too.", "adb_tcp", "0");
+            if (Caps.has(st, "serial_console")) rowSwitch(c, "Serial console shell", "Android shows a performance warning while it runs.", "serial_console", "0");
+        }
     }
 
     private String widevine() {
@@ -1816,7 +1956,7 @@ public class MainActivity extends Activity {
         if (appStates == null) {
             if ("running".equals(rf)) info = "Loading compile states…";
             else if ("failed".equals(rf)) info = "Could not read the compile states. Tap here to try again.";
-            else if (appsAsks >= 3) info = "The tuner service did not answer. Install the newest tablet_tunerd.sh on the tablet, then tap here.";
+            else if (appsAsks >= 3) info = "The tuner service did not answer. Tap here to ask again; if it keeps failing the service is not running.";
             else { info = "Loading compile states…"; if (now - appsAsked > 8000) askApps(); }
         } else if ("running".equals(s.get("compile_status"))) {
             info = "A system compile is running. Wait for it to finish before compiling one app.";
@@ -1954,29 +2094,37 @@ public class MainActivity extends Activity {
         setStatus("Sent");
     }
 
+    private boolean canOpen(Intent i) { return getPackageManager().resolveActivity(i, 0) != null; }
+
+    private void shortcut(LinearLayout c, String title, String sub, Intent i) { if (canOpen(i)) rowButton(c, title, sub, i); }
+
     private void pageSystem() {
         LinearLayout c = group("Shortcuts");
-        rowButton(c, "Status bar", "Clock, battery, network speed, brightness slider", comp("org.lineageos.lineageparts", "org.lineageos.lineageparts.statusbar.StatusBarSettings"));
-        rowButton(c, "Buttons", "Navigation and hardware key actions", comp("org.lineageos.lineageparts", "org.lineageos.lineageparts.input.ButtonSettings"));
-        rowButton(c, "Display rotation", "Allowed rotation angles", comp("org.lineageos.lineageparts", "org.lineageos.lineageparts.hardware.DisplayRotation"));
-        rowButton(c, "Charging control", "Limit the charge level", comp("org.lineageos.lineageparts", "org.lineageos.lineageparts.health.ChargingControlSettings"));
-        rowButton(c, "Dolby Atmos", "Sound modes", comp("com.dolby.daxappui", "com.dolby.daxappui.MainActivity"));
+        shortcut(c, "Status bar", "Clock, battery, network speed, brightness slider", comp("org.lineageos.lineageparts", "org.lineageos.lineageparts.statusbar.StatusBarSettings"));
+        shortcut(c, "Buttons", "Navigation and hardware key actions", comp("org.lineageos.lineageparts", "org.lineageos.lineageparts.input.ButtonSettings"));
+        shortcut(c, "Display rotation", "Allowed rotation angles", comp("org.lineageos.lineageparts", "org.lineageos.lineageparts.hardware.DisplayRotation"));
+        shortcut(c, "Charging control", "Limit the charge level", comp("org.lineageos.lineageparts", "org.lineageos.lineageparts.health.ChargingControlSettings"));
+        shortcut(c, "Dolby Atmos", "Sound modes", comp("com.dolby.daxappui", "com.dolby.daxappui.MainActivity"));
         rowButton(c, "Developer options", null, new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         c = group("Streaming");
         row(c, "Widevine", "Decides the streaming quality: L1 allows HD, L3 is limited to about 480p", text(widevine(), 15, true, accent()));
-        c = group("Diagnostics");
-        rowSwitch(c, "System logging", "Off for speed. Turn on to debug.", "logging", "0");
+        if (Caps.has(st, "logging")) {
+            c = group("Diagnostics");
+            rowSwitch(c, "System logging", "Off for speed. Turn on to debug. Off also shrinks the log buffers, so a crash report may be missing.", "logging", "1");
+        }
         c = group("App speed");
         progressBlock(c);
-        compileView = text(compileLabel(get("compile_status", "idle")), 15, true, accent());
-        row(c, "Compile apps now", "Compiles installed apps for faster launches. Takes 10 to 15 minutes, runs in the background. SystemUI and the launcher restart when it finishes the first apps.", compileView)
-            .setOnClickListener(v -> compile("compile_now"));
-        rowAction(c, "Recompile all apps", "Redoes apps that are already compiled too. Use Restart system interface afterwards.", () -> compile("compile_all"));
+        if (!"missing".equals(get("compile_status", "missing"))) {
+            compileView = text(compileLabel(get("compile_status", "idle")), 15, true, accent());
+            row(c, "Compile apps now", "Compiles installed apps for faster launches. Takes 10 to 15 minutes, runs in the background. SystemUI and the launcher restart when it finishes the first apps.", compileView)
+                .setOnClickListener(v -> compile("compile_now"));
+            rowAction(c, "Recompile all apps", "Redoes apps that are already compiled too. Use Restart system interface afterwards.", () -> compile("compile_all"));
+        }
         rowGo(c, "Per app compile", "See the compile state of every app and compile or reset one app", "apps");
         c = group("Restart");
         rowAction(c, "Restart system interface", "Re-applies theme changes without rebooting", () -> { Cfg.request(this, "restart_ui", "1"); setStatus("Restarting the interface…"); });
-        rowAction(c, "Reboot the tablet", "Needed for a few changes to fully apply", () ->
-            new AlertDialog.Builder(this).setMessage("Reboot the tablet now?").setNegativeButton("Cancel", null)
+        rowAction(c, "Reboot the phone", "Needed for a few changes to fully apply", () ->
+            new AlertDialog.Builder(this).setMessage("Reboot the phone now?").setNegativeButton("Cancel", null)
                 .setPositiveButton("Reboot", (d, w) -> Cfg.request(this, "reboot", "1")).show());
     }
 }

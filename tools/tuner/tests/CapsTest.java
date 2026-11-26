@@ -93,6 +93,55 @@ public final class CapsTest {
         eq("cap_big=2314000,cap_little=1742000,governor=schedutil,touch_duration_ms=150", join(Caps.baseline(st)), "baseline with touch");
         Map<String, String> noSched = live(); noSched.put("governors", "performance");
         eq("performance", Caps.baseline(noSched)[2][1], "baseline governor is one the kernel has");
+        // a tunable keeps its fixed list, adds the stock value (marked) and the value in use when it is not on the list, in numeric order
+        Map<String, String> vm = live(); vm.put("extra_free", "29615"); vm.put("stock_extra_free", "29615");
+        Caps.Choice ef = Caps.options(vm, "extra_free", new String[]{"0", "24576", "49152", "98304"}, new String[]{"None", "24 MB", "48 MB", "96 MB"}, " KB");
+        eq("0,24576,29615,49152,98304", String.join(",", ef.vals), "stock value inserted in order");
+        eq("None,24 MB,29615 KB (stock),48 MB,96 MB", String.join(",", ef.labels), "stock labelled");
+        vm.put("extra_free", "30000");
+        eq("0,24576,29615,30000,49152,98304", String.join(",", Caps.options(vm, "extra_free", new String[]{"0", "24576", "49152", "98304"}, new String[]{"None", "24 MB", "48 MB", "96 MB"}, " KB").vals), "current value kept visible");
+        eq("30000 KB (current)", Caps.options(vm, "extra_free", new String[]{"0", "24576", "49152", "98304"}, new String[]{"None", "24 MB", "48 MB", "96 MB"}, " KB").labels[3], "current labelled");
+        Map<String, String> sw = live(); sw.put("swappiness", "130"); sw.put("stock_swappiness", "130");
+        eq("80,100,130 (stock),160,200", String.join(",", Caps.options(sw, "swappiness", new String[]{"80", "100", "130", "160", "200"}, new String[]{"80", "100", "130", "160", "200"}, "").labels), "stock already on the list");
+        Map<String, String> names = new HashMap<>(); names.put("bg_procs", "default");
+        eq("default,8,16", String.join(",", Caps.options(names, "bg_procs", new String[]{"default", "8", "16"}, new String[]{"Default", "8", "16"}, "").vals), "non numeric lists keep their order");
+        Map<String, String> mixed = live(); mixed.put("up_rate", "mixed");
+        eq("0,2000", String.join(",", Caps.options(mixed, "up_rate", new String[]{"0", "2000"}, new String[]{"None", "2 ms"}, " µs").vals), "mixed state adds nothing");
+
+        // display sizes: the backend's list with reset as the physical value
+        Map<String, String> dn = live(); dn.put("density_opts", "336,378,reset,462,525"); dn.put("density_phys", "420"); dn.put("density", "420");
+        eq("336,378,reset,462,525", String.join(",", Caps.densities(dn).vals), "density values");
+        eq("336 dpi,378 dpi,Stock (420 dpi),462 dpi,525 dpi", String.join(",", Caps.densities(dn).labels), "density labels");
+        dn.put("density", "400");
+        eq("400", Caps.densities(dn).vals[5], "an override from elsewhere stays visible");
+        eq(true, Caps.densities(live()).empty(), "no density list, no row");
+
+        // pages: what this device can do decides what is listed
+        eq("overview,live,perf", String.join(",", Caps.pages(new HashMap<String, String>())), "no state yet: only what reads the kernel directly");
+        eq("overview,live,perf,system", String.join(",", Caps.pages(live())), "an old backend: no saved profiles, compile or settings pages");
+        Map<String, String> full = live(); full.put("saved_profiles", ""); full.put("compile_status", "idle"); full.put("night", "auto"); full.put("anim_scale", "1.0");
+        full.put("swappiness", "130"); full.put("dns", "auto");
+        eq("overview,live,perf,profiles,apps,look,display,memory,connect,system", String.join(",", Caps.pages(full)), "every page");
+        full.remove("night"); full.remove("dns"); full.put("compile_status", "missing");
+        eq("overview,live,perf,profiles,apps,display,memory,system", String.join(",", Caps.pages(full)), "no theme, no connections");
+        full.remove("saved_profiles");
+        eq(false, Caps.pages(full).contains("profiles"), "an empty saved list still counts as supported, a missing one does not");
+        eq(true, Caps.has(full, "swappiness"), "published control"); eq(false, Caps.has(full, "vfs_cache"), "unpublished control");
+        Map<String, String> pr = new HashMap<>(); pr.put("backend", "m30s"); pr.put("saved_profiles", "");
+        eq(true, Caps.pages(pr).contains("profiles"), "a published empty list means saved profiles are supported");
+
+        // the baseline is the stock values the backend recorded at boot
+        Map<String, String> sb = live(); sb.put("swappiness", "100"); sb.put("stock_swappiness", "130"); sb.put("vfs_cache", "100"); sb.put("stock_vfs_cache", "100"); sb.put("stock_cap_big", "2314000");
+        sb.put("stock_up_rate", "5000");   // the control is not there (no up_rate published): not compared
+        eq("cap_big=2314000,cap_little=1742000,governor=schedutil,swappiness=130,vfs_cache=100", join(Caps.baseline(sb)), "baseline from stock values");
+
+        // phone layout: three mode cards stack; the card in use is scrolled into view with the least movement
+        eq(true, Layouts.stackCards(false, 3), "three cards stack on a phone"); eq(false, Layouts.stackCards(false, 4), "four scroll"); eq(false, Layouts.stackCards(true, 3), "wide layouts have their own grid");
+        eq(0, Layouts.scrollTo(0, 0, 230, 360), "first card is already in view");
+        eq(100, Layouts.scrollTo(0, 100, 460, 360), "card overhanging the right moves in");
+        eq(0, Layouts.scrollTo(500, -10, 230, 360), "never below zero");
+        eq(230, Layouts.scrollTo(400, 230, 460, 360), "card hidden on the left moves back");
+        eq(150, Layouts.scrollTo(150, 200, 300, 360), "visible card: no movement");
         System.out.println("CapsTest OK");
     }
 

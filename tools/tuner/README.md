@@ -14,7 +14,7 @@ Controls are built from what the running kernel advertises, not from constants. 
 | TCP congestion control | `tcp_available_congestion_control` (`cubic`, `reno` on the mint kernel) | list missing |
 | GPU maximum clock | Mali `dvfs_table` and `dvfs_max_lock` (-1 removes the limit) | files missing |
 
-A request is accepted only when its value is in the matching list; every write is read back, and a multi-node change (both clusters, all disks) restores every node when one fails. Saved values are checked again at service start; saved touch boost values on a kernel without the module are skipped without an error. Swappiness and animation scales are unchanged. CPU/GPU clocks, BIG temperature, kernel battery capacity and available memory are displayed. Overclocking, thermal overrides and the GPU governor are unavailable.
+A request is accepted only when its value is in the matching list; every write is read back, and a multi-node change (both clusters, all disks) restores every node when one fails. Saved values are checked again at service start; saved touch boost values on a kernel without the module are skipped without an error. Swappiness and animation scales are unchanged. CPU/GPU clocks, BIG temperature, kernel battery capacity and available memory are displayed. Overclocking, thermal overrides and the GPU governor are unavailable; see `FEATURES.md` for the full list of controls and the ones that are not offered.
 
 | Profile | Efficiency maximum | Performance maximum | Touch boost |
 | --- | --- | --- | --- |
@@ -41,7 +41,9 @@ The M30s package is separate from Lenovo's `org.tablet.tuner`, so its signing id
 
 ## Tablet interface on M30s
 
-`tablet/` retains the tablet ROM Tuner's `org.tablet.tuner` package, interface, graphs, search, responsive layout and quick-settings performance tile. Its M30s pages expose CPU caps, governors, touch boost, swappiness and animation scales. The original tablet-only pages are excluded from navigation; direct legacy page intents return to the supported home page. Named saved profiles and the tablet's MediaTek, picture, overclock and thermal controls are unavailable. Both apps use one M30s backend and shared saved values; changes from either affect the same hardware.
+`tablet/` is the tablet ROM Tuner (`org.tablet.tuner`, source `rom-tuner/` at `8523f50`) adapted to the M30s: its interface, graphs, search, responsive layout, quick-settings performance tile and Hub mode tile are kept. Its pages are the ones this device can run: performance, saved profiles, per-app compile, look, display and touch, memory, storage and network, connections, system. `FEATURES.md` lists every control with its source, when it is hidden and what has only been tested on the host. The MediaTek-only parts (Picture, Overclock, MediaTek boosts, MCDI, thermal limit) are not offered, and neither are boot animations, font overlays or pure black unless the image ships them (the backend looks for them). Both apps use one M30s backend and shared saved values; changes from either affect the same hardware.
+
+The backend (`device/m30s_tunerd.sh`) keeps its state file small and cheap: it rebuilds it after a request, every round while something compiles and every 20 seconds; the slow framework readings (`settings`, `cmd overlay`, `wm`) are taken in the background once a minute and after a request. The values the kernel had at its first run after a boot are kept as `stock_*`, so the app can mark them and compare modes against them.
 
 ```sh
 M30S_TUNER_FLAVOR=tablet sh tools/tuner/build.sh /absolute/output /external/signing-key

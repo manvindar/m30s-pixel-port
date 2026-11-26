@@ -194,8 +194,9 @@ class GpuLimit(MintKernel):
     def test_limit_to_a_table_step_then_unlock(self):
         self.assertIn('Applied gpu_max', self.state('gpu_max=683000\n')['status'])
         self.assertEqual(self.read(GPU + 'dvfs_max_lock'), '683000')
-        self.state('gpu_max=-1\n')
-        self.assertEqual(self.read(GPU + 'dvfs_max_lock'), '-1')
+        s = self.state('gpu_max=-1\n')
+        self.assertEqual(self.read(GPU + 'dvfs_max_lock'), '0')      # on the phone writing -1 does nothing, writing 0 releases the lock
+        self.assertEqual(s['gpu_max'], '-1')
 
     def test_values_outside_the_table_never_write(self):
         for request in ('gpu_max=900000\n', 'gpu_max=0\n', 'gpu_max=-2\n', 'gpu_max=683000;x\n', 'gpu_max=\n', 'gpu_freq=683000\n', 'oc_gpu=940000\n'):
