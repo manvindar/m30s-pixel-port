@@ -2,7 +2,19 @@
 
 Native Android app (`org.m30s.tuner`) and a root backend for Samsung Galaxy M30s / Exynos 9611. The ROM builder includes both by default; `--no-m30s-tuner` omits them. The inherited MediaTek tuner stays excluded.
 
-Controls use the actual policy0/policy4 frequency tables: per-cluster CPU maximum, schedutil/performance governor, input boost enable/duration, swappiness and animation scales. CPU/GPU clocks, BIG temperature, kernel battery capacity and available memory are displayed. GPU controls, overclocking and thermal overrides are unavailable.
+Controls are built from what the running kernel advertises, not from constants. The backend publishes capability lists in its state file (`caps=2`) and the app shows a control only when its list exists:
+
+| Control | Taken from | Hidden when |
+| --- | --- | --- |
+| CPU maximum per cluster | `scaling_available_frequencies` of policy0 and policy4 | table missing |
+| CPU governor | governors both clusters advertise (`performance`, `schedutil` on the 4.14.113-a17-mint kernel) | none in common |
+| Profiles (Battery, Balanced, Responsive) | Battery: the largest step at most 77 percent of each table's maximum; Balanced: the table maximums | Responsive needs the touch boost module; no profile when `schedutil` is missing |
+| Touch boost enable and duration | `input_boost_m30s` module | module absent (the mint kernel has none) |
+| I/O scheduler and read-ahead | `queue/scheduler` and `queue/read_ahead_kb` of the UFS disks (`sda`..`sde`; USB disks are skipped), the list is what every disk offers | no UFS disk |
+| TCP congestion control | `tcp_available_congestion_control` (`cubic`, `reno` on the mint kernel) | list missing |
+| GPU maximum clock | Mali `dvfs_table` and `dvfs_max_lock` (-1 removes the limit) | files missing |
+
+A request is accepted only when its value is in the matching list; every write is read back, and a multi-node change (both clusters, all disks) restores every node when one fails. Saved values are checked again at service start; saved touch boost values on a kernel without the module are skipped without an error. Swappiness and animation scales are unchanged. CPU/GPU clocks, BIG temperature, kernel battery capacity and available memory are displayed. Overclocking, thermal overrides and the GPU governor are unavailable.
 
 | Profile | Efficiency maximum | Performance maximum | Touch boost |
 | --- | --- | --- | --- |
@@ -10,7 +22,7 @@ Controls use the actual policy0/policy4 frequency tables: per-cluster CPU maximu
 | Balanced | 1742 MHz | 2314 MHz | 150 ms |
 | Responsive | 1742 MHz | 2314 MHz | 300 ms |
 
-All profiles select schedutil and enable touch boost. Responsive extends boost duration without raising stock maximum clocks. Performance improvements have not been measured.
+The clocks above are what the stock tables give (the kernel's clock tables decide them: see the capability table). All profiles select schedutil. Touch boost is part of a profile only where the kernel has the module, and Responsive exists only there: it differs from Balanced only by the 300 ms boost. Performance improvements have not been measured.
 
 A fresh installation changes no knobs. Only successful explicit requests are saved under `/data/misc/m30s-tuner`; they are revalidated at service startup. Requests are parsed as data, bounded and checked against advertised frequencies. Writes require readback; partial failures attempt restoration. Hardware/transport failures can also prevent restoration: inspect actual values if a request fails. Thermal controls are never written.
 

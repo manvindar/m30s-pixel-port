@@ -6,31 +6,31 @@ import android.service.quicksettings.TileService;
 import java.util.Map;
 
 public class PerfTile extends TileService {
-    private static final String[] ORDER = {"battery", "balanced", "performance"};
-    private static final String[] NAMES = {"Battery saver", "Balanced", "Performance"};
+    private static String name(String id) { return id.equals("battery") ? "Battery saver" : id.equals("performance") ? "Responsive" : "Balanced"; }
 
-    private int index() {
-        Map<String, String> st = Cfg.load(this);
+    /** The profile in use; a custom one counts as Balanced. */
+    private String current(Map<String, String> st) {
         String p = st.containsKey("perf_profile") ? st.get("perf_profile") : "balanced";
-        for (int i = 0; i < ORDER.length; i++) if (ORDER[i].equals(p)) return i;
-        return 1;
+        return Caps.profiles(st).contains(p) ? p : "balanced";
     }
 
-    private void render(int i) {
+    private void render(String id) {
         Tile t = getQsTile();
         if (t == null) return;
         t.setIcon(Icon.createWithResource(this, R.drawable.ic_tuner));
         t.setLabel("Performance");
-        t.setSubtitle(NAMES[i]);
-        t.setState(i == 1 ? Tile.STATE_INACTIVE : Tile.STATE_ACTIVE);
+        t.setSubtitle(name(id));
+        t.setState(id.equals("balanced") ? Tile.STATE_INACTIVE : Tile.STATE_ACTIVE);
         t.updateTile();
     }
 
-    @Override public void onStartListening() { render(index()); }
+    @Override public void onStartListening() { render(current(Cfg.load(this))); }
 
+    /** Steps through the profiles this kernel's backend offers (Responsive only where the touch boost module exists). */
     @Override public void onClick() {
-        int next = (index() + 1) % ORDER.length;
-        Cfg.request(this, "perf_profile", ORDER[next]);
+        Map<String, String> st = Cfg.load(this);
+        String next = Caps.next(st, current(st));
+        Cfg.request(this, "perf_profile", next);
         render(next);
     }
 }

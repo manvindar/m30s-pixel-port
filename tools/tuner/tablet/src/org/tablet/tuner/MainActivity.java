@@ -59,11 +59,8 @@ public class MainActivity extends Activity {
     private Map<String, String> loadState() { return Cfg.load(this); }
     private final Runnable reload = () -> { st = Cfg.load(this); setStatus(get("status", "Waiting for M30s service")); build(); };
 
-    // preset id, name, one-line description
-    private static final String[][] PRESETS = {
-        {"battery", "Battery", "1326/1768 MHz CPU caps, 100 ms touch boost. Thermal limits retained."},
-        {"balanced", "Balanced", "Stock CPU caps, 150 ms touch boost. Thermal limits retained."},
-        {"performance", "Responsive", "Stock CPU caps, 300 ms touch boost. No overclock or thermal override."}};
+    // id, name, one-line description: only the profiles this kernel's backend accepts, described with the clocks it really has
+    private String[][] presets() { return Caps.presets(st); }
 
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
@@ -464,7 +461,7 @@ public class MainActivity extends Activity {
             case "perf": return "Performance details";
             case "oc": return "Overclock";
             case "profiles": return "Profiles";
-            case "memory": return "Memory and storage";
+            case "memory": return "Memory, storage and network";
             case "picture": return "Picture";
             case "look": return "Look";
             case "display": return "Display and touch";
@@ -555,7 +552,7 @@ public class MainActivity extends Activity {
     /** id, title, summary of the section list, in order. */
     private String[][] entries() {
         return new String[][]{{"overview", "Overview", overviewSummary()}, {"live", "Live", liveSummary()},
-            {"perf", "Performance", perfSummary()}, {"memory", "Memory", "Swappiness"}, {"look", "Animations", "Animation scales"}};
+            {"perf", "Performance", perfSummary()}, {"memory", "Memory", memoryPageSummary()}, {"look", "Animations", "Animation scales"}};
     }
     private java.util.List<String> entryIds() { ArrayList<String> r = new ArrayList<>(); for (String[] e : entries()) r.add(e[0]); return r; }
 
@@ -754,11 +751,22 @@ public class MainActivity extends Activity {
     private final Hist hFast = new Hist(WINDOW), hSlow = new Hist(WINDOW), hGpu = new Hist(WINDOW), hTemp = new Hist(WINDOW), hMem = new Hist(WINDOW);
     private float cpuMaxGhz = -1; private float[] cpuRules = new float[0];
 
+    /** The memory (MIF) devfreq node, found once; -1 when the kernel has none. */
+    private String ddrNode;
+    private long ddrKhz() {
+        if (ddrNode == null) {
+            ddrNode = "";
+            String[] n = new java.io.File("/sys/class/devfreq").list();
+            if (n != null) for (String d : n) if (d.endsWith("mif") && !rd("/sys/class/devfreq/" + d + "/cur_freq").isEmpty()) { ddrNode = "/sys/class/devfreq/" + d + "/cur_freq"; break; }
+        }
+        return ddrNode.isEmpty() ? -1 : num(rd(ddrNode));
+    }
+
     private void sample() {
         String c = "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq";
         curFast = num(rd(String.format(c, 4))); curSlow = num(rd(String.format(c, 0)));
         curGpu = num(rd("/sys/devices/platform/11500000.mali/clock"));
-        curDdr = num(grep("/sys/devices/platform/10012000.dvfsrc/helio-dvfsrc/dvfsrc_dump", "DDR"));
+        curDdr = ddrKhz();
         curAvail = num(grep("/proc/meminfo", "MemAvailable")); curTotal = num(grep("/proc/meminfo", "MemTotal"));
         long t = -1;
         for (int i = 0; i < 12 && t < 0; i++) if ("BIG".equals(rd("/sys/class/thermal/thermal_zone" + i + "/type"))) t = num(rd("/sys/class/thermal/thermal_zone" + i + "/temp"));
@@ -771,7 +779,7 @@ public class MainActivity extends Activity {
         if (liveCpu == null) return;
         liveCpu.setText(ghz(curFast) + " · " + ghz(curSlow));
         liveGpu.setText(curGpu < 0 ? "–" : (curGpu / 1000) + " MHz");
-        liveMem.setText((curDdr < 0 ? "–" : (curDdr / 1000) + " MHz") + (curAvail < 0 || curTotal < 0 ? "" : "\n" + String.format(Locale.US, "%.1f of %.1f GB free", curAvail / 1048576f, curTotal / 1048576f)));
+        liveMem.setText((curDdr < 0 ? "" : (curDdr / 1000) + " MHz") + (curAvail < 0 || curTotal < 0 ? (curDdr < 0 ? "–" : "") : (curDdr < 0 ? "" : "\n") + String.format(Locale.US, "%.1f of %.1f GB free", curAvail / 1048576f, curTotal / 1048576f)));
         liveHeat.setText(curTemp < 0 ? "–" : String.format(Locale.US, "%.0f °C", curTemp / 1000f));
     }
 
@@ -785,7 +793,7 @@ public class MainActivity extends Activity {
 
     private String overviewSummary() {
         String cur = get("preset", "custom");
-        for (String[] pr : PRESETS) if (pr[0].equals(cur)) return pr[1] + ", " + (curTemp < 0 ? "–" : Math.round(curTemp / 1000f) + " °C");
+        for (String[] pr : presets()) if (pr[0].equals(cur)) return pr[1] + ", " + (curTemp < 0 ? "–" : Math.round(curTemp / 1000f) + " °C");
         return "Custom, " + (curTemp < 0 ? "–" : Math.round(curTemp / 1000f) + " °C");
     }
 
@@ -816,7 +824,7 @@ public class MainActivity extends Activity {
         for (int i = 0; i < 3; i++) { ovG[i] = new LiveGraph(this); ovG[i].setHeightDp(wide ? 120 : 190); }
         ovG[2].setup(new Hist[]{hTemp}, new int[]{warm}, 20, 90, new float[0], 85, rule, 0xAAFF5A4C, true);
         ovG[0].setup(new Hist[]{hFast, hSlow}, new int[]{fastC, slowC}, 0, cpuMaxGhz, cpuRules, -1, rule, 0, false);
-        ovG[1].setup(new Hist[]{hGpu}, new int[]{gpuC}, 300, 900, new float[0], -1, rule, 0, false);
+        ovG[1].setup(new Hist[]{hGpu}, new int[]{gpuC}, gpuLo(), gpuHi(), new float[0], -1, rule, 0, false);
         fl.addView(ovG[2], new FrameLayout.LayoutParams(-1, -2)); fl.addView(ovG[0], new FrameLayout.LayoutParams(-1, -2)); fl.addView(ovG[1], new FrameLayout.LayoutParams(-1, -2));
         LinearLayout.LayoutParams fp = new LinearLayout.LayoutParams(-1, -2); fp.setMargins(0, px(10), 0, 0);
         sc.addView(fl, fp);
@@ -833,7 +841,7 @@ public class MainActivity extends Activity {
         // modes
         String cur = get("preset", "custom");
         int idx = -1;
-        for (int i = 0; i < PRESETS.length; i++) if (PRESETS[i][0].equals(cur)) idx = i;
+        for (int i = 0; i < presets().length; i++) if (presets()[i][0].equals(cur)) idx = i;
         TextView q = text("How should it run?", wide ? 26 : 28, true, ink());
         q.setPadding(px(6), px(22), 0, px(2)); col.addView(q);
         TextView qs = text(idx >= 0 ? "Pick a mode. The list under it shows what it changes." : "Your own settings are active. Pick a mode to start over.", 14, false, dim());
@@ -853,10 +861,10 @@ public class MainActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setBaselineAligned(false);
         String[] meterNames = {"Speed", "Battery", "Heat"};
-        final int shownIdx = idx < 0 ? PRESETS.length : idx;   // the Custom card is the sixth
+        final int shownIdx = idx < 0 ? presets().length : idx;   // the Custom card is the sixth
         final int perRow = wide && Layouts.contentWidth(getResources().getConfiguration().screenWidthDp) >= 1000 ? 6 : 3;
-        for (int i = 0; i <= PRESETS.length; i++) {
-            final int n = i; boolean sel = i == shownIdx, custom = i == PRESETS.length;
+        for (int i = 0; i <= presets().length; i++) {
+            final int n = i; boolean sel = i == shownIdx, custom = i == presets().length;
             LinearLayout c = new LinearLayout(this); c.setOrientation(LinearLayout.VERTICAL);
             c.setPadding(px(wide ? 16 : 20), px(wide ? 14 : 18), px(wide ? 16 : 20), px(wide ? 14 : 18));
             GradientDrawable g = new GradientDrawable(); g.setColor(sel ? priC() : card()); g.setCornerRadius(px(28));
@@ -872,8 +880,8 @@ public class MainActivity extends Activity {
             }
             c.addView(top, new LinearLayout.LayoutParams(-1, -2));
             String ap = get("profile_active", ""), pb = get("profile_base", "");
-            TextView nm = text(custom ? "Custom" : PRESETS[i][1], wide ? (perRow == 6 ? 17 : 19) : 22, true, fg); nm.setPadding(0, px(wide ? 8 : 12), 0, 0); c.addView(nm);
-            String desc = custom ? (!ap.isEmpty() ? "Profile \u201c" + Profiles.shown(ap) + "\u201d is in use." : !pb.isEmpty() ? "Based on \u201c" + Profiles.shown(pb) + "\u201d, changed." : "Your explicit M30s settings.") : PRESETS[i][2];
+            TextView nm = text(custom ? "Custom" : presets()[i][1], wide ? (perRow == 6 ? 17 : 19) : 22, true, fg); nm.setPadding(0, px(wide ? 8 : 12), 0, 0); c.addView(nm);
+            String desc = custom ? (!ap.isEmpty() ? "Profile \u201c" + Profiles.shown(ap) + "\u201d is in use." : !pb.isEmpty() ? "Based on \u201c" + Profiles.shown(pb) + "\u201d, changed." : "Your explicit M30s settings.") : presets()[i][2];
             TextView ds = text(desc, wide ? 12.5f : 13, false, fg2); ds.setMinLines(wide ? (perRow == 6 ? 5 : 3) : 4); ds.setPadding(0, px(4), 0, px(wide ? 6 : 10)); c.addView(ds);
             if (custom) {
                 String[] ps = get("profiles", "").split(","); int cnt = 0; for (String q : ps) if (!q.isEmpty()) cnt++;
@@ -893,8 +901,8 @@ public class MainActivity extends Activity {
                 LinearLayout.LayoutParams ml = new LinearLayout.LayoutParams(-1, -2); ml.setMargins(0, px(6), 0, 0);
                 c.addView(mr, ml);
             }
-            c.setOnClickListener(v -> { if (custom) showProfilesSheet(); else if (n != idx) { set("preset", PRESETS[n][0]); build(); } });
-            c.setContentDescription((custom ? "Custom. " + desc : PRESETS[i][1] + ". " + PRESETS[i][2]) + (sel ? " In use." : ""));
+            c.setOnClickListener(v -> { if (custom) showProfilesSheet(); else if (n != idx) { set("preset", presets()[n][0]); build(); } });
+            c.setContentDescription((custom ? "Custom. " + desc : presets()[i][1] + ". " + presets()[i][2]) + (sel ? " In use." : ""));
             if (wide) {   // all six visible without scrolling: in one row when the pane is wide, else three across
                 LinearLayout.LayoutParams wl = new LinearLayout.LayoutParams(0, -1, 1f); wl.setMargins(i % perRow == 0 ? 0 : px(5), 0, i % perRow == perRow - 1 ? 0 : px(5), 0);
                 if (i % perRow == 0) { row = new LinearLayout(this); row.setBaselineAligned(false); LinearLayout.LayoutParams rl = new LinearLayout.LayoutParams(-1, -2); rl.setMargins(0, i == 0 ? 0 : px(10), 0, 0); col.addView(row, rl); }
@@ -929,7 +937,7 @@ public class MainActivity extends Activity {
         String ap = get("profile_active", ""), pb = get("profile_base", ""), cur = get("preset", "custom"), t, sub;
         if (!ap.isEmpty()) { t = "Profile \u201c" + Profiles.shown(ap) + "\u201d in use"; sub = "No changes"; }
         else if (!pb.isEmpty() && canUpdateProfile()) { t = "Profile \u201c" + Profiles.shown(pb) + "\u201d in use"; sub = "Changed since you applied it"; }
-        else { t = "Custom settings"; sub = "Not saved as a profile"; for (String[] pr : PRESETS) if (pr[0].equals(cur)) { t = pr[1] + " mode"; sub = "Keep these settings as a profile"; } }
+        else { t = "Custom settings"; sub = "Not saved as a profile"; for (String[] pr : presets()) if (pr[0].equals(cur)) { t = pr[1] + " mode"; sub = "Keep these settings as a profile"; } }
         LinearLayout texts = new LinearLayout(this); texts.setOrientation(LinearLayout.VERTICAL);
         texts.addView(text(t, 17, true, ink())); texts.addView(text(sub, 13.5f, false, dim()));
         bar.addView(texts, new LinearLayout.LayoutParams(0, -2, 1f));
@@ -950,7 +958,7 @@ public class MainActivity extends Activity {
     private void fineTuneGrid() {
         TextView h = text("Fine tune", 14, true, accent()); h.setPadding(px(20), px(24), 0, px(8)); col.addView(h);
         String[][] t = {{"live", "Live", liveSummary()}, {"perf", "Performance", perfSummary()},
-            {"memory", "Memory", "Swappiness"}, {"look", "Animations", "Animation scales"}};
+            {"memory", "Memory", memoryPageSummary()}, {"look", "Animations", "Animation scales"}};
         for (int i = 0; i < t.length; i += 2) {
             LinearLayout r = new LinearLayout(this); r.setBaselineAligned(false);
             for (int k = 0; k < 2; k++) {
@@ -971,9 +979,6 @@ public class MainActivity extends Activity {
             col.addView(r, new LinearLayout.LayoutParams(-1, -2));
         }
     }
-
-    // key, Balanced value; the daemon's Balanced preset is the baseline the other modes are compared with
-    private static final String[][] BASE = {{"cap_big", "2314000"}, {"cap_little", "1742000"}, {"governor", "schedutil"}, {"touch_duration_ms", "150"}};
 
     private static String keyLabel(String k) {
         if (k.equals("touch_duration_ms")) return "Touch boost duration (ms)";
@@ -1001,10 +1006,10 @@ public class MainActivity extends Activity {
         LinearLayout p = plainCard();
         p.setPadding(px(22), px(18), px(22), px(10));
         ArrayList<String[]> diff = new ArrayList<>();
-        for (String[] b : BASE) { String c = get(b[0], b[1]); if (!c.equals(b[1])) diff.add(new String[]{keyLabel(b[0]), keyValue(b[0], b[1]), keyValue(b[0], c)}); }
+        for (String[] b : Caps.baseline(st)) { String c = get(b[0], b[1]); if (!c.equals(b[1])) diff.add(new String[]{keyLabel(b[0]), keyValue(b[0], b[1]), keyValue(b[0], c)}); }
         boolean base = idx == 1 && diff.isEmpty();
         LinearLayout head = new LinearLayout(this); head.setGravity(Gravity.CENTER_VERTICAL);
-        head.addView(text(base ? "Balanced is the baseline" : (idx >= 0 ? PRESETS[idx][1] : "Your settings") + " changes", 18, true, ink()));
+        head.addView(text(base ? "Balanced is the baseline" : (idx >= 0 ? presets()[idx][1] : "Your settings") + " changes", 18, true, ink()));
         if (!base) { TextView sm = text("compared with Balanced", 13, false, dim()); sm.setPadding(px(12), 0, 0, 0); head.addView(sm); }
         p.addView(head);
         if (diff.isEmpty()) {
@@ -1029,7 +1034,7 @@ public class MainActivity extends Activity {
         ovV[0].setText(ghz(curFast)); ovV[1].setText(ghz(curSlow));
         ovV[2].setText(curGpu < 0 ? "–" : String.valueOf(curGpu / 1000));
         ovV[3].setText(curTemp < 0 ? "–" : Math.round(curTemp / 1000f) + "°");
-        if (ovG[1] != null) ovG[1].setRange(300, Math.max(900f, hGpu.max() + 50), new float[0]);
+        if (ovG[1] != null) ovG[1].setRange(gpuLo(), Math.max(gpuHi(), hGpu.max() + 50), new float[0]);
         for (LiveGraph g : ovG) if (g != null) g.invalidate();
     }
 
@@ -1101,7 +1106,7 @@ public class MainActivity extends Activity {
         for (int i = 0; i < gv.length; i++) gv[i] = big();
         LiveGraph gc = new LiveGraph(this); gc.setup(new Hist[]{hFast, hSlow}, new int[]{fastC, slowC}, 0, cpuMaxGhz, cpuRules, -1, rule, 0, false);
         View cpu = chartCard("CPU clock, GHz", gc, new TextView[]{gv[0], gv[1]}, new int[]{fastC, slowC});
-        LiveGraph gg = new LiveGraph(this); gg.setup(new Hist[]{hGpu}, new int[]{gpuC}, 0, 800, gpuRules(), -1, rule, 0, true);
+        LiveGraph gg = new LiveGraph(this); gg.setup(new Hist[]{hGpu}, new int[]{gpuC}, 0, gpuHi(), gpuRules(), -1, rule, 0, true);
         View gpu = chartCard("GPU clock, MHz", gg, new TextView[]{gv[2]}, new int[]{gpuC});
         LiveGraph gt = new LiveGraph(this); gt.setup(new Hist[]{hTemp}, new int[]{warm}, 20, 90, new float[]{40, 60}, 85, rule, 0xAAFF5A4C, true);
         View heat = chartCard("Chip temperature, °C (dashed: 85 limit)", gt, new TextView[]{gv[3]}, new int[]{warm});
@@ -1124,17 +1129,13 @@ public class MainActivity extends Activity {
         // state
         LinearLayout saved = col; col = stateBox;
         String presetName = "custom";
-        for (String[] pr : PRESETS) if (pr[0].equals(get("preset", "custom"))) presetName = pr[1];
-        String prof = get("profile_active", "");
+        for (String[] pr : presets()) if (pr[0].equals(get("preset", "custom"))) presetName = pr[1];
         LinearLayout c = group("Set now");
-        row(c, "Preset", "The dial on the home screen", text(presetName, 15, true, accent()));
-        row(c, "Profile", "A saved set of settings", text(prof.isEmpty() ? "none" : prof.replace('_', ' '), 15, true, accent()));
-        row(c, "Overclock", null, text(ocSummary(), 15, true, accent()));
-        row(c, "Thermal limit", "Chip temperature the kernel throttles at", text("off".equals(get("thermal", "stock")) ? "off" : "stock", 15, true, accent()));
+        row(c, "Preset", "The mode picked on the overview", text(presetName, 15, true, accent()));
         c = group("Running now");
         sv2[0] = text("–", 15, true, accent()); row(c, "GPU clock", "0 means the clock is not readable", sv2[0]);
         sv2[1] = text("–", 15, true, accent()); row(c, "Battery", null, sv2[1]);
-        sv2[2] = text("–", 15, true, accent()); row(c, "Memory", "Memory clock and free RAM", sv2[2]);
+        sv2[2] = text("–", 15, true, accent()); row(c, "Memory", "Memory clock (where the kernel has one) and free RAM", sv2[2]);
         col = saved;
 
         final Runnable show = () -> {
@@ -1152,12 +1153,10 @@ public class MainActivity extends Activity {
         refreshGraphs();
     }
 
-    private float[] gpuRules() {
-        String[] o = list("gpu_opps", "680000,500000,400000");
-        float[] r = new float[o.length];
-        for (int i = 0; i < o.length; i++) { try { r[i] = Integer.parseInt(o[i].trim()) / 1000f; } catch (Exception e) { r[i] = 0; } }
-        return r;
-    }
+    /** The Mali clock steps the backend published (faint rules on the GPU graph); none when it published none. */
+    private float[] gpuRules() { return Caps.rulesMhz(st, "gpu_freqs"); }
+    private float gpuHi() { float m = 0; for (float f : gpuRules()) m = Math.max(m, f); return m > 0 ? m + 50 : 900; }
+    private float gpuLo() { float m = Float.MAX_VALUE; for (float f : gpuRules()) m = Math.min(m, f); return m == Float.MAX_VALUE ? 300 : Math.max(0, m - 50); }
 
     private void refreshGraphs() {
         if (graphBox == null) return;
@@ -1172,13 +1171,13 @@ public class MainActivity extends Activity {
             String[] now = {gv[0].getText() + " and " + gv[1].getText() + " gigahertz", gv[2].getText().toString(), gv[3].getText().toString(), gv[4].getText() + " gigabytes"};
             for (int i = 0; i < 4; i++) graphs.get(i).setContentDescription(names[i] + " over the last 90 seconds, now " + now[i]);
         }
-        if (graphs.size() == 4) graphs.get(1).setRange(0, Math.max(800f, hGpu.max()), gpuRules());
+        if (graphs.size() == 4) graphs.get(1).setRange(0, Math.max(gpuHi(), hGpu.max()), gpuRules());
         for (LiveGraph g : graphs) g.invalidate();
         if (sv2[0] != null) {
             sv2[0].setText(curGpu < 0 ? "–" : (curGpu / 1000) + " MHz");
             String b = rd("/sys/class/power_supply/battery/capacity"), st2 = rd("/sys/class/power_supply/battery/status");
             sv2[1].setText(b.isEmpty() ? "–" : b + " %" + (st2.isEmpty() ? "" : ", " + st2.toLowerCase(Locale.US)));
-            sv2[2].setText((curDdr < 0 ? "–" : (curDdr / 1000) + " MHz") + (curAvail < 0 || curTotal < 0 ? "" : ", " + String.format(Locale.US, "%.1f of %.1f GB free", curAvail / 1048576f, curTotal / 1048576f)));
+            sv2[2].setText((curDdr < 0 ? "" : (curDdr / 1000) + " MHz") + (curAvail < 0 || curTotal < 0 ? (curDdr < 0 ? "–" : "") : (curDdr < 0 ? "" : ", ") + String.format(Locale.US, "%.1f of %.1f GB free", curAvail / 1048576f, curTotal / 1048576f)));
         }
     }
 
@@ -1289,7 +1288,7 @@ public class MainActivity extends Activity {
         }
         liveCpu = liveCell(top, "CPU, GHz (fast · slow cores)", grid ? 1f : 1.25f);
         liveGpu = liveCell(top, "GPU", grid ? 1f : 0.8f);
-        liveMem = liveCell(bottom, "Memory clock and free RAM", grid ? 1f : 1.3f);
+        liveMem = liveCell(bottom, "Memory clock and free RAM (clock where the kernel has one)", grid ? 1f : 1.3f);
         liveHeat = liveCell(bottom, "Chip temperature", grid ? 1f : 0.8f);
         c.setOnClickListener(v -> go("live"));
         col.addView(c, new LinearLayout.LayoutParams(-1, -2));
@@ -1386,7 +1385,7 @@ public class MainActivity extends Activity {
     }
 
     private String perfSummary() {
-        return "Exynos CPU caps and touch boost; thermal limits retained";
+        return "CPU clocks and governor" + (Caps.touch(st) ? ", touch boost" : "") + (Caps.gpuLimit(st).empty() ? "" : ", GPU limit") + "; thermal limits retained";
     }
     private String pictureSummary() {
         if (!"2".equals(get("pq_mode", "0"))) return "Factory picture";
@@ -1403,18 +1402,24 @@ public class MainActivity extends Activity {
     // ---------- pages ----------
     private void pagePerf() {
         if (!wide) liveCard(false);
-        LinearLayout c = group("M30s CPU clocks");
-        rowChoice(c, "Performance cores, maximum", "Exynos policy4, advertised clock steps", "cap_big",
-            list("big_freqs", "2314000,1768000,936000"), list("big_freqs", "2314000,1768000,936000"), "2314000");
-        rowChoice(c, "Efficiency cores, maximum", "Exynos policy0, advertised clock steps", "cap_little",
-            list("little_freqs", "1742000,1326000,403000"), list("little_freqs", "1742000,1326000,403000"), "1742000");
-        rowChoice(c, "CPU governor", "Both clusters; thermal limits unchanged", "governor",
-            new String[]{"Schedutil", "Performance"}, new String[]{"schedutil", "performance"}, "schedutil");
-        c = group("Touch boost");
-        rowSwitch(c, "Touch boost", "Existing M30s kernel input boost", "touch_enabled", "1");
-        rowChoice(c, "Touch boost duration", "Stock 150 ms; existing boost clocks retained", "touch_duration_ms",
-            new String[]{"50 ms", "100 ms", "150 ms", "200 ms", "300 ms", "500 ms"}, new String[]{"50", "100", "150", "200", "300", "500"}, "150");
-        col.addView(text("Mali GPU readings are available in Live. MediaTek controls, overclocking and thermal overrides are unsupported on M30s.", 14, false, dim()));
+        if (get("backend", "").isEmpty()) { col.addView(text("The M30s service has not published its state yet.", 14, false, dim())); return; }
+        LinearLayout c = group("CPU clocks");
+        Caps.Choice big = Caps.clocks(st, "big_freqs"), little = Caps.clocks(st, "little_freqs"), gov = Caps.governors(st);
+        if (!big.empty()) rowChoice(c, "Performance cores, maximum", "Exynos policy4, advertised clock steps", "cap_big", big.labels, big.vals, big.vals[0]);
+        if (!little.empty()) rowChoice(c, "Efficiency cores, maximum", "Exynos policy0, advertised clock steps", "cap_little", little.labels, little.vals, little.vals[0]);
+        if (!gov.empty()) rowChoice(c, "CPU governor", "Both clusters; the governors this kernel offers", "governor", gov.labels, gov.vals, "–");
+        if (Caps.touch(st)) {
+            c = group("Touch boost");
+            rowSwitch(c, "Touch boost", "Existing M30s kernel input boost", "touch_enabled", "1");
+            rowChoice(c, "Touch boost duration", "Stock 150 ms; existing boost clocks retained", "touch_duration_ms",
+                new String[]{"50 ms", "100 ms", "150 ms", "200 ms", "300 ms", "500 ms"}, new String[]{"50", "100", "150", "200", "300", "500"}, "150");
+        }
+        Caps.Choice gpu = Caps.gpuLimit(st);
+        if (!gpu.empty()) {
+            c = group("GPU");
+            rowChoice(c, "GPU maximum clock", "Mali DVFS steps; the GPU still scales below the limit", "gpu_max", gpu.labels, gpu.vals, "-1");
+        }
+        col.addView(text("Only what this kernel offers is shown. MediaTek controls, overclocking and thermal overrides are unsupported on M30s.", 14, false, dim()));
     }
 
 
@@ -1489,6 +1494,22 @@ public class MainActivity extends Activity {
         LinearLayout c = group("Memory");
         rowChoice(c, "Swappiness", "Kernel swap preference; existing zram configuration retained", "swappiness",
             new String[]{"80", "100", "130", "160", "200"}, new String[]{"80", "100", "130", "160", "200"}, "130");
+        Caps.Choice io = Caps.names(st, "io_scheds");
+        if (!io.empty()) {
+            c = group("Storage");
+            rowChoice(c, "I/O scheduler", "UFS disks " + get("io_devices", "").replace(",", ", ") + "; one choice for all of them", "io_sched", io.labels, io.vals, "–");
+            Caps.Choice ra = Caps.readAhead(st);
+            if (!ra.empty()) rowChoice(c, "Read-ahead", "How much the kernel reads in advance on those disks", "read_ahead_kb", ra.labels, ra.vals, "–");
+        }
+        Caps.Choice tcp = Caps.names(st, "tcp_ccs");
+        if (!tcp.empty()) {
+            c = group("Network");
+            rowChoice(c, "TCP congestion control", "How fast downloads ramp up; the algorithms this kernel has", "tcp_cc", tcp.labels, tcp.vals, "–");
+        }
+    }
+
+    private String memoryPageSummary() {
+        return "Swappiness" + (Caps.names(st, "io_scheds").empty() ? "" : ", I/O scheduler") + (Caps.names(st, "tcp_ccs").empty() ? "" : ", TCP");
     }
 
     // Picture edits wait here until Apply, so the engine restarts once; the preview shows them at once.

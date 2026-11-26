@@ -7,27 +7,41 @@ import unittest
 SCRIPT = Path(__file__).resolve().parents[1] / 'device/m30s_tunerd.sh'
 
 
-class BackendTests(unittest.TestCase):
+class Fixture(unittest.TestCase):
+    """A fake /sys and /proc tree for the backend (--test mode). Subclasses pick the tables."""
+    LITTLE = ('1742000 1326000 403000', '403000', '1742000')
+    BIG = ('2314000 1768000 936000', '936000', '2314000')
+    GOVERNORS = 'schedutil performance'
+    TOUCH = True
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         self.app = self.root / 'app'; self.app.mkdir()
-        for cluster, freqs, minf, maxf in [('0', '1742000 1326000 403000', '403000', '1742000'),
-                                          ('4', '2314000 1768000 936000', '936000', '2314000')]:
+        for cluster, (freqs, minf, maxf) in [('0', self.LITTLE), ('4', self.BIG)]:
             prefix = 'sys/devices/system/cpu/cpufreq/policy' + cluster + '/'
             for name, value in {'scaling_available_frequencies': freqs, 'scaling_min_freq': minf,
-                                'scaling_max_freq': maxf, 'scaling_available_governors': 'schedutil performance',
+                                'scaling_max_freq': maxf, 'scaling_available_governors': self.GOVERNORS,
                                 'scaling_governor': 'schedutil', 'scaling_cur_freq': minf}.items():
                 self.put(prefix + name, value)
-        for name, value in [('duration_ms', '150'), ('enabled', 'Y')]:
-            self.put('sys/module/input_boost_m30s/parameters/' + name, value)
+        if self.TOUCH:
+            for name, value in [('duration_ms', '150'), ('enabled', 'Y')]:
+                self.put('sys/module/input_boost_m30s/parameters/' + name, value)
         self.put('proc/sys/vm/swappiness', '130')
         self.put('proc/meminfo', 'MemAvailable: 123456 kB')
         self.put('sys/devices/platform/11500000.mali/clock', '683000')
         self.put('sys/class/thermal/thermal_zone0/temp', '46000')
         self.put('sys/class/power_supply/battery/capacity', '100')
         self.put('sys/class/thermal/thermal_zone0/mode', 'enabled')
+        self.put('proc/sys/net/ipv4/tcp_available_congestion_control', 'cubic reno')
+        self.put('proc/sys/net/ipv4/tcp_congestion_control', 'cubic')
+        gpu = 'sys/devices/platform/11500000.mali/'
+        self.put(gpu + 'dvfs_table', ' 1053000 949000 839000 764000 683000 572000 546000 455000 385000 338000 260000 ')
+        self.put(gpu + 'dvfs_max_lock', '-1')
+        self.put(gpu + 'dvfs_min_lock', '-1')
+        for disk in 'abcde':
+            self.add_disk('sd' + disk, 'sys/devices/platform/11120000.ufs/host0/target0:0:0/0:0:0:%d/block/' % ('abcde'.index(disk)))
         self.bin = self.root / 'bin'; self.bin.mkdir()
         mock = self.bin / 'settings'
         mock.write_text('''#!/bin/sh
@@ -40,6 +54,15 @@ esac
 ''')
         mock.chmod(0o755)
         self.env = dict(os.environ, PATH=str(self.bin) + ':' + os.environ['PATH'], MOCK_ROOT=str(self.root))
+
+    def add_disk(self, name, parent, scheduler='noop [cfq]'):
+        """A block device in the device tree with /sys/block/<name> linking to it, as on the phone."""
+        real = self.root / parent / name
+        for node, value in (('queue/scheduler', scheduler), ('queue/read_ahead_kb', '128')):
+            (real / node).parent.mkdir(parents=True, exist_ok=True); (real / node).write_text(value + '\n')
+        (self.root / 'sys/block').mkdir(parents=True, exist_ok=True)
+        link = self.root / 'sys/block' / name
+        if not link.exists(): link.symlink_to(real)
 
     def put(self, name, value):
         path = self.root / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_text(value + '\n')
@@ -55,6 +78,11 @@ esac
         self.assertEqual(result.returncode, 0, result.stderr)
         return (self.app / 'state').read_text()
 
+    def snapshot(self):
+        return {p: p.read_bytes() for top in ['sys', 'proc'] for p in (self.root / top).rglob('*') if p.is_file()}
+
+
+class BackendTests(Fixture):
     def test_installation_does_not_apply_defaults(self):
         before = {p: p.read_bytes() for p in (self.root / 'sys').rglob('*') if p.is_file()}
         state = self.run_backend()
@@ -102,10 +130,13 @@ esac
         self.assertEqual(self.read('sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq'), '1742000')
         self.assertEqual(self.read('sys/module/input_boost_m30s/parameters/duration_ms'), '150')
 
-    def test_missing_provider_rejects_profile_before_any_write(self):
-        (self.root / 'sys/module/input_boost_m30s/parameters/enabled').unlink()
-        self.assertIn('Rejected', self.run_backend('perf_profile=battery\n'))
-        self.assertEqual(self.read('sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq'), '1742000')
+    def test_missing_touch_provider_skips_boost_but_applies_clock_profile(self):
+        for name in ('enabled', 'duration_ms'):
+            (self.root / 'sys/module/input_boost_m30s/parameters' / name).unlink()
+        state = self.run_backend('perf_profile=battery\n')
+        self.assertIn('Applied battery', state)
+        self.assertIn('touch_supported=0', state)
+        self.assertEqual(self.read('sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq'), '1326000')
 
     def test_animation_and_swappiness_readback(self):
         self.assertIn('Applied anim_scale', self.run_backend('anim_scale=1.0\n'))
