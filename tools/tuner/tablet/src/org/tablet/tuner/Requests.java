@@ -12,7 +12,7 @@ final class Requests {
     static final long WAIT_MS = 20000;
     static final int MAX = 32;
     /** Keys whose value names a target (a package, a profile): two of them are two jobs, never one. */
-    private static final String ACTIONS = ",compile_pkg,compile_pkg_profile,reset_pkg,save_profile,update_profile,apply_profile,delete_profile,compile_now,compile_all,refresh_apps,restart_ui,reboot,";
+    private static final String ACTIONS = ",compile_pkg,compile_pkg_profile,reset_pkg,save_profile,update_profile,apply_profile,delete_profile,compile_now,compile_all,refresh_apps,restart_ui,reboot,reboot_recovery,";
     private final List<String[]> queue = new ArrayList<>();
     private String sent;
     private long sentAt;

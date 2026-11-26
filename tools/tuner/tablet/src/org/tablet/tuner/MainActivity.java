@@ -2141,5 +2141,9 @@ public class MainActivity extends Activity {
         rowAction(c, "Reboot the phone", "Needed for a few changes to fully apply", () ->
             new AlertDialog.Builder(this).setMessage("Reboot the phone now?").setNegativeButton("Cancel", null)
                 .setPositiveButton("Reboot", (d, w) -> Cfg.request(this, "reboot", "1")).show());
+        if (Caps.has(st, "reboot_recovery"))
+            rowAction(c, "Reboot to recovery", "Leaves Android; the phone stays in recovery until you restart it from there", () ->
+                new AlertDialog.Builder(this).setMessage("Reboot to recovery now? Android is closed until you restart the phone from recovery.").setNegativeButton("Cancel", null)
+                    .setPositiveButton("Reboot", (d, w) -> Cfg.request(this, "reboot_recovery", "1")).show());
     }
 }

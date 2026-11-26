@@ -158,6 +158,8 @@ public final class CapsTest {
         eq(true, r.waiting("vfs_cache=50", 2), "the daemon has answered an older request: still applying");
         eq(false, r.waiting("swappiness=60", 3), "the echo matches the newest request: show the status");
         eq(false, r.waiting("vfs_cache=50", 4), "and it stays settled");
+        r.offer("reboot_recovery", "1"); r.offer("reboot_recovery", "1");
+        eq("reboot_recovery=1\n", r.next(true, 4), "an action is never merged (1)"); eq("reboot_recovery=1\n", r.next(true, 4), "an action is never merged (2)");
         r.offer("compile_pkg", "a.b"); r.offer("compile_pkg", "c.d");
         eq("compile_pkg=a.b\n", r.next(true, 5), "two packages are two jobs (1)"); eq("compile_pkg=c.d\n", r.next(true, 5), "two packages are two jobs (2)");
         eq(true, r.waiting("x=1", 6), "no echo yet"); eq(false, r.waiting("x=1", 5 + Requests.WAIT_MS + 1), "a daemon that never answers does not hold the header");

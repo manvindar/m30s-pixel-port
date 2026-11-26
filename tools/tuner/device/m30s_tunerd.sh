@@ -3,9 +3,9 @@
 # Every option is offered only when this kernel or ROM has it (cpufreq tables and governors, UFS block queues, TCP congestion list, Mali DVFS table, vm and scheduler
 # nodes, the framework commands a setting needs). A control exists in the app only when its key is published in the state file. Requests are checked against fixed
 # lists and what the kernel advertises, written with readback and rolled back on failure.
-SYS=/sys; PROC=/proc; APP=/data/user/0/org.m30s.tuner/files; WORK=/data/misc/m30s-tuner; TEST=0; DXS=/system/bin/dexopt_all.sh; DALVIK=/data/dalvik-cache
+SYS=/sys; PROC=/proc; APP=/data/user/0/org.m30s.tuner/files; WORK=/data/misc/m30s-tuner; TEST=0; DXS=/system/bin/dexopt_all.sh; DALVIK=/data/dalvik-cache; DEVBLK=/dev/block
 if [ "$1" = --test ]; then
-    TEST=1; FIXTURE=$2; SYS=$2/sys; PROC=$2/proc; APP=$2/app; WORK=$2/private; DXS=$2/dexopt_all.sh; DALVIK=$2/dalvik-cache; shift 2
+    TEST=1; FIXTURE=$2; SYS=$2/sys; PROC=$2/proc; APP=$2/app; WORK=$2/private; DXS=$2/dexopt_all.sh; DALVIK=$2/dalvik-cache; DEVBLK=$2/dev/block; shift 2
 else
     [ "$(getprop ro.product.device)" = m30s ] || exit 1
     [ "$(id -u)" = 0 ] || exit 1
@@ -148,6 +148,9 @@ gpu_lock_set() {
     gpu_lock_write "$go" || { [ "$go" = -1 ] && printf '0\n' > "$GPU/dvfs_max_lock" 2>/dev/null; }
     return 1
 }
+
+# a recovery partition by name, flat or under the controller (the Exynos boards list them under platform/*/by-name)
+recovery_part() { for rp in "$DEVBLK/by-name/recovery" "$DEVBLK"/platform/*/by-name/recovery; do [ -e "$rp" ] || [ -L "$rp" ] && return 0; done; return 1; }
 
 # ---------- read-ahead probe ----------
 # Some kernels accept a write to read_ahead_kb and keep the old value (the M30s UFS disks do). The row exists only where a changed value sticks: once per boot the
@@ -844,6 +847,7 @@ static_data() {
             echo "profile_$pr=$pl,$pb"
         done
         if touch_ok; then echo touch_supported=1; else echo touch_supported=0; fi
+        recovery_part && echo reboot_recovery=1
         echo "io_devices=$(csv "$(disks)")"
         if [ -n "$(disks)" ]; then
             echo "io_scheds=$(csv "$(blkcommon scheduler)")"
@@ -952,6 +956,7 @@ handle() {
             if profile "$val"; then savekey profile_active ""; savekey profile_base ""; STATUS="Applied $val; thermal limits unchanged"; else STATUS='Rejected or restored failed profile'; return 1; fi;;
         restart_ui) [ "$val" = 1 ] || { reject "$key" "no supported value"; return 1; }; pkill -f com.android.systemui; STATUS='Restarting the interface';;
         reboot) [ "$val" = 1 ] || { reject "$key" "no supported value"; return 1; }; STATUS='Rebooting'; PUBYIELD=3; publish; sync; reboot;;
+        reboot_recovery) [ "$val" = 1 ] || { reject "$key" "no supported value"; return 1; }; recovery_part || { reject "$key" "no recovery partition"; return 1; }; STATUS='Rebooting to recovery'; PUBYIELD=3; publish; sync; reboot recovery;;
         compile_now|compile_all)
             [ "$val" = 1 ] || { reject "$key" "no supported value"; return 1; }
             if [ "$key" = compile_all ]; then cf=-f; else cf=; fi

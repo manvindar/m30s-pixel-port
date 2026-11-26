@@ -70,6 +70,7 @@ Rule for every row: the backend publishes the control's key in the state file on
 | Progress of both | `compile_*` | parsed from the script log or the queue | | Host |
 | Boost while CarPlay is open | `carplay_boost` | DiPlay or Pillion installed; Battery becomes Balanced while it is on screen and goes back | neither app installed | Host |
 | Restart interface, reboot | `restart_ui`, `reboot` | `pkill -f com.android.systemui`, `sync; reboot` | | Host |
+| Reboot to recovery | `reboot_recovery` | `sync; reboot recovery`, value must be 1, never saved; the key is published only when a `recovery` partition is listed by name (`/dev/block/by-name` or `/dev/block/platform/*/by-name`); the System page asks for confirmation | no recovery partition by name (what this image has is not known) | Host (stub `reboot`, fake `/dev/block`), Device not run |
 | Hub mode tile, screen saver | | app only (unchanged from the tablet app); no backend | | not tested |
 | Widevine row, shortcuts | | MediaDrm; shortcuts only when their target app resolves (LineageOS parts and Dolby Atmos are not on this image) | target absent | n/a |
 

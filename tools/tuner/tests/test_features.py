@@ -792,6 +792,50 @@ class ReadAheadProbe(Features):
         self.assertIn('read_ahead_kb', self.state())
 
 
+class RebootToRecovery(Features):
+    """The owner's reboot-to-recovery request: offered only where a recovery partition exists by name, and it must be exactly the value 1."""
+
+    def partition(self, where='dev/block/by-name'):
+        d = self.root / where; d.mkdir(parents=True, exist_ok=True)
+        (d / 'recovery').write_text('')
+
+    def test_not_published_without_a_recovery_partition(self):
+        (self.root / 'dev/block/by-name').mkdir(parents=True)
+        (self.root / 'dev/block/by-name/boot').write_text('')
+        self.assertNotIn('reboot_recovery', self.state())
+
+    def test_published_for_a_flat_or_a_controller_listing(self):
+        self.partition()
+        self.assertEqual(self.state()['reboot_recovery'], '1')
+        (self.root / 'dev/block/by-name/recovery').unlink()
+        self.partition('dev/block/platform/13d60000.ufs/by-name')
+        (self.root / 'private/static').unlink()
+        self.assertEqual(self.state()['reboot_recovery'], '1')
+
+    def test_the_request_calls_reboot_recovery_and_nothing_else_reboots(self):
+        self.partition()
+        s = self.state('reboot_recovery=1\n')
+        self.assertIn('Rebooting to recovery', s['status'])
+        self.assertEqual(self.called('reboot'), ['reboot recovery'])
+        self.assertFalse((self.root / 'private/config').exists() and 'reboot_recovery' in (self.root / 'private/config').read_text())
+
+    def test_the_plain_reboot_has_no_argument(self):
+        self.partition()
+        self.state('reboot=1\n')
+        self.assertEqual(self.called('reboot'), ['reboot '])
+
+    def test_rejected_unless_the_value_is_one(self):
+        self.partition()
+        for request in ('reboot_recovery=0\n', 'reboot_recovery=2\n', 'reboot_recovery=yes\n', 'reboot_recovery=1;reboot\n', 'reboot_recovery=\n'):
+            self.assertIn('Rejected', self.state(request)['status'], request)
+        self.assertEqual(self.called('reboot'), [])
+
+    def test_rejected_where_there_is_no_recovery_partition(self):
+        s = self.state('reboot_recovery=1\n')
+        self.assertIn('no recovery partition', s['status'])
+        self.assertEqual(self.called('reboot'), [])
+
+
 class RateProbe(Features):
     """The M30s kernel takes a write to the schedutil rate limits and keeps 5000 (device evidence, 2026-11-26): the rows exist only where a change sticks."""
 
