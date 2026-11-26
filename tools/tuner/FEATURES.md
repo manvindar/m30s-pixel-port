@@ -27,11 +27,11 @@ Rule for every row: the backend publishes the control's key in the state file on
 
 | Control | Key | Source on this device | Hidden when | Status |
 | --- | --- | --- | --- | --- |
-| Mode: Battery, Balanced | `perf_profile` | caps 77 percent step / table maximum, schedutil | no schedutil | Host (v0.9 behaviour, unchanged) |
+| Mode: Battery, Balanced | `perf_profile` | caps 77 percent step / table maximum, schedutil; a mode left as Custom by a change that was later undone reads as Balanced or Battery again once the clocks match and every other kernel value is back at its stock value (no saved profile in use) | no schedutil | Host, Device |
 | Mode: Responsive | | needs the touch boost module | module absent: hidden on the mint kernel | Host |
 | CPU maximum, little and big | `cap_little`, `cap_big` | cpufreq tables (13 and 15 steps) | table missing | Host |
 | CPU governor | `governor` | performance, schedutil (both clusters) | none in common | Host |
-| Clock rise and drop delay | `up_rate`, `down_rate` | schedutil `up_/down_rate_limit_us` (5000/5000) on both policies | governor is not schedutil | Host, Device |
+| Clock rise and drop delay | `up_rate`, `down_rate` | schedutil `up_/down_rate_limit_us` (5000/5000) on both policies; offered only where a probe shows a changed value sticks on both (once per boot the node gets another value, is read back and put back): the M30s kernel keeps 5000, so the rows are expected to be hidden there (device, 2026-11-26) | governor is not schedutil, probe fails | Host (probe), Device |
 | Deep idle | `deep_idle` | cpuidle `state1..` `disable` (state1 `bootcl-cpu-slee`); state0 WFI never touched | nodes missing | Host, Device |
 | Scheduler statistics | `schedstats` | `/proc/sys/kernel/sched_schedstats` | node missing | Host |
 | Touch boost on, duration | `touch_enabled`, `touch_duration_ms` | `input_boost_m30s` | module absent (it is, on the mint kernel) | Host |

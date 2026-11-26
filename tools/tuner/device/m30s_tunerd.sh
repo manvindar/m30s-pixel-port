@@ -166,15 +166,50 @@ ra_probe() {
 }
 ra_ok() { [ -n "$(disks)" ] && case "$(readnode "$RAF")" in *" supported") return 0;; esac; return 1; }
 
-# the mode the user chose; before any choice, the one the clocks and governor already match (so a fresh install does not say "custom" while it runs Balanced)
-mode_now() {
-    mv=$(value perf_profile); [ -n "$mv" ] && { echo "$mv"; return 0; }
+# Same for the schedutil rate limits: the M30s kernel takes a write to up/down_rate_limit_us and keeps 5000. A row exists only where a changed value sticks on both
+# clusters; once per boot (and again if schedutil was not there yet) the node is given another value, read back and put back.
+rate_probe() {
+    rk=$1; rn=${rk}_rate_limit_us; r0=$P0/schedutil/$rn; r4=$P4/schedutil/$rn
+    [ -f "$r0" ] && [ ! -L "$r0" ] && [ -f "$r4" ] && [ ! -L "$r4" ] || return 0
+    rb=$(readnode "$PROC/sys/kernel/random/boot_id"); [ -n "$rb" ] || rb=none
+    case "$(readnode "$WORK/rate.$rk")" in "$rb "*) return 0;; esac
+    o0=$(readnode "$r0"); o4=$(readnode "$r4"); rv=10000; [ "$o0" = 10000 ] && rv=5000
+    rr=unsupported
+    if writecheck "$r0" "$rv" && writecheck "$r4" "$rv"; then rr=supported; fi
+    writecheck "$r0" "$o0" || log "rate probe: could not put $rn back to $o0"
+    writecheck "$r4" "$o4" || log "rate probe: could not put $rn back to $o4"
+    printf '%s %s\n' "$rb" "$rr" > "$WORK/rate.$rk"
+}
+rate_ok() { case "$(readnode "$WORK/rate.$1")" in *" supported") return 0;; esac; return 1; }
+
+# the mode the clocks and governor match (balanced: table maximum, battery: 77 percent step), schedutil on both clusters
+mode_match() {
     allowed_in schedutil "$(governors)" && [ "$(curval governor)" = schedutil ] && [ "$(readnode "$P4/scaling_governor")" = schedutil ] || return 0
     ml=$(maxfreq "$P0/scaling_available_frequencies"); mb=$(maxfreq "$P4/scaling_available_frequencies")
     cl=$(curval cap_little); cb=$(curval cap_big)
     if [ "$cl" = "$ml" ] && [ "$cb" = "$mb" ]; then echo balanced; return 0; fi
     [ "$cl" = "$(stepbelow "$P0/scaling_available_frequencies" $((ml * 77 / 100)))" ] && [ "$cb" = "$(stepbelow "$P4/scaling_available_frequencies" $((mb * 77 / 100)))" ] && echo battery
     return 0
+}
+# every other kernel setting at its stock value (a key without a stock value is not held against the mode)
+at_stock() {
+    for ak in $STOCKKEYS; do
+        case "$ak" in cap_little|cap_big|governor|touch_enabled|touch_duration_ms) continue;; esac
+        as=$(stockof "$ak"); [ -n "$as" ] || continue
+        [ "$(curval "$ak")" = "$as" ] || return 1
+    done
+    return 0
+}
+# the mode the user chose; before any choice, the one the clocks and governor already match (so a fresh install does not say "custom" while it runs Balanced). A custom
+# mode left behind by a change that was undone is a stock mode again once every value is back where a mode would put it.
+mode_now() {
+    mv=$(value perf_profile)
+    case "$mv" in
+        '') mode_match; return 0;;
+        custom) [ -z "$(value profile_active)" ] || { echo custom; return 0; }
+            mm=$(mode_match); if [ -n "$mm" ] && at_stock; then echo "$mm"; else echo custom; fi; return 0;;
+    esac
+    echo "$mv"
 }
 
 # ---------- stock values ----------
@@ -215,8 +250,8 @@ curval() {
         watermark) readnode "$PROC/sys/vm/watermark_scale_factor";;
         extra_free) readnode "$PROC/sys/vm/extra_free_kbytes";;
         schedstats) readnode "$PROC/sys/kernel/sched_schedstats";;
-        up_rate) ratecur up_rate_limit_us;;
-        down_rate) ratecur down_rate_limit_us;;
+        up_rate) rate_ok up && ratecur up_rate_limit_us;;
+        down_rate) rate_ok down && ratecur down_rate_limit_us;;
         deep_idle) idlecur;;
         touch_enabled) touch_ok && case "$(readnode "$BOOST/enabled")" in Y|1) echo 1;; N|0) echo 0;; esac;;
         touch_duration_ms) touch_ok && readnode "$BOOST/duration_ms";;
@@ -693,6 +728,7 @@ apply() {
         extra_free) number "$v" && allowed_in "$v" "0 24576 49152 98304 $(stockof extra_free)" || return 1; path=$PROC/sys/vm/extra_free_kbytes;;
         schedstats) bool01 "$v" || return 1; path=$PROC/sys/kernel/sched_schedstats;;
         up_rate|down_rate)
+            rate_ok "${k%_rate}" || return 1
             rn=up_rate_limit_us; rl="0 2000 5000 10000"
             [ "$k" = down_rate ] && { rn=down_rate_limit_us; rl="2000 5000 10000 20000 40000"; }
             number "$v" && allowed_in "$v" "$rl $(stockof $k)" || return 1
@@ -975,7 +1011,7 @@ rmdir "$WORK/static.lock" "$WORK/qf.lock" "$WORK/q.run" "$WORK/r.lock" "$WORK/sl
 while :; do
     now=$(date +%s)
     if [ $((now - DISKAT)) -ge 20 ]; then DISKAT=$now; DISKS=$(disks_scan | tr '\n' ' '); DISKS_OK=1; fi
-    if [ $((now - SLOWAT)) -ge 60 ]; then SLOWAT=$now; bg refresh_slow; bg refresh_static; fi
+    if [ $((now - SLOWAT)) -ge 60 ]; then SLOWAT=$now; rate_probe up; rate_probe down; bg refresh_slow; bg refresh_static; fi
     need=0; busy=0; YIELDED=0
     [ -d "$QR" ] && busy=1
     [ "$busy" = 0 ] && [ -f "$DXP" ] && [ "$(cstat)" = running ] && busy=1
@@ -988,7 +1024,7 @@ while :; do
             STATE=$APP/state
             if [ "$started" = 0 ]; then
                 started=1; need=1
-                ra_probe
+                ra_probe; rate_probe up; rate_probe down
                 pf_check
                 stock_capture
                 refresh_static

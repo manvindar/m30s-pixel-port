@@ -792,6 +792,49 @@ class ReadAheadProbe(Features):
         self.assertIn('read_ahead_kb', self.state())
 
 
+class RateProbe(Features):
+    """The M30s kernel takes a write to the schedutil rate limits and keeps 5000 (device evidence, 2026-11-26): the rows exist only where a change sticks."""
+
+    def test_offered_where_a_changed_value_sticks_and_left_as_it_was(self):
+        s = self.state()
+        self.assertEqual((s['up_rate'], s['down_rate']), ('5000', '5000'))
+        for pol in (P0, P4):
+            self.assertEqual((self.read(pol + 'schedutil/up_rate_limit_us'), self.read(pol + 'schedutil/down_rate_limit_us')), ('5000', '5000'))
+        self.assertEqual([(self.root / ('private/rate.%s' % k)).read_text().split()[1] for k in ('up', 'down')], ['supported', 'supported'])
+
+    def test_hidden_and_rejected_where_the_value_does_not_stick(self):
+        (self.root / 'private').mkdir(exist_ok=True)
+        for k in ('up', 'down'):
+            (self.root / ('private/rate.%s' % k)).write_text('boot-1 unsupported\n')
+        s = self.state('up_rate=2000\n')
+        self.assertNotIn('up_rate', s); self.assertNotIn('down_rate', s); self.assertNotIn('stock_up_rate', s)
+        self.assertEqual(self.read(P0 + 'schedutil/up_rate_limit_us'), '5000')
+        self.assertIn('Rejected', s['status'])
+
+    def test_a_write_that_reads_back_unchanged_means_unsupported_and_is_put_back(self):
+        d = self.root / 'rp'; d.mkdir()
+        body = ('PROC=$D/proc; SYS=$D/sys; WORK=$D; P0=$SYS/p0; P4=$SYS/p4; mkdir -p $PROC/sys/kernel/random $P0/schedutil $P4/schedutil; echo b1 > $PROC/sys/kernel/random/boot_id\n'
+                'echo 5000 > $P0/schedutil/up_rate_limit_us; echo 5000 > $P4/schedutil/up_rate_limit_us\n'
+                'log() { :; }; writecheck() { echo "$2" >> $D/writes; return 1; }\n'
+                'rate_probe up; cat $D/rate.up; rate_ok up && echo ok || echo notok')
+        out, err = harness(['readnode', 'rate_probe', 'rate_ok'], body, D=str(d))
+        self.assertEqual(out.split(), ['b1', 'unsupported', 'notok'], err)
+        self.assertEqual((d / 'writes').read_text().split(), ['10000', '5000', '5000'])      # tried another value, then put the old one back on both
+
+    def test_nothing_is_recorded_while_schedutil_is_absent_and_the_probe_runs_once_per_boot(self):
+        for pol in (P0, P4):
+            (self.root / (pol + 'schedutil/up_rate_limit_us')).unlink()
+        self.state()
+        self.assertFalse((self.root / 'private/rate.up').exists())
+        for pol in (P0, P4):
+            self.put(pol + 'schedutil/up_rate_limit_us', '5000')
+        self.state()
+        (self.root / 'private/rate.up').write_text('boot-1 unsupported\n')
+        self.assertNotIn('up_rate', self.state())
+        self.put('proc/sys/kernel/random/boot_id', 'boot-2')
+        self.assertIn('up_rate', self.state())
+
+
 class ModeAndStatus(Features):
     def test_fresh_install_names_the_mode_the_clocks_already_match(self):
         self.assertEqual(self.state()['perf_profile'], 'balanced')
@@ -803,6 +846,26 @@ class ModeAndStatus(Features):
     def test_a_chosen_mode_is_not_overridden_by_the_clocks(self):
         self.state('swappiness=100\n')
         self.assertEqual(self.state()['perf_profile'], 'custom')
+
+    def test_custom_left_behind_by_an_undone_change_is_the_stock_mode_again(self):
+        self.assertEqual(self.state('swappiness=100\n')['perf_profile'], 'custom')
+        self.assertEqual(self.state('swappiness=130\n')['perf_profile'], 'balanced')        # every value back where it started
+        self.assertEqual(self.state('vfs_cache=150\n')['perf_profile'], 'custom')
+        self.assertEqual(self.state('vfs_cache=100\n')['perf_profile'], 'balanced')
+
+    def test_custom_stays_while_a_clock_or_another_value_differs(self):
+        self.state('swappiness=100\n'); self.state('vfs_cache=150\n')
+        self.assertEqual(self.state('swappiness=130\n')['perf_profile'], 'custom')          # vfs_cache still changed
+        self.state('vfs_cache=100\n')
+        self.assertEqual(self.state('cap_big=1768000\n')['perf_profile'], 'custom')         # a clock that matches no mode
+        self.assertEqual(self.state('cap_big=2314000\n')['perf_profile'], 'balanced')
+
+    def test_a_saved_profile_in_use_keeps_the_mode_custom(self):
+        self.state('swappiness=100\n')
+        s = self.state('save_profile=mine\n')
+        self.assertEqual((s['perf_profile'], s['profile_active']), ('custom', 'mine'))
+        s = self.state('swappiness=130\n')
+        self.assertEqual((s['perf_profile'], s['profile_active']), ('balanced', ''))        # changing a value ends the profile; the values are stock again
 
     def test_the_status_line_is_rewritten_at_once_and_the_rest_of_the_state_is_kept(self):
         self.state()
