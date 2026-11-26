@@ -28,10 +28,19 @@ fi
 printf '%s\n' "$$" > "$WORK/lock/pid"
 trap 'rm -f "$WORK/lock/pid"; rmdir "$WORK/lock" 2>/dev/null' EXIT
 CFG=$WORK/config; STATE=$APP/state; STATUS='Ready; thermal limits unchanged'; LASTREQ=
-# the first line of a node or file. Never the shell's read: it takes one byte at a time, and a /proc/sys node answers a one byte read with one
-# character and nothing after it (130 became 1)
-readnode() { _rn=$(cat "$1" 2>/dev/null); printf '%s\n' "${_rn%%
-*}"; }
+# The first line of a node or file. A /proc/sys node is read with cat, never with the shell's read: the builtin takes one byte at a time and a
+# sysctl answers a one byte read with one character and nothing after it (130 became 1). Stable sysfs attributes are read with the builtin (no
+# program to start: the state has about fifty of them and the phone needs 0.1 s per program); values that change while they are read use cat.
+readnode() {
+    _rnp=$1
+    case "$1" in
+        "$SYS"/*cur_freq|"$SYS"/*/temp|"$SYS"/*/clock|"$SYS"/*/capacity) _rn=$(cat "$1" 2>/dev/null);;
+        "$SYS"/*) _rn=; if [ -r "$1" ]; then read -r _rn < "$1" || :; fi;;
+        *) _rn=$(cat "$1" 2>/dev/null);;
+    esac
+    printf '%s\n' "${_rn%%
+*}"
+}
 allowed() { for a in $(readnode "$2"); do [ "$1" = "$a" ] && return 0; done; return 1; }
 number() { case "$1" in ''|*[!0-9]*) return 1;; esac; [ ${#1} -le 8 ]; }
 name_ok() { case "$1" in ''|*[!A-Za-z0-9_.-]*) return 1;; esac; [ ${#1} -le 32 ]; }
@@ -786,21 +795,9 @@ slow_data() {
     cps=$(carplay_pkgs); [ -n "$cps" ] && { echo "carplay_pkgs=$(echo $cps | tr ' ' ',')"; echo "carplay_boost=$(curval carplay_boost)"; }
     return 0
 }
-refresh_slow() {
-    mkdir "$WORK/slow.lock" 2>/dev/null || return 0
-    slow_data > "$WORK/slow.new" 2>/dev/null; mv "$WORK/slow.new" "$WORK/slow"
-    rmdir "$WORK/slow.lock"
-}
-publish() {
-    [ -d "$APP" ] && [ ! -L "$APP" ] || return 1
-    {
-        echo backend=m30s
-        printf 'status=%s\n' "$STATUS"
-        printf 'last_request=%s\n' "$LASTREQ"
-        mn=$(mode_now); echo "perf_profile=$mn"; echo "preset=$mn"
-        for spec in "cap_little:$P0/scaling_max_freq" "cap_big:$P4/scaling_max_freq" "governor:$P0/scaling_governor" "governor_big:$P4/scaling_governor" "swappiness:$PROC/sys/vm/swappiness" "cpu_little_khz:$P0/scaling_cur_freq" "cpu_big_khz:$P4/scaling_cur_freq" "temp_mc:$SYS/class/thermal/thermal_zone0/temp" "battery_percent:$SYS/class/power_supply/battery/capacity"; do
-            key=${spec%%:*}; node=${spec#*:}; printf '%s=%s\n' "$key" "$(readnode "$node")"
-        done
+# What this kernel offers and the values only a boot or a new disk changes. Rebuilt in the background every minute and once at start (about a hundred
+# small commands: on the phone the whole state took 12 s with these in it, and a request waits for the publish in progress).
+static_data() {
         # Capabilities: what this kernel offers right now. The app builds its option lists from these and hides what is missing.
         echo caps=2
         echo "governors=$(csv "$(governors)")"
@@ -810,49 +807,89 @@ publish() {
                 *) pl=$(maxfreq "$P0/scaling_available_frequencies"); pb=$(maxfreq "$P4/scaling_available_frequencies");; esac
             echo "profile_$pr=$pl,$pb"
         done
-        if touch_ok; then
-            echo touch_supported=1
-            echo "touch_duration_ms=$(readnode "$BOOST/duration_ms")"
-            case "$(readnode "$BOOST/enabled")" in Y|1) echo touch_enabled=1;; N|0) echo touch_enabled=0;; esac
-        else echo touch_supported=0; fi
+        if touch_ok; then echo touch_supported=1; else echo touch_supported=0; fi
         echo "io_devices=$(csv "$(disks)")"
         if [ -n "$(disks)" ]; then
             echo "io_scheds=$(csv "$(blkcommon scheduler)")"
-            echo "io_sched=$(blkcurrent scheduler)"
-            if ra_ok; then
-                echo "read_aheads=128,256,512,1024,2048"
-                echo "read_ahead_kb=$(blkcurrent read_ahead_kb)"
-            fi
+            ra_ok && echo "read_aheads=128,256,512,1024,2048"
         fi
         echo "tcp_ccs=$(csv "$(readnode "$PROC/sys/net/ipv4/tcp_available_congestion_control")")"
+        if [ -n "$GPU" ] && [ -f "$GPU/dvfs_table" ] && [ -f "$GPU/dvfs_max_lock" ]; then echo "gpu_freqs=$(csv "$(readnode "$GPU/dvfs_table")")"; fi
+        for sk in $STOCKKEYS; do sv=$(stockof "$sk"); [ -n "$sv" ] && echo "stock_$sk=$sv"; done
+        echo "little_freqs=$(csv "$(readnode "$P0/scaling_available_frequencies")")"
+        echo "big_freqs=$(csv "$(readnode "$P4/scaling_available_frequencies")")"
+        return 0
+}
+refresh_static() {
+    mkdir "$WORK/static.lock" 2>/dev/null || return 0
+    static_data > "$WORK/static.new" 2>/dev/null && mv "$WORK/static.new" "$WORK/static"
+    rmdir "$WORK/static.lock"
+}
+refresh_slow() {
+    mkdir "$WORK/slow.lock" 2>/dev/null || return 0
+    slow_data > "$WORK/slow.new" 2>/dev/null; mv "$WORK/slow.new" "$WORK/slow"
+    : > "$WORK/slow.fresh"   # the main loop publishes once more: the new values are in the state a moment after the request that changed them
+    rmdir "$WORK/slow.lock"
+}
+# A request that arrives while the state is being built is answered first: the build stops at its next checkpoint (the half built file is thrown away) and
+# the main loop handles the request at once. At most three times in a row, so the state is still written when requests keep coming.
+PUBYIELD=0
+request_waiting() { for ra_ in $APPS; do [ -f "$ra_/request" ] && [ ! -L "$ra_/request" ] && return 0; done; return 1; }
+checkpoint() { [ $PUBYIELD -lt 3 ] && request_waiting && { PUBYIELD=$((PUBYIELD + 1)); return 0; }; return 1; }
+# builds the state once into $WORK/state.new: 0 done, 2 stopped for a request
+build_state() {
+    {
+        echo backend=m30s
+        printf 'status=%s\n' "$STATUS"
+        printf 'last_request=%s\n' "$LASTREQ"
+        mn=$(mode_now); echo "perf_profile=$mn"; echo "preset=$mn"
+        for spec in "cap_little:$P0/scaling_max_freq" "cap_big:$P4/scaling_max_freq" "governor:$P0/scaling_governor" "governor_big:$P4/scaling_governor" "swappiness:$PROC/sys/vm/swappiness" "cpu_little_khz:$P0/scaling_cur_freq" "cpu_big_khz:$P4/scaling_cur_freq" "temp_mc:$SYS/class/thermal/thermal_zone0/temp" "battery_percent:$SYS/class/power_supply/battery/capacity"; do
+            key=${spec%%:*}; node=${spec#*:}; printf '%s=%s\n' "$key" "$(readnode "$node")"
+        done
+        if touch_ok; then
+            echo "touch_duration_ms=$(readnode "$BOOST/duration_ms")"
+            case "$(readnode "$BOOST/enabled")" in Y|1) echo touch_enabled=1;; N|0) echo touch_enabled=0;; esac
+        fi
+        if [ -n "$(disks)" ]; then
+            echo "io_sched=$(blkcurrent scheduler)"
+            ra_ok && echo "read_ahead_kb=$(blkcurrent read_ahead_kb)"
+        fi
+        checkpoint && return 2
         echo "tcp_cc=$(readnode "$PROC/sys/net/ipv4/tcp_congestion_control")"
         if [ -n "$GPU" ]; then
             echo "gpu_khz=$(readnode "$GPU/clock")"
-            if [ -f "$GPU/dvfs_table" ] && [ -f "$GPU/dvfs_max_lock" ]; then
-                echo "gpu_freqs=$(csv "$(readnode "$GPU/dvfs_table")")"
-                echo "gpu_max=$(gpu_lock_now)"
-            fi
+            if [ -f "$GPU/dvfs_table" ] && [ -f "$GPU/dvfs_max_lock" ]; then echo "gpu_max=$(gpu_lock_now)"; fi
         fi
+        checkpoint && return 2
         for ck in vfs_cache page_cluster watermark extra_free schedstats up_rate down_rate deep_idle; do
             cv=$(curval "$ck"); [ -n "$cv" ] && echo "$ck=$cv"
         done
-        for sk in $STOCKKEYS; do sv=$(stockof "$sk"); [ -n "$sv" ] && echo "stock_$sk=$sv"; done
+        checkpoint && return 2
         echo "saved_profiles=$(pf_names)"
         echo "profile_active=$(value profile_active)"
         echo "profile_base=$(value profile_base)"
-        echo "little_freqs=$(csv "$(readnode "$P0/scaling_available_frequencies")")"
-        echo "big_freqs=$(csv "$(readnode "$P4/scaling_available_frequencies")")"
         echo "mem_available=$(awk '/^MemAvailable:/ {print $2}' "$PROC/meminfo")"
+        checkpoint && return 2
+        [ -f "$WORK/static" ] && cat "$WORK/static"
         [ -f "$WORK/slow" ] && cat "$WORK/slow"
         pubcompile
-    } > "$WORK/state.new" || return 1
+    } > "$WORK/state.new"
+    _br=$?
+    [ $_br = 0 ] && PUBYIELD=0
+    return $_br
+}
+# puts the built state into one app's directory (a copy each: both apps get the same state from one build)
+deliver_state() {
+    [ -d "$APP" ] && [ ! -L "$APP" ] && [ -f "$WORK/state.new" ] || return 1
+    cp "$WORK/state.new" "$WORK/state.copy" || return 1
     if [ "$TEST" = 0 ]; then
         owner=$(stat -c %u "$APP"); group=$(stat -c %g "$APP")
-        chown "$owner:$group" "$WORK/state.new"
-        chcon --reference="$APP" "$WORK/state.new" 2>/dev/null || restorecon "$WORK/state.new"
+        chown "$owner:$group" "$WORK/state.copy"
+        chcon --reference="$APP" "$WORK/state.copy" 2>/dev/null || restorecon "$WORK/state.copy"
     fi
-    chmod 0644 "$WORK/state.new"; mv "$WORK/state.new" "$STATE"
+    chmod 0644 "$WORK/state.copy"; mv "$WORK/state.copy" "$STATE"
 }
+publish() { build_state && deliver_state; _pr=$?; rm -f "$WORK/state.new"; return $_pr; }
 # the new status line goes into the published state at once (a full publish takes seconds on the phone)
 quick_status() {
     [ -f "$STATE" ] && [ ! -L "$STATE" ] || return 0
@@ -878,7 +915,7 @@ handle() {
         perf_profile)
             if profile "$val"; then savekey profile_active ""; savekey profile_base ""; STATUS="Applied $val; thermal limits unchanged"; else STATUS='Rejected or restored failed profile'; return 1; fi;;
         restart_ui) [ "$val" = 1 ] || { reject "$key" "no supported value"; return 1; }; pkill -f com.android.systemui; STATUS='Restarting the interface';;
-        reboot) [ "$val" = 1 ] || { reject "$key" "no supported value"; return 1; }; STATUS='Rebooting'; publish; sync; reboot;;
+        reboot) [ "$val" = 1 ] || { reject "$key" "no supported value"; return 1; }; STATUS='Rebooting'; PUBYIELD=3; publish; sync; reboot;;
         compile_now|compile_all)
             [ "$val" = 1 ] || { reject "$key" "no supported value"; return 1; }
             if [ "$key" = compile_all ]; then cf=-f; else cf=; fi
@@ -930,22 +967,22 @@ APPS=$APP
 if [ "$TEST" = 1 ]; then
     [ ! -d "$FIXTURE/app-tablet" ] || APPS="$APP $FIXTURE/app-tablet"
 else APPS="$APP /data/user/0/org.tablet.tuner/files"; fi
-refresh_slow; SLOWAT=$(date +%s); DISKAT=0; SSPID=; PUBAT=0; LASTBUSY=x; DISKS_OK=; FAST=0
-rmdir "$WORK/qf.lock" "$WORK/q.run" "$WORK/r.lock" "$WORK/slow.lock" 2>/dev/null; rm -f "$QF" "$PST" "$AFAIL" "$QC"
+refresh_slow; SLOWAT=$(date +%s); DISKAT=0; SSPID=; PUBAT=0; LASTBUSY=x; DISKS_OK=
+rmdir "$WORK/static.lock" "$WORK/qf.lock" "$WORK/q.run" "$WORK/r.lock" "$WORK/slow.lock" 2>/dev/null; rm -f "$QF" "$PST" "$AFAIL" "$QC"
 [ -f "$WORK/tuner.log" ] && [ "$(wc -c < "$WORK/tuner.log")" -gt 262144 ] && mv "$WORK/tuner.log" "$WORK/tuner.log.1"
 # the daemon does little per round: the state is rebuilt (about a hundred small commands) after a request, every round while something compiles and every 20 s
 # otherwise; the live clocks and temperature in the app come from /sys directly
 while :; do
     now=$(date +%s)
     if [ $((now - DISKAT)) -ge 20 ]; then DISKAT=$now; DISKS=$(disks_scan | tr '\n' ' '); DISKS_OK=1; fi
-    if [ $((now - SLOWAT)) -ge 60 ]; then SLOWAT=$now; bg refresh_slow; fi
-    need=0; busy=0
+    if [ $((now - SLOWAT)) -ge 60 ]; then SLOWAT=$now; bg refresh_slow; bg refresh_static; fi
+    need=0; busy=0; YIELDED=0
     [ -d "$QR" ] && busy=1
     [ "$busy" = 0 ] && [ -f "$DXP" ] && [ "$(cstat)" = running ] && busy=1
     [ "$busy" = "$LASTBUSY" ] || { need=1; LASTBUSY=$busy; }
     [ "$busy" = 1 ] && need=1
     [ $((now - PUBAT)) -ge 20 ] && need=1
-    [ $FAST -gt 0 ] && { need=1; FAST=$((FAST - 1)); }   # the background refresh of the settings finishes a moment after a request: publish again
+    [ -f "$WORK/slow.fresh" ] && { rm -f "$WORK/slow.fresh"; need=1; }
     for APP in $APPS; do
         if [ -d "$APP" ] && [ ! -L "$APP" ]; then
             STATE=$APP/state
@@ -954,20 +991,29 @@ while :; do
                 ra_probe
                 pf_check
                 stock_capture
+                refresh_static
                 restore_config
                 [ -f "$AFD" ] && put_app_file "$AFD" apps_state
                 [ "$TEST" = 1 ] && bg wifiboot
             fi
-            HANDLED=0; handle; [ "$HANDLED" = 1 ] && { need=1; FAST=5; quick_status; log "request $LASTREQ answered: $STATUS"; }
+            HANDLED=0; handle; [ "$HANDLED" = 1 ] && { need=1; quick_status; log "request $LASTREQ answered: $STATUS"; }
         fi
     done
     if [ "$need" = 1 ]; then
         PUBAT=$now
-        for APP in $APPS; do STATE=$APP/state; [ -d "$APP" ] && [ ! -L "$APP" ] && publish; done
+        have=0; for APP in $APPS; do [ -d "$APP" ] && [ ! -L "$APP" ] && have=1; done
+        if [ $have = 1 ]; then
+            build_state; br=$?
+            if [ $br = 0 ]; then
+                for APP in $APPS; do STATE=$APP/state; deliver_state; done
+            elif [ $br = 2 ]; then YIELDED=1; log "state build stopped for a request ($PUBYIELD)"; fi
+            rm -f "$WORK/state.new"
+        fi
         pubs=$(( $(date +%s) - now )); [ $pubs -ge 3 ] && log "publish took $pubs s"   # evidence for the stale-state reports
     fi
     boostwatch
     if [ $((now % 5)) -eq 0 ] || [ "$TEST" = 1 ]; then sp=$(pidof system_server 2>/dev/null); if [ -n "$sp" ] && [ "$sp" != "$SSPID" ]; then SSPID=$sp; bg wifiboot; fi; fi
+    if [ "$YIELDED" = 1 ]; then YIELDED=0; continue; fi   # the request that stopped the build is handled in the next round, without waiting
     [ "$1" = --once ] && break
     sleep 1
 done

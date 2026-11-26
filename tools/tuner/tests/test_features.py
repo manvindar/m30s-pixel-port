@@ -5,6 +5,7 @@ The fake commands keep their state in files under <fixture>/mock and log every c
 import os
 import re
 import stat
+import time
 import subprocess
 import unittest
 from pathlib import Path
@@ -829,7 +830,7 @@ class ModeAndStatus(Features):
 
 # What a /proc/sys node does to the shell's read builtin on the phone: the builtin asks for one byte, the node answers it with one
 # character and nothing after it (130 became 1). A function in front of the script gives readnode's old variable that behaviour.
-ONE_BYTE_READ = '''read() { if [ "$#" = 2 ] && [ "$2" = _rn ]; then command read -r _rn || return 1; _rn=${_rn%"${_rn#?}"}; return 0; fi; command read "$@"; }
+ONE_BYTE_READ = '''read() { if [ "$#" = 2 ] && [ "$2" = _rn ]; then command read -r _rn || return 1; case "$_rnp" in */proc/sys/*) _rn=${_rn%"${_rn#?}"};; esac; return 0; fi; command read "$@"; }
 '''
 
 
@@ -844,7 +845,7 @@ class DeviceLikeReads(Features):
         return (self.app / 'state').read_text()
 
     def test_the_stand_in_really_truncates_what_read_returns(self):
-        probe = subprocess.run(['sh', '-c', ONE_BYTE_READ + 'echo 130 > "$1"; _rn=; read -r _rn < "$1"; echo "$_rn"', 'sh', str(self.root / 'x')], capture_output=True, text=True)
+        probe = subprocess.run(['sh', '-c', ONE_BYTE_READ + '_rnp=/x/proc/sys/vm/swappiness; echo 130 > "$1"; _rn=; read -r _rn < "$1"; echo "$_rn"', 'sh', str(self.root / 'x')], capture_output=True, text=True)
         self.assertEqual(probe.stdout.strip(), '1')
 
     def test_whole_values_are_published_and_recorded(self):
@@ -869,7 +870,8 @@ class DeviceLikeReads(Features):
     def test_the_daemon_never_reads_a_kernel_node_with_the_shell_builtin(self):
         text = SCRIPT.read_text()
         body = text.split('readnode() ', 1)[1].split('\nallowed()', 1)[0]
-        self.assertNotRegex(body, r'\bread\b[^\n]*<')
+        self.assertRegex(body, r'"\$SYS"/\*\) _rn=; if \[ -r "\$1" \]; then read -r _rn < "\$1"')   # the builtin only for sysfs
+        self.assertEqual(body.count('read -r'), 1)
         for line in text.splitlines():
             if re.search(r'\bread (-r )?\w+ *(\|\||<)', line) and not line.lstrip().startswith('#'):
                 self.assertRegex(line, r'<\s*"\$(CFG|STOCK|PF|QC|PST|STATE|WORK/idle\.snap)"|\|\|', line)
@@ -927,9 +929,111 @@ class RequestEcho(Features):
         subprocess.run(['sh', '-c', script, 'sh', str(self.root)], check=True)
         self.assertEqual((self.root / 'state').read_text(), 'backend=m30s\nstatus=Applied b\nlast_request=b=2\nx=2\n')
 
+    def test_what_only_a_boot_changes_is_kept_apart_from_what_a_request_changes(self):
+        # the full publish took 12 s on the phone: the lists, tables and stock values come from a file rebuilt in the background
+        s = self.state()
+        static = dict(l.split('=', 1) for l in (self.root / 'private/static').read_text().splitlines())
+        for key in ('caps', 'governors', 'profile_battery', 'io_devices', 'io_scheds', 'tcp_ccs', 'gpu_freqs', 'stock_swappiness', 'little_freqs', 'big_freqs'):
+            self.assertEqual(static[key], s[key], key)
+        for key in ('cap_big', 'governor', 'swappiness', 'io_sched', 'tcp_cc', 'gpu_max', 'vfs_cache', 'saved_profiles'):
+            self.assertNotIn(key, static, key)
+        (self.root / 'private/static').write_text('caps=2\ntcp_ccs=cached\n')
+        s = self.state('vfs_cache=150\n')   # a new process rebuilds the file at its start
+        self.assertEqual(s['tcp_ccs'], 'cubic,reno')
+
     def test_a_restarted_daemon_has_answered_nothing_yet(self):
         self.state('swappiness=100\n')
         self.assertEqual(self.state()['last_request'], '')   # a restarted daemon has handled nothing yet
+
+
+SHIM_CAT = '''#!/bin/sh
+# stands in for cat: while the state is being built (state.new exists) it can be slow and it can drop a request file, as the app does
+R="$MOCK_ROOT"
+if [ -f "$R/private/state.new" ]; then
+    [ -n "$SLOW" ] && sleep "$SLOW"
+    if [ -f "$R/inject" ] && [ ! -f "$R/app/request" ]; then
+        printf 'vfs_cache=150\\n' > "$R/app/request"; echo injected >> "$R/injected.log"
+        [ -f "$R/inject_always" ] || rm -f "$R/inject"
+    fi
+    case "$*" in */vm/swappiness) echo read >> "$R/swappiness_reads.log";; esac
+fi
+exec /bin/cat "$@"
+'''
+
+
+class RequestLatency(Features):
+    """On the phone one build of the state took 12 s and a request waited for it (echo after 8 to 16 s, new values after 18 to 26 s)."""
+
+    def setUp(self):
+        super().setUp()
+        shim = self.bin / 'cat'; shim.write_text(SHIM_CAT); shim.chmod(0o755)
+
+    def log(self):
+        path = self.root / 'private/tuner.log'
+        return path.read_text() if path.exists() else ''
+
+    def test_a_request_that_arrives_during_the_build_is_answered_first(self):
+        self.state()
+        (self.root / 'inject').write_text('1')
+        s = self.state()
+        self.assertEqual((s['last_request'], s['vfs_cache']), ('vfs_cache=150', '150'))
+        self.assertIn('Applied vfs_cache', s['status'])
+        self.assertIn('state build stopped for a request (1)', self.log())
+        self.assertEqual(self.log().count('answered'), 1)
+        self.assertFalse((self.root / 'private/state.new').exists())
+        self.assertFalse((self.app / 'request').exists())
+        self.assertEqual(self.read('proc/sys/vm/vfs_cache_pressure'), '150')
+
+    def test_the_state_is_still_written_when_requests_keep_coming(self):
+        self.state()
+        (self.root / 'inject').write_text('1'); (self.root / 'inject_always').write_text('1')
+        s = self.state()
+        self.assertEqual(s['last_request'], 'vfs_cache=150')
+        self.assertIn('state build stopped for a request (3)', self.log())
+        self.assertNotIn('(4)', self.log())
+        self.assertEqual(s['backend'], 'm30s')
+
+    def test_a_stopped_build_leaves_the_published_state_whole(self):
+        before = (self.app / 'state').read_text() if (self.app / 'state').exists() else self.run_backend()
+        (self.root / 'inject').write_text('1')
+        self.state()
+        after = (self.app / 'state').read_text().splitlines()
+        self.assertTrue(all('=' in l for l in after))
+        self.assertEqual(sorted(l.split('=')[0] for l in before.splitlines()), sorted(l.split('=')[0] for l in after))
+
+    def test_both_apps_get_the_same_state_from_one_build(self):
+        tablet = self.root / 'app-tablet'; tablet.mkdir()
+        self.state()
+        self.assertEqual((self.app / 'state').read_text(), (tablet / 'state').read_text())
+        reads = (self.root / 'swappiness_reads.log').read_text().count('read')
+        self.assertEqual(reads, 1)   # one build, not one per app
+
+    def test_the_echo_does_not_wait_for_a_slow_build(self):
+        self.state()                                       # a first state, so the quick rewrite has something to rewrite
+        env = dict(self.env, SLOW='0.35')
+        (self.root / 'private/tuner.log').unlink(missing_ok=True)
+        daemon = subprocess.Popen(['sh', str(SCRIPT), '--test', str(self.root)], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.addCleanup(lambda: (daemon.terminate(), daemon.wait(timeout=20)))
+        building = self.root / 'private/state.new'
+        end = time.time() + 20
+        while not building.exists() and time.time() < end:
+            time.sleep(0.02)
+        self.assertTrue(building.exists(), 'the daemon never started a build')
+        t0 = time.time()
+        (self.app / 'request').write_text('vfs_cache=150\n')
+        echoed = None
+        while time.time() < t0 + 20:
+            try:
+                if 'last_request=vfs_cache=150' in (self.app / 'state').read_text(): echoed = time.time() - t0; break
+            except OSError:
+                pass
+            time.sleep(0.05)
+        self.assertIsNotNone(echoed, 'no echo')
+        self.assertLess(echoed, 4.5, 'the echo waited for the whole build')   # a whole build is about 7 s with this cat
+        end = time.time() + 20
+        while 'vfs_cache=150' not in [l for l in (self.app / 'state').read_text().splitlines()] and time.time() < end:
+            time.sleep(0.1)
+        self.assertIn('vfs_cache=150', (self.app / 'state').read_text().splitlines())
 
 
 if __name__ == '__main__':
